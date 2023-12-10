@@ -2,7 +2,7 @@ from ctypes import *
 
 
 class InitParam(Structure):
-    _fields_ = [("w", c_int), ("h", c_int)]
+    _fields_ = [("w", c_int), ("h", c_int), ("numWorkers", c_int)]
 
 
 class Observation(Structure):

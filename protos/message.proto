@@ -1,0 +1,29 @@
+
+// [START declaration]
+syntax = "proto3";
+package message;
+
+message Message {
+    string msg = 1;
+    bytes data = 2;
+}
+
+enum Role {
+    PLAYER_A = 0;
+    PLAYER_B = 1;
+    OBSERVER = 2;
+}
+
+message ObservationRequest {
+}
+
+message PlayerRequest {
+    Role role = 1;
+    bytes data = 2;
+}
+
+service Rts {
+    rpc ConnectObserver(ObservationRequest) returns (stream Message) {}
+    rpc ConnectPlayer(stream PlayerRequest) returns (stream Message) {}
+}
+

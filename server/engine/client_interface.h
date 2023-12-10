@@ -12,6 +12,26 @@ struct InitParam {
     int numWorkers;
 };
 
+enum ObservationPlane {
+    HP_0,
+    HP_1,
+    HP_2,
+    HP_3,
+    HP_4PLUS,
+    RES_0,
+    RES_1,
+    RES_2,
+    RES_3,
+    RES_4PLUS,
+    OWNER_1,
+    OWNER_NONE,
+    OWNER_2,
+    OBJ_TYPE,
+    CURRENT_ACTION = OBJ_TYPE + GAME_OBJ_TYPE_NUM,
+};
+
+constexpr static int OBSERVATION_PLANE_NUM = CURRENT_ACTION + GAME_ACTION_TYPE_NUM + 1;
+
 struct Observation {
     signed char* data = nullptr;
     int size = 0;
@@ -40,6 +60,18 @@ struct Observation {
     int newNetIncome = 0;
     int newHitCnt = 0;
 };
+
+enum ActionPlane {
+    ACTION,
+    MOVE_PARAM,
+    GATHER_PARAM,
+    RETURN_PARAM,
+    PRODUCE_DIRECTION_PARAM,
+    PRODUCE_TYPE_PARAM,
+    RELATIVE_ATTACK_POSITION
+};
+
+constexpr static int ACTION_PLANE_NUM = RELATIVE_ATTACK_POSITION + 1;
 
 struct Action {
     signed char* data;

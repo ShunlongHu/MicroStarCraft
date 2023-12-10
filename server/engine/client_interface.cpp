@@ -9,14 +9,19 @@
 using namespace std;
 static vector<signed char> observationVec1;
 static vector<signed char> observationVec2;
+static vector<GameState> gameStateVec;
 
 extern "C" __declspec(dllexport) void Init(InitParam initParam) {
-    cout << "Init " << initParam.w << "x" << initParam.h << endl;
-    observationVec1.resize(initParam.h * initParam.w * initParam.numWorkers);
+    cout << "Init " << initParam.w << "x" << initParam.h << " with " << initParam.numWorkers << " workers." << endl;
+    gameStateVec.resize(initParam.numWorkers,{{}, initParam.w, initParam.h});
+
+    auto observationSize = initParam.numWorkers * initParam.h * initParam.w * OBSERVATION_PLANE_NUM;
+
+    observationVec1.resize(observationSize);
     for (int i = 0; i < observationVec1.size(); ++i) {
         observationVec1[i] = i;
     }
-    observationVec2.resize(initParam.h * initParam.w * initParam.numWorkers);
+    observationVec2.resize(observationSize);
     for (int i = 0; i < observationVec2.size(); ++i) {
         observationVec2[i] = -i;
     }

@@ -7,6 +7,9 @@
 
 #include "game_types.h"
 
+const int W = 32;
+const int H = 32;
+
 struct InitParam {
     int w;
     int h;

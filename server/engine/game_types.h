@@ -16,15 +16,15 @@ constexpr static int GAME_DIRECTION_TYPE_NUM = 4;
 // GAME_ATTACK
 constexpr static int RADIUS_MELEE = 1;
 constexpr static int RADIUS_RANGED = 3;
-constexpr static int HP_BASE = 10; // starcraft building hp/10
-constexpr static int HP_BARRACK = 8;
-constexpr static int HP_WORKER = 1; // starcraft unit hp/2
-constexpr static int HP_LIGHT = 1;
-constexpr static int HP_HEAVY = 4;
-constexpr static int HP_RANGED = 1;
+constexpr static int HP_BASE = 60; // starcraft building hp/25
+constexpr static int HP_BARRACK = 40;
+constexpr static int HP_WORKER = 2; // starcraft unit hp/25
+constexpr static int HP_LIGHT = 2;
+constexpr static int HP_HEAVY = 6;
+constexpr static int HP_RANGED = 2;
 constexpr static int ATTACK_WORKER = 1;
-constexpr static int ATTACK_LIGHT = 1;
-constexpr static int ATTACK_HEAVY = 3;
+constexpr static int ATTACK_LIGHT = 2;
+constexpr static int ATTACK_HEAVY = 2;
 constexpr static int ATTACK_RANGED = 1;
 
 // GAME_ECONOMY
@@ -35,12 +35,12 @@ constexpr static int COST_WORKER = 2;
 constexpr static int COST_LIGHT = 1;
 constexpr static int COST_HEAVY = 4;
 constexpr static int COST_RANGED = 2;
-constexpr static int TIME_BASE = 5;
-constexpr static int TIME_BARRACK = 4;
-constexpr static int TIME_WORKER = 2;
-constexpr static int TIME_LIGHT = 1;
-constexpr static int TIME_HEAVY = 4;
-constexpr static int TIME_RANGED = 2;
+constexpr static int TIME_BASE = 36;
+constexpr static int TIME_BARRACK = 24;
+constexpr static int TIME_WORKER = 6; // scv
+constexpr static int TIME_LIGHT = 4;  // zergling
+constexpr static int TIME_HEAVY = 12;   // zelot
+constexpr static int TIME_RANGED = 9;  // marine
 
 template <class T> struct UHasher{
     size_t operator() (const T& key) const {

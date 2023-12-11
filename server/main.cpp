@@ -32,6 +32,7 @@
 #include <grpcpp/health_check_service_interface.h>
 
 #include "rts_service_impl.h"
+#include "client_interface.h"
 
 ABSL_FLAG(uint16_t, port, 50051, "Server port for the service");
 
@@ -64,6 +65,7 @@ void RunServer(uint16_t port) {
 
 int main(int argc, char** argv) {
     absl::ParseCommandLine(argc, argv);
+    Init({W, H, 1});
     RunServer(absl::GetFlag(FLAGS_port));
     return 0;
 }

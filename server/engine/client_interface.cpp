@@ -5,39 +5,62 @@
 #include "client_interface.h"
 #include <vector>
 #include <iostream>
+#include <chrono>
+#include "thread_pool.h"
+#include "game_engine.h"
+#include "state_to_observation.h"
 
 using namespace std;
-static vector<signed char> observationVec1;
-static vector<signed char> observationVec2;
+using namespace std::this_thread; // sleep_for, sleep_until
+using namespace std::chrono; // nanoseconds, system_clock, seconds
+
+static vector<signed char> observationVec[2]; // NUM_WORKER * FLATTENED_FEATURE
+static vector<int> rewardVec[2]; // NUM_WORKER * FEATURE
 static vector<GameState> gameStateVec;
+static unique_ptr<ThreadPool> pool;
+static atomic<int> taskCounter;
+static TotalObservation totalObservation;
 
 extern "C" __declspec(dllexport) void Init(InitParam initParam) {
     cout << "Init " << initParam.w << "x" << initParam.h << " with " << initParam.numWorkers << " workers." << endl;
     gameStateVec.resize(initParam.numWorkers,{{}, initParam.w, initParam.h});
 
     auto observationSize = initParam.numWorkers * initParam.h * initParam.w * OBSERVATION_PLANE_NUM;
+    observationVec[0].resize(observationSize);
+    observationVec[1].resize(observationSize);
 
-    observationVec1.resize(observationSize);
-    for (int i = 0; i < observationVec1.size(); ++i) {
-        observationVec1[i] = i;
+    auto featureSize = initParam.numWorkers * GAME_STAT_NUM;
+    rewardVec[0].resize(featureSize);
+    rewardVec[1].resize(featureSize);
+
+    for (int i = 0; i < initParam.numWorkers; ++i) {
+        totalObservation.ob1.size = gameStateVec.size();
+        totalObservation.ob1.data = observationVec[0].data();
+        totalObservation.ob1.reward = rewardVec[0].data();
+
+        totalObservation.ob2.size = gameStateVec.size();
+        totalObservation.ob2.data = observationVec[0].data();
+        totalObservation.ob2.reward = rewardVec[0].data();
     }
-    observationVec2.resize(observationSize);
-    for (int i = 0; i < observationVec2.size(); ++i) {
-        observationVec2[i] = -i;
-    }
+    pool = make_unique<ThreadPool>(initParam.numWorkers);
 }
 
 extern "C" __declspec(dllexport) TotalObservation Step(TotalAction totalAction) {
-    cout << totalAction.action1.size << ":";
-    for (int i = 0; i < totalAction.action1.size; ++i) {
-        cout << static_cast<int>(totalAction.action1.data[i]) << " ";
+    taskCounter = 0;
+    for (int i = 0; i < gameStateVec.size(); ++i) {
+        pool->enqueue(GameStep, &gameStateVec[i], &taskCounter);
     }
-    cout << endl;
-    cout << totalAction.action2.size << ":";
-    for (int i = 0; i < totalAction.action2.size; ++i) {
-        cout << static_cast<int>(totalAction.action2.data[i]) << " ";
+    while (taskCounter != gameStateVec.size()) {
+        sleep_for(microseconds (100));
     }
-    cout << endl;
-    return TotalObservation{Observation{observationVec1.data(), static_cast<int>(observationVec1.size())},
-                            Observation{observationVec2.data(), static_cast<int>(observationVec2.size())}};
+
+    taskCounter = 0;
+    for (int i = 0; i < gameStateVec.size(); ++i) {
+        pool->enqueue(StateToObservation, &gameStateVec[i], observationVec, rewardVec, i, &taskCounter);
+    }
+    while (taskCounter != gameStateVec.size()) {
+        sleep_for(microseconds (100));
+    }
+
+    return totalObservation;
 }

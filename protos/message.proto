@@ -14,7 +14,15 @@ enum Role {
     OBSERVER = 2;
 }
 
+enum Command {
+    START = 0; // 开始tick
+    STOP = 1;  // 停止tick
+    STEP = 2;  // 手动tick一下
+    RESET = 3; // reset环境
+}
+
 message ObservationRequest {
+    Command command = 1;
 }
 
 message PlayerRequest {
@@ -23,7 +31,7 @@ message PlayerRequest {
 }
 
 service Rts {
-    rpc ConnectObserver(ObservationRequest) returns (stream Message) {}
+    rpc ConnectObserver(stream ObservationRequest) returns (stream Message) {}
     rpc ConnectPlayer(stream PlayerRequest) returns (stream Message) {}
 }
 

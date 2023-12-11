@@ -4,6 +4,7 @@
 
 #include "rts_service_impl.h"
 #include <chrono>
+#include "client_interface.h"
 
 using grpc::Status;
 using grpc::ServerContext;
@@ -15,11 +16,11 @@ using message::Message;
 using namespace std::this_thread; // sleep_for, sleep_until
 using namespace std::chrono; // nanoseconds, system_clock, seconds
 
-Status RtsServiceImpl::ConnectObserver(ServerContext* context, const ObservationRequest* request, ServerWriter<Message>* writer) {
+Status RtsServiceImpl::ConnectObserver(ServerContext* context, ServerReaderWriter<Message, ObservationRequest>* stream) {
     Message msg;
     msg.mutable_msg()->append("hello");
     while(true) {
-        writer->Write(msg);
+        stream->Write(msg);
         sleep_for(milliseconds (500));
     }
 

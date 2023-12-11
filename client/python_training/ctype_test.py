@@ -35,6 +35,7 @@ print("size = ", sizeof(obs))
 data1[0] = 10
 data2[0] = -10
 obs = obj.Step(TotalAction(action1, action2))
+print(Reward.NEW_NET_INCOME)
 if __name__ == "main":
     pass
 

@@ -171,6 +171,7 @@ struct GameState {
     std::unordered_map<Coord, GameObj, UHasher<Coord>> objMap;
     int w;
     int h;
+    int time;
 };
 
 #endif //RTS_GAME_TYPES_H

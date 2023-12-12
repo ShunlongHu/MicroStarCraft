@@ -11,7 +11,8 @@ find_package(Qt5 COMPONENTS
 
 include_directories("D:/Qt/Qt5.14.2/5.14.2/msvc2017_64/include"
         "D:/Qt/Qt5.14.2/5.14.2/msvc2017_64/mkspecs/win32-msvc"
-        "ui")
+        "ui"
+        "client")
 
 
 link_directories("D:/Qt/Qt5.14.2/5.14.2/msvc2017_64/bin"
@@ -19,6 +20,8 @@ link_directories("D:/Qt/Qt5.14.2/5.14.2/msvc2017_64/bin"
 
 aux_source_directory(. rts_observer)
 aux_source_directory(ui rts_observer)
+aux_source_directory(client rts_observer)
+
 add_executable(${PROJECT_NAME} WIN32 ${rts_observer})
 target_link_libraries(${PROJECT_NAME} Qt5Core Qt5Gui Qt5Widgets message_proto)
 

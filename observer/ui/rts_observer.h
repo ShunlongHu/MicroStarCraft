@@ -8,6 +8,9 @@
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QLineEdit>
+#include <memory>
+#include "thread_pool.h"
+#include "rpc_client.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class RtsObserver; }
@@ -23,6 +26,7 @@ public:
 
 private:
     Ui::RtsObserver *ui;
+    static ThreadPool threadPool;
 
 private slots:
     void HandleConnectButton();

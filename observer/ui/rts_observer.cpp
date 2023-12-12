@@ -7,6 +7,7 @@
 #include "rts_observer.h"
 #include "ui_rts_observer.h"
 #include <iostream>
+#include <QtWidgets/QMessageBox>
 #include "rpc_client.h"
 
 using namespace std;
@@ -22,14 +23,17 @@ RtsObserver::RtsObserver(QWidget *parent) :
 }
 
 RtsObserver::~RtsObserver() {
+    RpcClient::SendCommand(static_cast<message::Command>(DISCONNECT));
     delete ui;
 }
 
 void RtsObserver::HandleConnectButton() {
-//    auto ip = ui->ipLineEdit->text().toStdString();
-//    auto port = ui->portLineEdit->text().toStdString();
-//    RpcClient::Connect(ip + ":" + port);
-    static int counter = 0;
-    counter++;
-    ui->timeDisplayLabel->setText(QString::fromStdString(to_string(counter)));
+    static bool isStarted = false;
+    auto ip = ui->ipLineEdit->text().toStdString();
+    auto port = ui->portLineEdit->text().toStdString();
+    if (isStarted) {
+        RpcClient::SendCommand(static_cast<message::Command>(DISCONNECT));
+    }
+    threadPool.enqueue(RpcClient::Connect, ip + ":" + port);
+    isStarted = true;
 }

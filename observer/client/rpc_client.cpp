@@ -39,7 +39,6 @@ private:
 RtsClient::RtsClient(std::shared_ptr<Channel> channel) : stub_(Rts::NewStub(channel)) {}
 void RtsClient::Connect() {
     ClientContext context;
-    cout << context.raw_deadline().tv_nsec << endl;
     std::shared_ptr<ClientReaderWriter<ObservationRequest, Message> > stream(
             stub_->ConnectObserver(&context));
 
@@ -52,6 +51,7 @@ void RtsClient::Connect() {
                 return;
             }
             if (command == INVALID_COMMAND) {
+                sleep_for(microseconds (100));
                 continue;
             }
             ObservationRequest request;
@@ -60,6 +60,7 @@ void RtsClient::Connect() {
             sleep_for(microseconds (100));
         }
     });
+    writer.join();
 }
 
 
@@ -74,4 +75,7 @@ void RpcClient::SendCommand(Command cmd){
         sleep_for(microseconds (100));
     }
     command = cmd;
+    while (command != INVALID_COMMAND) {
+        sleep_for(microseconds (100));
+    }
 }

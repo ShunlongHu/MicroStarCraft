@@ -34,11 +34,11 @@ extern "C" __declspec(dllexport) void Init(InitParam initParam) {
     rewardVec[1].resize(featureSize);
 
     for (int i = 0; i < initParam.numWorkers; ++i) {
-        totalObservation.ob1.size = gameStateVec.size();
+        totalObservation.ob1.size = static_cast<int>(gameStateVec.size());
         totalObservation.ob1.data = observationVec[0].data();
         totalObservation.ob1.reward = rewardVec[0].data();
 
-        totalObservation.ob2.size = gameStateVec.size();
+        totalObservation.ob2.size = static_cast<int>(gameStateVec.size());
         totalObservation.ob2.data = observationVec[0].data();
         totalObservation.ob2.reward = rewardVec[0].data();
     }

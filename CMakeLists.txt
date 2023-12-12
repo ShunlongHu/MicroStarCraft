@@ -6,9 +6,12 @@ find_package(Threads REQUIRED)
 find_package(gRPC CONFIG REQUIRED)
 find_package(Protobuf CONFIG REQUIRED)
 
+add_subdirectory(3rdparty)
+
 link_directories("D:/repo/vcpkg/installed/x64-windows/lib"
                 "D:/repo/vcpkg/installed/x64-windows/bin")
+include_directories(game_types)
+add_proto(message)
 
-add_subdirectory(3rdparty)
 add_subdirectory(server)
 add_subdirectory(observer)

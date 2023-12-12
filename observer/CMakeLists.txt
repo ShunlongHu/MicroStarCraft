@@ -13,13 +13,14 @@ include_directories("D:/Qt/Qt5.14.2/5.14.2/msvc2017_64/include"
         "D:/Qt/Qt5.14.2/5.14.2/msvc2017_64/mkspecs/win32-msvc"
         "ui")
 
+
 link_directories("D:/Qt/Qt5.14.2/5.14.2/msvc2017_64/bin"
         "D:/Qt/Qt5.14.2/5.14.2/msvc2017_64/lib")
 
 aux_source_directory(. rts_observer)
 aux_source_directory(ui rts_observer)
 add_executable(${PROJECT_NAME} WIN32 ${rts_observer})
-target_link_libraries(${PROJECT_NAME} Qt5Core Qt5Gui Qt5Widgets)
+target_link_libraries(${PROJECT_NAME} Qt5Core Qt5Gui Qt5Widgets message_proto)
 
 
 if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)

@@ -6,7 +6,8 @@
 #define RTS_RTS_OBSERVER_H
 
 #include <QtWidgets/QWidget>
-
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QLineEdit>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class RtsObserver; }
@@ -22,6 +23,9 @@ public:
 
 private:
     Ui::RtsObserver *ui;
+
+private slots:
+    void HandleConnectButton();
 };
 
 

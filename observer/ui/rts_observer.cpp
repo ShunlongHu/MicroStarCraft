@@ -6,13 +6,21 @@
 
 #include "rts_observer.h"
 #include "ui_rts_observer.h"
+#include <iostream>
 
-
+using namespace std;
 RtsObserver::RtsObserver(QWidget *parent) :
         QWidget(parent), ui(new Ui::RtsObserver) {
     ui->setupUi(this);
+    connect(ui->connectButton, &QPushButton::released, this, &RtsObserver::HandleConnectButton);
 }
 
 RtsObserver::~RtsObserver() {
     delete ui;
+}
+
+void RtsObserver::HandleConnectButton() {
+    static int counter = 0;
+    counter++;
+    ui->timeDisplayLabel->setText(QString::fromStdString(to_string(counter)));
 }

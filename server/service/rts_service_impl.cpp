@@ -38,7 +38,6 @@ Status RtsServiceImpl::ConnectObserver(ServerContext* context, ServerReaderWrite
             }
             lastGameState = gameState;
             msg.set_msg(to_string(lastGameState.time));
-            cout << msg.msg() << endl;
             stream->Write(msg);
             sleep_for(milliseconds(10));
         }
@@ -46,34 +45,34 @@ Status RtsServiceImpl::ConnectObserver(ServerContext* context, ServerReaderWrite
     ObservationRequest msg;
     while(stream->Read(&msg)) {
         if (msg.command() == message::DISCONNECT) {
-            cout << "disconnect!" << endl;
+            cout << "observer disconnect!" << endl;
             isEnd = true;
         }
         if (msg.command() == message::START) {
-            cout << "start!" << endl;
+            cout << "observer cmd start!" << endl;
             tickingCycle = TICKING_INTERVAL;
         }
         if (msg.command() == message::STOP) {
-            cout << "stop!" << endl;
+            cout << "observer cmd stop!" << endl;
             tickingCycle = INT32_MAX;
         }
         if (msg.command() == message::STEP) {
-            cout << "step!" << endl;
+            cout << "observer cmd step!" << endl;
             tick = true;
         }
         if (msg.command() == message::RESET) {
-            cout << "reset!" << endl;
+            cout << "observer cmd reset!" << endl;
             reset = true;
         }
     }
 
     writer.join();
-    cout << "disconnected!" << endl;
+    cout << "observer disconnected!" << endl;
     return Status::OK;
 }
 Status RtsServiceImpl::ConnectPlayer(ServerContext* context, ServerReaderWriter<Message, PlayerRequest>* stream) {
     Message msg;
-    msg.mutable_msg()->append("hello");
+    msg.set_msg("hello!");
     while(true) {
         stream->Write(msg);
         sleep_for(milliseconds (500));

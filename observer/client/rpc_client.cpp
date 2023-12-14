@@ -46,12 +46,6 @@ void RtsClient::Connect() {
     std::thread writer([stream]() {
         while (true) {
             // handle request
-            if (command == DISCONNECT) {
-                stream->WritesDone();
-                stop = true;
-                command = INVALID_COMMAND;
-                return;
-            }
             if (command == INVALID_COMMAND) {
                 sleep_for(microseconds (100));
                 continue;
@@ -59,6 +53,13 @@ void RtsClient::Connect() {
             ObservationRequest request;
             request.set_command(static_cast<message::Command>(command.load()));
             stream->Write(request);
+            if (command == SpecialCommand::DISCONNECT) {
+                stream->WritesDone();
+                stop = true;
+                command = INVALID_COMMAND;
+                return;
+            }
+            command = INVALID_COMMAND;
             sleep_for(microseconds (100));
         }
     });
@@ -66,7 +67,7 @@ void RtsClient::Connect() {
     Message result;
 
     while (!stop && stream->Read(&result)) {
-        frameCount++;
+        frameCount = stoi(*result.mutable_msg());
     }
     writer.join();
 }

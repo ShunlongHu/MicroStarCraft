@@ -9,7 +9,7 @@
 
 enum SpecialCommand {
     INVALID_COMMAND = -1,
-    DISCONNECT = -2,
+    DISCONNECT = 4,
 };
 
 namespace RpcClient {

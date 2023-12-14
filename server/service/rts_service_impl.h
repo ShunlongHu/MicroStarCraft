@@ -13,6 +13,7 @@ class RtsServiceImpl final : public message::Rts::Service {
 
     grpc::Status ConnectPlayer(grpc::ServerContext *context,
                                grpc::ServerReaderWriter<message::Message, message::PlayerRequest> *stream) final;
+    void mainLoop();
 };
 
 

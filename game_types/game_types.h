@@ -166,9 +166,30 @@ struct GameObj {
 
 struct GameState {
     std::unordered_map<Coord, GameObj, UHasher<Coord>> objMap;
-    int w;
-    int h;
-    int time;
+    int w = 0;
+    int h = 0;
+    int time = 0;
+
+    inline bool operator== (const GameState& state2) const {
+        return state2.time == time && state2.w == w && state2.h == h;
+    }
+
+    inline bool operator== (const volatile GameState& state2) const {
+        return state2.time == time && state2.w == w && state2.h == h;
+    }
+
+    inline GameState& operator= (const GameState& state2)  noexcept {
+        w = state2.w;
+        h = state2.h;
+        time = state2.time;
+        return *this;
+    }
+    inline GameState& operator= (const volatile GameState& state2)  noexcept {
+        w = state2.w;
+        h = state2.h;
+        time = state2.time;
+        return *this;
+    }
 };
 
 #endif //RTS_GAME_TYPES_H

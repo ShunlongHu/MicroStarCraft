@@ -16,17 +16,58 @@ using message::Message;
 using namespace std::this_thread; // sleep_for, sleep_until
 using namespace std::chrono; // nanoseconds, system_clock, seconds
 using namespace std;
+static constexpr int TICKING_INTERVAL {100};
+static atomic<int> tickingCycle { INT32_MAX };
+static atomic<bool> reset {false};
+static atomic<bool> tick {false};
+static atomic<bool> gameStart {true};
+static volatile GameState gameState;
 
 Status RtsServiceImpl::ConnectObserver(ServerContext* context, ServerReaderWriter<Message, ObservationRequest>* stream) {
     cout << "Connected!" << endl;
-    Message msg;
-    msg.mutable_msg()->append("hello");
-    while(true) {
-        cout << "hello" << endl;
-        stream->Write(msg);
-        sleep_for(milliseconds (500));
+    atomic<bool> isEnd {false};
+    std::thread writer([stream, &isEnd]() {
+        Message msg;
+        msg.mutable_msg()->append("hello");
+        GameState lastGameState;
+        while (!isEnd) {
+            if (lastGameState == gameState) {
+                sleep_for(milliseconds(10));
+                continue;
+            }
+            lastGameState = gameState;
+            cout << lastGameState.time << endl;
+            msg.mutable_msg()->append(to_string(lastGameState.time));
+            stream->Write(msg);
+            sleep_for(milliseconds(10));
+        }
+    });
+    ObservationRequest msg;
+    while(stream->Read(&msg)) {
+        if (msg.command() == message::DISCONNECT) {
+            cout << "disconnect!" << endl;
+            isEnd = true;
+        }
+        if (msg.command() == message::START) {
+            cout << "start!" << endl;
+            tickingCycle = TICKING_INTERVAL;
+        }
+        if (msg.command() == message::STOP) {
+            cout << "stop!" << endl;
+            tickingCycle = INT32_MAX;
+        }
+        if (msg.command() == message::STEP) {
+            cout << "step!" << endl;
+            tick = true;
+        }
+        if (msg.command() == message::RESET) {
+            cout << "reset!" << endl;
+            reset = true;
+        }
     }
 
+    writer.join();
+    cout << "disconnected!" << endl;
     return Status::OK;
 }
 Status RtsServiceImpl::ConnectPlayer(ServerContext* context, ServerReaderWriter<Message, PlayerRequest>* stream) {
@@ -37,4 +78,24 @@ Status RtsServiceImpl::ConnectPlayer(ServerContext* context, ServerReaderWriter<
         sleep_for(milliseconds (500));
     }
     return Status::OK;
+}
+
+void RtsServiceImpl::mainLoop() {
+    static auto time = chrono::high_resolution_clock::now();
+    while (true) {
+        if (reset) {
+            gameState.time = 0;
+        }
+        if (tick) {
+            gameState.time++;
+        }
+        if (gameStart) {
+            auto now = chrono::high_resolution_clock::now();
+            if (duration_cast<milliseconds>(now - time).count() >= tickingCycle) {
+                time = now;
+                gameState.time++;
+            }
+        }
+        sleep_for(microseconds (100));
+    }
 }

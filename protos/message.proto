@@ -19,6 +19,7 @@ enum Command {
     STOP = 1;  // 停止tick
     STEP = 2;  // 手动tick一下
     RESET = 3; // reset环境
+    DISCONNECT = 4;
 }
 
 message ObservationRequest {

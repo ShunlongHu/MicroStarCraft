@@ -8,12 +8,15 @@
 #include "message.grpc.pb.h"
 
 class RtsServiceImpl final : public message::Rts::Service {
+public:
+    static void mainLoop();
+
+private:
     grpc::Status ConnectObserver(grpc::ServerContext *context,
                                  grpc::ServerReaderWriter<message::Message, message::ObservationRequest> *stream) final;
 
     grpc::Status ConnectPlayer(grpc::ServerContext *context,
                                grpc::ServerReaderWriter<message::Message, message::PlayerRequest> *stream) final;
-    void mainLoop();
 };
 
 

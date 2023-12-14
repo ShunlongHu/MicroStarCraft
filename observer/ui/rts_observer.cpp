@@ -24,6 +24,7 @@ RtsObserver::RtsObserver(QWidget *parent) :
     connect(&renderTimer, &QTimer::timeout, this, &RtsObserver::HandleRenderTimer);
     renderTimer.setInterval(10);
     renderTimer.start();
+    connect(ui->startButton, &QPushButton::released, this, &RtsObserver::HandleStartButton);
 }
 
 RtsObserver::~RtsObserver() {
@@ -31,17 +32,39 @@ RtsObserver::~RtsObserver() {
     delete ui;
 }
 
-void RtsObserver::HandleConnectButton() {
-    static bool isStarted = false;
+void RtsObserver::HandleConnectButton() const {
     auto ip = ui->ipLineEdit->text().toStdString();
     auto port = ui->portLineEdit->text().toStdString();
-    if (isStarted) {
+    if (!RpcClient::stop) {
         RpcClient::SendCommand(static_cast<message::Command>(DISCONNECT));
+        RpcClient::stop = true;
+        return;
     }
     threadPool.enqueue(RpcClient::Connect, ip + ":" + port);
-    isStarted = true;
 }
 
 void RtsObserver::HandleRenderTimer() {
     ui->timeDisplayLabel->setText(QString::fromStdString(to_string(RpcClient::GetObservation())));
+    this->RefreshButton();
+
+}
+
+void RtsObserver::HandleStartButton() {
+    RpcClient::SendCommand(message::START);
+}
+
+void RtsObserver::RefreshButton() {
+    if (RpcClient::stop) {
+        ui->connectButton->setText(QString::fromStdString("Connect"));
+        ui->startButton->setEnabled(false);
+        ui->stepButton->setEnabled(false);
+        ui->resetButton->setEnabled(false);
+        ui->stopButton->setEnabled(false);
+    } else {
+        ui->connectButton->setText(QString::fromStdString("Disconnect"));
+        ui->startButton->setEnabled(true);
+        ui->stepButton->setEnabled(true);
+        ui->resetButton->setEnabled(true);
+        ui->stopButton->setEnabled(true);
+    }
 }

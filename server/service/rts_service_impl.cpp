@@ -21,6 +21,7 @@ static atomic<int> tickingCycle { INT32_MAX };
 static atomic<bool> reset {false};
 static atomic<bool> tick {false};
 static atomic<bool> gameStart {true};
+static atomic<bool> serverStart {true};
 static volatile GameState gameState;
 
 Status RtsServiceImpl::ConnectObserver(ServerContext* context, ServerReaderWriter<Message, ObservationRequest>* stream) {
@@ -36,8 +37,8 @@ Status RtsServiceImpl::ConnectObserver(ServerContext* context, ServerReaderWrite
                 continue;
             }
             lastGameState = gameState;
-            cout << lastGameState.time << endl;
-            msg.mutable_msg()->append(to_string(lastGameState.time));
+            msg.set_msg(to_string(lastGameState.time));
+            cout << msg.msg() << endl;
             stream->Write(msg);
             sleep_for(milliseconds(10));
         }
@@ -82,7 +83,7 @@ Status RtsServiceImpl::ConnectPlayer(ServerContext* context, ServerReaderWriter<
 
 void RtsServiceImpl::mainLoop() {
     static auto time = chrono::high_resolution_clock::now();
-    while (true) {
+    while (serverStart) {
         if (reset) {
             gameState.time = 0;
         }

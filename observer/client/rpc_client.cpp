@@ -26,18 +26,18 @@ using namespace message;
 
 static atomic<int> command {INVALID_COMMAND};
 static atomic<int> frameCount {0};
-static atomic<bool> stop { true };
+atomic<bool> RpcClient::stop { true };
 static vector<int> rx;
 
 class RtsClient {
 public:
-    RtsClient(std::shared_ptr<grpc::Channel> channel);
+    explicit RtsClient(const std::shared_ptr<grpc::Channel>& channel);
     void Connect();
 private:
     std::unique_ptr<message::Rts::Stub> stub_;
 };
 
-RtsClient::RtsClient(std::shared_ptr<Channel> channel) : stub_(Rts::NewStub(channel)) {}
+RtsClient::RtsClient(const std::shared_ptr<Channel>& channel) : stub_(Rts::NewStub(channel)) {}
 void RtsClient::Connect() {
     ClientContext context;
     std::shared_ptr<ClientReaderWriter<ObservationRequest, Message> > stream(
@@ -55,7 +55,6 @@ void RtsClient::Connect() {
             stream->Write(request);
             if (command == SpecialCommand::DISCONNECT) {
                 stream->WritesDone();
-                stop = true;
                 command = INVALID_COMMAND;
                 return;
             }
@@ -66,8 +65,8 @@ void RtsClient::Connect() {
 
     Message result;
 
-    while (!stop && stream->Read(&result)) {
-        frameCount = stoi(*result.mutable_msg());
+    while (!RpcClient::stop && stream->Read(&result)) {
+        frameCount = stoi(result.msg());
     }
     writer.join();
 }

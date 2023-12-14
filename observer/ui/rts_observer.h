@@ -31,8 +31,10 @@ public:
     QTimer renderTimer;
 
 private slots:
-    void HandleConnectButton();
+    void HandleConnectButton() const;
+    void HandleStartButton();
     void HandleRenderTimer();
+    void RefreshButton();
 };
 
 

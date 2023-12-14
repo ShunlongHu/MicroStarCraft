@@ -19,6 +19,7 @@ namespace RpcClient {
 
     int GetObservation();
 
+    extern std::atomic<bool> stop;
 }
 
 

@@ -8,8 +8,5 @@ int WinMain(int argc, char *argv[]) {
     QApplication a(argc, argv);
     RtsObserver w;
     w.show();
-//    QPushButton button("Hello world!", nullptr);
-//    button.resize(200, 100);
-//    button.show();
     return QApplication::exec();
 }

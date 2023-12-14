@@ -33,6 +33,9 @@ public:
 private slots:
     void HandleConnectButton() const;
     void HandleStartButton();
+    void HandleStopButton();
+    void HandleStepButton();
+    void HandleResetButton();
     void HandleRenderTimer();
     void RefreshButton();
 };

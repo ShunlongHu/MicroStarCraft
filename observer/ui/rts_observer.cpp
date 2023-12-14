@@ -25,6 +25,10 @@ RtsObserver::RtsObserver(QWidget *parent) :
     renderTimer.setInterval(10);
     renderTimer.start();
     connect(ui->startButton, &QPushButton::released, this, &RtsObserver::HandleStartButton);
+    connect(ui->stopButton, &QPushButton::released, this, &RtsObserver::HandleStopButton);
+    connect(ui->stepButton, &QPushButton::released, this, &RtsObserver::HandleStepButton);
+    connect(ui->resetButton, &QPushButton::released, this, &RtsObserver::HandleResetButton);
+
 }
 
 RtsObserver::~RtsObserver() {
@@ -51,6 +55,18 @@ void RtsObserver::HandleRenderTimer() {
 
 void RtsObserver::HandleStartButton() {
     RpcClient::SendCommand(message::START);
+}
+
+void RtsObserver::HandleStopButton() {
+    RpcClient::SendCommand(message::STOP);
+}
+
+void RtsObserver::HandleStepButton() {
+    RpcClient::SendCommand(message::STEP);
+}
+
+void RtsObserver::HandleResetButton() {
+    RpcClient::SendCommand(message::RESET);
 }
 
 void RtsObserver::RefreshButton() {

@@ -86,9 +86,11 @@ void RtsServiceImpl::mainLoop() {
     while (serverStart) {
         if (reset) {
             gameState.time = 0;
+            reset = false;
         }
         if (tick) {
             gameState.time++;
+            tick = false;
         }
         if (gameStart) {
             auto now = chrono::high_resolution_clock::now();

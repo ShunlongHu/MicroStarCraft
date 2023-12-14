@@ -40,7 +40,7 @@ const static std::unordered_map<GameObjType, int> OBJ_ATTACK_MAP { // sc2 / 40
     {RANGED, 1}
 };
 
-const static std::unordered_map<GameObjType, int> OBJ_ATTACK_CD_MAP { // sc2 * 2
+const static std::unordered_map<GameObjType, int> OBJ_ATTACK_INTERVAL_MAP { // sc2 * 2
         {WORKER, 1},
         {LIGHT, 0},
         {HEAVY, 1},
@@ -70,6 +70,32 @@ const static std::unordered_map<GameObjType, int> OBJ_MOVE_INTERVAL_MAP { // (ç§
         {LIGHT, 0},
         {HEAVY, 1},
         {RANGED, 1}
+};
+
+const static std::unordered_map<GameObjType, std::vector<GameObjType>> OBJ_PRODUCE_MAP { // sc2 / 50
+        {BASE, {WORKER}},
+        {BARRACK, {LIGHT, HEAVY, RANGED}},
+        {WORKER, {BASE, BARRACK}},
+};
+
+struct ActionMask {
+    bool canMove;
+    bool canAttack;
+    bool canGather;
+    bool canBeStored; // can be stored resource to
+    bool canBeAttacked;
+    bool canBeGathered;
+};
+
+const static std::unordered_map<GameObjType, ActionMask> OBJ_ACTION_MASK_MAP { // sc2 / 50
+        {TERRAIN, {false, false, false, false, false, false}},
+        {MINERAL, {false, false, false, false, false, true}},
+        {BASE, {false, false, false, true, true, false}},
+        {BARRACK, {false, false, false, false, true, false}},
+        {WORKER, {true, true, true, false, true, false}},
+        {LIGHT, {true, true, false, false, true, false}},
+        {HEAVY, {true, true, false, false, true, false}},
+        {RANGED, {true, true, false, false, true, false}},
 };
 
 // GAME_ATTACK
@@ -154,18 +180,33 @@ const static std::vector<ActionTarget> DIRECTION_TARGET_MAP {{-1, 0}, {0, 1}, {1
 
 struct GameObj {
     GameObjType type;
-    int hitPoint;
-    int resource;
-    int owner;
+    uint8_t hitPoint;
+    uint8_t resource;   // resource of a cluster/carried by a worker
+    int8_t owner;   // -1: a, 0: neutral, 1:b
     ActionType currentAction;
     ActionTarget actionTarget;
-    int actionProgress;
-    int actionTotalProgress;
-    int attackCD;
+    uint8_t actionProgress;
+    uint8_t actionTotalProgress;
+    uint8_t attackCD;
+
+    // static attributes
+    uint8_t attackRange;
+    uint8_t attackInterval;
+    uint8_t attackPoint;
+    uint8_t moveInterval;
+
+    // action mask
+    bool canMove;
+    bool canAttack;
+    bool canGather;
+    bool canStore; // can store resource
+    bool canBeAttacked;
+    bool canBeGathered;
 };
 
 struct GameState {
     std::unordered_map<Coord, GameObj, UHasher<Coord>> objMap;
+    int resource[2] {0, 0};
     int w = 0;
     int h = 0;
     int time = 0;

@@ -7,19 +7,23 @@
 #include "rts_observer.h"
 #include "ui_rts_observer.h"
 #include <iostream>
+#include <chrono>
 #include <QtWidgets/QMessageBox>
 #include "rpc_client.h"
 
 using namespace std;
+using namespace chrono;
+using namespace this_thread;
 
 ThreadPool RtsObserver::threadPool {8};
 
 RtsObserver::RtsObserver(QWidget *parent) :
         QWidget(parent), ui(new Ui::RtsObserver) {
     ui->setupUi(this);
-
-
     connect(ui->connectButton, &QPushButton::released, this, &RtsObserver::HandleConnectButton);
+    connect(&renderTimer, &QTimer::timeout, this, &RtsObserver::HandleRenderTimer);
+    renderTimer.setInterval(10);
+    renderTimer.start();
 }
 
 RtsObserver::~RtsObserver() {
@@ -36,4 +40,8 @@ void RtsObserver::HandleConnectButton() {
     }
     threadPool.enqueue(RpcClient::Connect, ip + ":" + port);
     isStarted = true;
+}
+
+void RtsObserver::HandleRenderTimer() {
+    ui->timeDisplayLabel->setText(QString::fromStdString(to_string(RpcClient::GetObservation())));
 }

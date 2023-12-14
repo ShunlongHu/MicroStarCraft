@@ -8,6 +8,7 @@
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QLineEdit>
+#include <QtCore/QTimer>
 #include <memory>
 #include "thread_pool.h"
 #include "rpc_client.h"
@@ -24,12 +25,14 @@ public:
 
     ~RtsObserver() override;
 
-private:
+public:
     Ui::RtsObserver *ui;
     static ThreadPool threadPool;
+    QTimer renderTimer;
 
 private slots:
     void HandleConnectButton();
+    void HandleRenderTimer();
 };
 
 

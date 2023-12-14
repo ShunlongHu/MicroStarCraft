@@ -17,7 +17,7 @@ namespace RpcClient {
 
     void SendCommand(message::Command cmd);
 
-    void GetObservation();
+    int GetObservation();
 
 }
 

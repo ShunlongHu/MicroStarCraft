@@ -15,11 +15,14 @@ using message::PlayerRequest;
 using message::Message;
 using namespace std::this_thread; // sleep_for, sleep_until
 using namespace std::chrono; // nanoseconds, system_clock, seconds
+using namespace std;
 
 Status RtsServiceImpl::ConnectObserver(ServerContext* context, ServerReaderWriter<Message, ObservationRequest>* stream) {
+    cout << "Connected!" << endl;
     Message msg;
     msg.mutable_msg()->append("hello");
     while(true) {
+        cout << "hello" << endl;
         stream->Write(msg);
         sleep_for(milliseconds (500));
     }

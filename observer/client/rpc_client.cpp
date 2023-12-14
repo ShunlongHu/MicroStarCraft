@@ -26,6 +26,7 @@ using namespace message;
 
 static atomic<int> command {INVALID_COMMAND};
 static atomic<int> frameCount {0};
+static atomic<bool> stop { true };
 static vector<int> rx;
 
 class RtsClient {
@@ -47,6 +48,7 @@ void RtsClient::Connect() {
             // handle request
             if (command == DISCONNECT) {
                 stream->WritesDone();
+                stop = true;
                 command = INVALID_COMMAND;
                 return;
             }
@@ -60,17 +62,27 @@ void RtsClient::Connect() {
             sleep_for(microseconds (100));
         }
     });
+
+    Message result;
+
+    while (!stop && stream->Read(&result)) {
+        frameCount++;
+    }
     writer.join();
 }
 
 
 
 void RpcClient::Connect(const std::string& target) {
+    stop = false;
     auto rtsClient = RtsClient(grpc::CreateChannel(target, grpc::InsecureChannelCredentials()));
     rtsClient.Connect();
 }
 
 void RpcClient::SendCommand(Command cmd){
+    if (stop) {
+        return;
+    }
     while (command != INVALID_COMMAND) {
         sleep_for(microseconds (100));
     }
@@ -79,3 +91,7 @@ void RpcClient::SendCommand(Command cmd){
         sleep_for(microseconds (100));
     }
 }
+
+int RpcClient::GetObservation() {
+    return frameCount;
+};

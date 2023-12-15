@@ -5,6 +5,7 @@
 #include "rts_service_impl.h"
 #include <chrono>
 #include <sstream>
+#include <mutex>
 #include "client_interface.h"
 
 using grpc::Status;
@@ -23,7 +24,7 @@ static atomic<bool> reset {false};
 static atomic<bool> tick {false};
 static atomic<bool> gameStart {true};
 static atomic<bool> serverStart {true};
-static volatile GameState gameState;
+static mutex stateLock;
 
 Status RtsServiceImpl::ConnectObserver(ServerContext* context, ServerReaderWriter<Message, ObservationRequest>* stream) {
     cout << "Connected!" << endl;
@@ -33,17 +34,19 @@ Status RtsServiceImpl::ConnectObserver(ServerContext* context, ServerReaderWrite
         msg.mutable_msg()->append("hello");
         GameState lastGameState;
         while (!isEnd) {
-            if (lastGameState == gameState) {
-                sleep_for(milliseconds(10));
-                continue;
+            sleep_for(milliseconds(10));
+            {
+                unique_lock<mutex> lockGuard(stateLock);
+                if (lastGameState == GetGameState(0)) {
+                    continue;
+                }
+                lastGameState = GetGameState(0);
             }
-            lastGameState = gameState;
             ostringstream oss(ios::binary);
             oss << lastGameState;
 
             msg.set_data(oss.str());
             stream->Write(msg);
-            sleep_for(milliseconds(10));
         }
     });
     ObservationRequest msg;
@@ -87,21 +90,22 @@ Status RtsServiceImpl::ConnectPlayer(ServerContext* context, ServerReaderWriter<
 void RtsServiceImpl::mainLoop() {
     static auto time = chrono::high_resolution_clock::now();
     while (serverStart) {
+        sleep_for(microseconds (100));
+        unique_lock<mutex> lockGuard(stateLock);
         if (reset) {
-            gameState.time = 0;
+            GetGameState(0).time = 0;
             reset = false;
         }
         if (tick) {
-            gameState.time++;
+            GetGameState(0).time++;
             tick = false;
         }
         if (gameStart) {
             auto now = chrono::high_resolution_clock::now();
             if (duration_cast<milliseconds>(now - time).count() >= tickingCycle) {
                 time = now;
-                gameState.time++;
+                GetGameState(0).time++;
             }
         }
-        sleep_for(microseconds (100));
     }
 }

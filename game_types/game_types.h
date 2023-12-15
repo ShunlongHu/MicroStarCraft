@@ -250,12 +250,6 @@ struct GameState {
                resource[1] == state2.resource[1] && objMap == state2.objMap;
     }
 
-    inline bool operator==(const volatile GameState &state2) const {
-        return state2.time == time && state2.w == w && state2.h == h && resource[0] == state2.resource[0] &&
-               resource[1] == state2.resource[1] &&
-               objMap == *const_cast<const std::unordered_map<Coord, GameObj, UHasher<Coord>> *>(&state2.objMap);
-    }
-
     inline GameState &operator=(const GameState &state2) noexcept {
         w = state2.w;
         h = state2.h;
@@ -263,16 +257,6 @@ struct GameState {
         resource[1] = state2.resource[1];
         time = state2.time;
         objMap = state2.objMap;
-        return *this;
-    }
-
-    inline GameState &operator=(const volatile GameState &state2) noexcept {
-        w = state2.w;
-        h = state2.h;
-        resource[0] = state2.resource[0];
-        resource[1] = state2.resource[1];
-        time = state2.time;
-        objMap = *const_cast<const std::unordered_map<Coord, GameObj, UHasher<Coord>> *>(&state2.objMap);
         return *this;
     }
 };

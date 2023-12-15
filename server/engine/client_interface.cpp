@@ -64,3 +64,7 @@ extern "C" __declspec(dllexport) TotalObservation Step(TotalAction totalAction) 
 
     return totalObservation;
 }
+
+GameState &GetGameState(int gameIdx) {
+    return gameStateVec[gameIdx];
+}

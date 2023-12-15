@@ -4,6 +4,7 @@
 
 #include "rts_service_impl.h"
 #include <chrono>
+#include <sstream>
 #include "client_interface.h"
 
 using grpc::Status;
@@ -37,7 +38,10 @@ Status RtsServiceImpl::ConnectObserver(ServerContext* context, ServerReaderWrite
                 continue;
             }
             lastGameState = gameState;
-            msg.set_msg(to_string(lastGameState.time));
+            ostringstream oss(ios::binary);
+            oss << lastGameState;
+
+            msg.set_data(oss.str());
             stream->Write(msg);
             sleep_for(milliseconds(10));
         }

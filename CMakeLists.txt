@@ -1,5 +1,6 @@
 set(CMAKE_TOOLCHAIN_FILE "D:/repo/vcpkg/scripts/buildsystems/vcpkg.cmake")
 cmake_minimum_required(VERSION 3.10)
+set(CMAKE_CXX_FLAGS "/std:c++17")
 project(rts)
 find_package(absl CONFIG REQUIRED)
 find_package(Threads REQUIRED)

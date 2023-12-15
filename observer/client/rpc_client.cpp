@@ -7,10 +7,12 @@
 #include <atomic>
 #include <mutex>
 #include <chrono>
+#include <sstream>
 #include <grpcpp/grpcpp.h>
 #include <vector>
 #include "rts_observer.h"
 #include "message.grpc.pb.h"
+#include "game_types.h"
 
 using namespace std;
 using namespace message;
@@ -66,7 +68,11 @@ void RtsClient::Connect() {
     Message result;
 
     while (!RpcClient::stop && stream->Read(&result)) {
-        frameCount = stoi(result.msg());
+        istringstream iss(result.data(), ios::binary);
+        GameState state;
+        iss >> state;
+
+        frameCount = state.time;
     }
     writer.join();
 }

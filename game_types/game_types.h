@@ -7,6 +7,7 @@
 
 #include <unordered_map>
 #include <vector>
+#include <iostream>
 
 // GAME PARAMS
 constexpr static int GAME_OBJ_TYPE_NUM = 8;
@@ -275,5 +276,55 @@ struct GameState {
         return *this;
     }
 };
+
+template<class T> void Serialize(std::ostream& os, const T& t) {
+    os.write(reinterpret_cast<const char*>(&t), sizeof(t));
+}
+template<class T> void Deserialize(std::istream& is, T& t) {
+    is.read(reinterpret_cast<char*>(&t), sizeof(t));
+}
+
+template<class K, class V, class H> std::ostream& operator << (std::ostream& os, const std::unordered_map<K, V, H>& ht) {
+    auto size = ht.size();
+    Serialize(os, size);
+    for (const auto& [k, v]: ht) {
+        Serialize(os, k);
+        Serialize(os, v);
+    }
+    return os;
+}
+template<class K, class V, class H> std::istream& operator >> (std::istream& is, std::unordered_map<K, V, H>& ht) {
+    size_t size;
+    Deserialize(is, size);
+    ht.reserve(size);
+    for (size_t i = 0; i < size; ++i) {
+        K key;
+        V value;
+        Deserialize(is, key);
+        Deserialize(is, value);
+        ht.emplace(key, value);
+    }
+    return is;
+}
+
+inline std::ostream& operator << (std::ostream& os, const GameState& state) {
+    os << state.objMap;
+    Serialize(os, state.resource[0]);
+    Serialize(os, state.resource[1]);
+    Serialize(os, state.w);
+    Serialize(os, state.h);
+    Serialize(os, state.time);
+    return os;
+}
+
+inline std::istream& operator >> (std::istream& is, GameState& state) {
+    is >> state.objMap;
+    Deserialize(is, state.resource[0]);
+    Deserialize(is, state.resource[1]);
+    Deserialize(is, state.w);
+    Deserialize(is, state.h);
+    Deserialize(is, state.time);
+    return is;
+}
 
 #endif //RTS_GAME_TYPES_H

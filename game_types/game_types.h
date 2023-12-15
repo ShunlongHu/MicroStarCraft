@@ -4,6 +4,7 @@
 
 #ifndef RTS_GAME_TYPES_H
 #define RTS_GAME_TYPES_H
+
 #include <unordered_map>
 #include <vector>
 
@@ -24,55 +25,55 @@ enum GameObjType {
     RANGED
 };
 
-const static std::unordered_map<GameObjType, int> OBJ_HP_MAP {  // sc2 / 25
-    {BASE, 60},
-    {BARRACK, 40},
-    {WORKER, 4},
-    {LIGHT, 4},
-    {HEAVY, 12},
-    {RANGED, 4}
+const static std::unordered_map<GameObjType, int> OBJ_HP_MAP{  // sc2 / 25
+        {BASE,    60},
+        {BARRACK, 40},
+        {WORKER,  4},
+        {LIGHT,   4},
+        {HEAVY,   12},
+        {RANGED,  4}
 };
 
-const static std::unordered_map<GameObjType, int> OBJ_ATTACK_MAP { // sc2 / 40
-    {WORKER, 1},
-    {LIGHT, 1},
-    {HEAVY, 4},
-    {RANGED, 1}
-};
-
-const static std::unordered_map<GameObjType, int> OBJ_ATTACK_INTERVAL_MAP { // sc2 * 2
+const static std::unordered_map<GameObjType, int> OBJ_ATTACK_MAP{ // sc2 / 40
         {WORKER, 1},
-        {LIGHT, 0},
-        {HEAVY, 1},
-        {RANGED, 0}
-};
-
-const static std::unordered_map<GameObjType, int> OBJ_COST_MAP { // sc2 / 50
-        {BASE, 16},
-        {BARRACK, 6},
-        {WORKER, 2},
-        {LIGHT, 1},
-        {HEAVY, 4},
-        {RANGED, 2}
-};
-
-const static std::unordered_map<GameObjType, int> OBJ_TIME_MAP { // sc2 / 4
-        {BASE, 25},
-        {BARRACK, 16},
-        {WORKER, 4},
-        {LIGHT, 3},
-        {HEAVY, 7},
-        {RANGED, 6}
-};
-
-const static std::unordered_map<GameObjType, int> OBJ_MOVE_INTERVAL_MAP { // (移动前摇) sc2 * 2
-        {WORKER, 1},
-        {LIGHT, 0},
-        {HEAVY, 1},
+        {LIGHT,  1},
+        {HEAVY,  4},
         {RANGED, 1}
 };
 
-const static std::unordered_map<GameObjType, std::vector<GameObjType>> OBJ_PRODUCE_MAP { // sc2 / 50
+const static std::unordered_map<GameObjType, int> OBJ_ATTACK_INTERVAL_MAP{ // sc2 * 2
+        {WORKER, 1},
+        {LIGHT,  0},
+        {HEAVY,  1},
+        {RANGED, 0}
+};
+
+const static std::unordered_map<GameObjType, int> OBJ_COST_MAP{ // sc2 / 50
+        {BASE,    16},
+        {BARRACK, 6},
+        {WORKER,  2},
+        {LIGHT,   1},
+        {HEAVY,   4},
+        {RANGED,  2}
+};
+
+const static std::unordered_map<GameObjType, int> OBJ_TIME_MAP{ // sc2 / 4
+        {BASE,    25},
+        {BARRACK, 16},
+        {WORKER,  4},
+        {LIGHT,   3},
+        {HEAVY,   7},
+        {RANGED,  6}
+};
+
+const static std::unordered_map<GameObjType, int> OBJ_MOVE_INTERVAL_MAP{ // (移动前摇) sc2 * 2
+        {WORKER, 1},
+        {LIGHT,  0},
+        {HEAVY,  1},
+        {RANGED, 1}
+};
+
+const static std::unordered_map<GameObjType, std::vector<GameObjType>> OBJ_PRODUCE_MAP{ // sc2 / 50
         {BASE, {WORKER}},
         {BARRACK, {LIGHT, HEAVY, RANGED}},
         {WORKER, {BASE, BARRACK}},
@@ -87,7 +88,7 @@ struct ActionMask {
     bool canBeGathered;
 };
 
-const static std::unordered_map<GameObjType, ActionMask> OBJ_ACTION_MASK_MAP { // sc2 / 50
+const static std::unordered_map<GameObjType, ActionMask> OBJ_ACTION_MASK_MAP{ // sc2 / 50
         {TERRAIN, {false, false, false, false, false, false}},
         {MINERAL, {false, false, false, false, false, true}},
         {BASE, {false, false, false, true, true, false}},
@@ -106,21 +107,22 @@ constexpr static int RADIUS_RANGED = 3;
 constexpr static int RES_PER_GATHER = 1;
 constexpr static int GATHER_POST = 0;
 
-template <class T> struct UHasher{
-    size_t operator() (const T& key) const {
+template<class T>
+struct UHasher {
+    size_t operator()(const T &key) const {
         if (sizeof(T) == 8) {
-            return *reinterpret_cast<const uint64_t*>(&key);
+            return *reinterpret_cast<const uint64_t *>(&key);
         }
         if (sizeof(T) == 4) {
-            return *reinterpret_cast<const uint32_t*>(&key);
+            return *reinterpret_cast<const uint32_t *>(&key);
         }
         if (sizeof(T) == 2) {
-            return *reinterpret_cast<const uint16_t*>(&key);
+            return *reinterpret_cast<const uint16_t *>(&key);
         }
         if (sizeof(T) == 1) {
-            return *reinterpret_cast<const uint8_t*>(&key);
+            return *reinterpret_cast<const uint8_t *>(&key);
         }
-        return std::_Hash_array_representation(reinterpret_cast<const char*>(&key), sizeof(key));
+        return std::_Hash_array_representation(reinterpret_cast<const char *>(&key), sizeof(key));
     }
 };
 
@@ -144,10 +146,18 @@ enum DirectionType {
 struct Coord {
     int y;
     int x;
-    bool operator== (const Coord& second) const {
+
+    bool operator==(const Coord &second) const {
         return second.x == x && second.y == y;
     }
+
+    inline Coord &operator=(const Coord &state2) noexcept {
+        this->x = state2.x;
+        this->y = state2.y;
+        return *this;
+    }
 };
+
 using ActionTarget = Coord;
 
 // 攻击无法选择方向，以默认攻击方向进行攻击
@@ -157,12 +167,12 @@ const static std::unordered_map<int, std::vector<Coord>> ATTACK_RANGE_COORD_MAP{
          *  xox
          *   x
          */
-        {1, {{-1, 0}, {1, 0}, {0, -1}, {0, 1}}},
+        {1, {{-1, 0}, {1, 0},  {0,  -1}, {0,  1}}},
         /*   xxx
          *  x o x
          *   xxx
          */
-        {2, {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}, {-2, 0}, {2, 0}, {0, -2}, {0, 2}}},
+        {2, {{1,  1}, {1, -1}, {-1, 1},  {-1, -1}, {-2, 0}, {2, 0},  {0,  -2}, {0,  2}}},
         /*
          *    x
          *  xx xx
@@ -172,11 +182,14 @@ const static std::unordered_map<int, std::vector<Coord>> ATTACK_RANGE_COORD_MAP{
          *  xx xx
          *    x
          */
-        {3, {{2, 1}, {2, -1}, {-2, 1}, {-2, -1}, {1, 2}, {1, -2}, {-1, 2}, {-1, -2}, {2, 2}, {2, -2}, {-2, 2}, {-2, -2}, {-3, 0}, {3, 0}, {0, -3}, {0, 3}}},
+        {3, {{2,  1}, {2, -1}, {-2, 1},  {-2, -1}, {1,  2}, {1, -2}, {-1, 2},  {-1, -2}, {2, 2}, {2, -2}, {-2, 2}, {-2, -2}, {-3, 0}, {3, 0}, {0, -3}, {0, 3}}},
 
 };
 
-const static std::vector<ActionTarget> DIRECTION_TARGET_MAP {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
+const static std::vector<ActionTarget> DIRECTION_TARGET_MAP{{-1, 0},
+                                                            {0,  1},
+                                                            {1,  0},
+                                                            {0,  -1}};
 
 struct GameObj {
     GameObjType type;
@@ -202,33 +215,63 @@ struct GameObj {
     bool canStore; // can store resource
     bool canBeAttacked;
     bool canBeGathered;
+
+    inline bool operator==(const GameObj &state2) const {
+        auto ptrA = reinterpret_cast<const char *> (this);
+        auto ptrB = reinterpret_cast<const char *> (&state2);
+        for (int i = 0; i < sizeof(GameObj); ++i) {
+            if (ptrA[i] != ptrB[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    inline GameObj &operator=(const GameObj &state2) noexcept {
+        auto ptrA = reinterpret_cast<char *> (this);
+        auto ptrB = reinterpret_cast<const char *> (&state2);
+        for (int i = 0; i < sizeof(GameObj); ++i) {
+            ptrA[i] = ptrB[i];
+        }
+        return *this;
+    }
 };
 
 struct GameState {
     std::unordered_map<Coord, GameObj, UHasher<Coord>> objMap;
-    int resource[2] {0, 0};
+    int resource[2]{0, 0};
     int w = 0;
     int h = 0;
     int time = 0;
 
-    inline bool operator== (const GameState& state2) const {
-        return state2.time == time && state2.w == w && state2.h == h;
+    inline bool operator==(const GameState &state2) const {
+        return state2.time == time && state2.w == w && state2.h == h && resource[0] == state2.resource[0] &&
+               resource[1] == state2.resource[1] && objMap == state2.objMap;
     }
 
-    inline bool operator== (const volatile GameState& state2) const {
-        return state2.time == time && state2.w == w && state2.h == h;
+    inline bool operator==(const volatile GameState &state2) const {
+        return state2.time == time && state2.w == w && state2.h == h && resource[0] == state2.resource[0] &&
+               resource[1] == state2.resource[1] &&
+               objMap == *const_cast<const std::unordered_map<Coord, GameObj, UHasher<Coord>> *>(&state2.objMap);
     }
 
-    inline GameState& operator= (const GameState& state2)  noexcept {
+    inline GameState &operator=(const GameState &state2) noexcept {
         w = state2.w;
         h = state2.h;
+        resource[0] = state2.resource[0];
+        resource[1] = state2.resource[1];
         time = state2.time;
+        objMap = state2.objMap;
         return *this;
     }
-    inline GameState& operator= (const volatile GameState& state2)  noexcept {
+
+    inline GameState &operator=(const volatile GameState &state2) noexcept {
         w = state2.w;
         h = state2.h;
+        resource[0] = state2.resource[0];
+        resource[1] = state2.resource[1];
         time = state2.time;
+        objMap = *const_cast<const std::unordered_map<Coord, GameObj, UHasher<Coord>> *>(&state2.objMap);
         return *this;
     }
 };

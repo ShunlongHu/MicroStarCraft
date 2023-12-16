@@ -2,28 +2,24 @@ project(rts_observer)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
-set(CMAKE_PREFIX_PATH "D:/Qt/Qt5.14.2/5.14.2/msvc2017_64")
-find_package(Qt5 COMPONENTS
+find_package(Qt5 REQUIRED COMPONENTS
         Core
         Gui
         Widgets
-        REQUIRED)
+        UiPlugin
+)
+find_package(Qt5Widgets REQUIRED)
 
-include_directories("D:/Qt/Qt5.14.2/5.14.2/msvc2017_64/include"
-        "D:/Qt/Qt5.14.2/5.14.2/msvc2017_64/mkspecs/win32-msvc"
+include_directories(
         "ui"
         "client")
-
-
-link_directories("D:/Qt/Qt5.14.2/5.14.2/msvc2017_64/bin"
-        "D:/Qt/Qt5.14.2/5.14.2/msvc2017_64/lib")
 
 aux_source_directory(. rts_observer)
 aux_source_directory(ui rts_observer)
 aux_source_directory(client rts_observer)
 
 add_executable(${PROJECT_NAME} WIN32 ${rts_observer})
-target_link_libraries(${PROJECT_NAME} Qt5Core Qt5Gui Qt5Widgets message_proto)
+target_link_libraries(${PROJECT_NAME} Qt5::Core Qt5::Gui Qt5::Widgets Qt5::UiPlugin message_proto)
 
 
 if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)

@@ -27,7 +27,8 @@ using namespace std::chrono; // nanoseconds, system_clock, seconds
 using namespace message;
 
 static atomic<int> command {INVALID_COMMAND};
-static atomic<int> frameCount {0};
+static int frameCount {0};
+static mutex stateLock;
 atomic<bool> RpcClient::stop { true };
 static vector<int> rx;
 
@@ -71,7 +72,7 @@ void RtsClient::Connect() {
         istringstream iss(result.data(), ios::binary);
         GameState state;
         iss >> state;
-
+        unique_lock<mutex> lockGuard(stateLock);
         frameCount = state.time;
     }
     writer.join();
@@ -99,5 +100,6 @@ void RpcClient::SendCommand(Command cmd){
 }
 
 int RpcClient::GetObservation() {
+    unique_lock<mutex> lockGuard(stateLock);
     return frameCount;
 };

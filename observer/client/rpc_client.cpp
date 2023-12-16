@@ -38,16 +38,24 @@ public:
     void Connect();
 private:
     std::unique_ptr<message::Rts::Stub> stub_;
+    std::shared_ptr<Channel> channel_;
 };
 
-RtsClient::RtsClient(const std::shared_ptr<Channel>& channel) : stub_(Rts::NewStub(channel)) {}
+RtsClient::RtsClient(const std::shared_ptr<Channel>& channel) : stub_(Rts::NewStub(channel)), channel_(channel){}
 void RtsClient::Connect() {
     ClientContext context;
     std::shared_ptr<ClientReaderWriter<ObservationRequest, Message> > stream(
             stub_->ConnectObserver(&context));
-
-    std::thread writer([stream]() {
+    if (channel_->GetState(false) != GRPC_CHANNEL_READY) {
+        return;
+    }
+    stop = false;
+    std::thread writer([this, stream]() {
         while (true) {
+            if (channel_->GetState(false) != GRPC_CHANNEL_READY) {
+                stop = true;
+                return;
+            }
             // handle request
             if (command == INVALID_COMMAND) {
                 sleep_for(microseconds (100));
@@ -81,9 +89,9 @@ void RtsClient::Connect() {
 
 
 void RpcClient::Connect(const std::string& target) {
-    stop = false;
     auto rtsClient = RtsClient(grpc::CreateChannel(target, grpc::InsecureChannelCredentials()));
     rtsClient.Connect();
+
 }
 
 void RpcClient::SendCommand(Command cmd){

@@ -14,47 +14,8 @@
    <string>RtsObserver</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="7" column="0">
-    <widget class="QLabel" name="timeLabel">
-     <property name="maximumSize">
-      <size>
-       <width>80</width>
-       <height>16777215</height>
-      </size>
-     </property>
-     <property name="text">
-      <string>Time:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="3">
-    <widget class="QPushButton" name="stepButton">
-     <property name="maximumSize">
-      <size>
-       <width>150</width>
-       <height>40</height>
-      </size>
-     </property>
-     <property name="text">
-      <string>Step</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="2">
-    <widget class="QLabel" name="portLabel">
-     <property name="maximumSize">
-      <size>
-       <width>80</width>
-       <height>40</height>
-      </size>
-     </property>
-     <property name="layoutDirection">
-      <enum>Qt::RightToLeft</enum>
-     </property>
-     <property name="text">
-      <string>端口</string>
-     </property>
-    </widget>
+   <item row="0" column="0" rowspan="7" colspan="2">
+    <widget class="RtsMap" name="mapWidget"/>
    </item>
    <item row="0" column="2">
     <widget class="QLabel" name="ipLabel">
@@ -69,19 +30,6 @@
      </property>
      <property name="text">
       <string>IP</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="3">
-    <widget class="QPushButton" name="startButton">
-     <property name="maximumSize">
-      <size>
-       <width>150</width>
-       <height>40</height>
-      </size>
-     </property>
-     <property name="text">
-      <string>Start</string>
      </property>
     </widget>
    </item>
@@ -101,11 +49,11 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="3">
-    <widget class="QPushButton" name="connectButton">
+   <item row="1" column="2">
+    <widget class="QLabel" name="portLabel">
      <property name="maximumSize">
       <size>
-       <width>150</width>
+       <width>80</width>
        <height>40</height>
       </size>
      </property>
@@ -113,14 +61,7 @@
       <enum>Qt::RightToLeft</enum>
      </property>
      <property name="text">
-      <string>Connect</string>
-     </property>
-    </widget>
-   </item>
-   <item row="7" column="1">
-    <widget class="QLabel" name="timeDisplayLabel">
-     <property name="text">
-      <string/>
+      <string>端口</string>
      </property>
     </widget>
    </item>
@@ -140,8 +81,24 @@
      </property>
     </widget>
    </item>
-   <item row="6" column="3">
-    <widget class="QPushButton" name="resetButton">
+   <item row="2" column="3">
+    <widget class="QPushButton" name="connectButton">
+     <property name="maximumSize">
+      <size>
+       <width>150</width>
+       <height>40</height>
+      </size>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::RightToLeft</enum>
+     </property>
+     <property name="text">
+      <string>Connect</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="3">
+    <widget class="QPushButton" name="startButton">
      <property name="maximumSize">
       <size>
        <width>150</width>
@@ -149,7 +106,7 @@
       </size>
      </property>
      <property name="text">
-      <string>Reset</string>
+      <string>Start</string>
      </property>
     </widget>
    </item>
@@ -166,8 +123,61 @@
      </property>
     </widget>
    </item>
+   <item row="5" column="3">
+    <widget class="QPushButton" name="stepButton">
+     <property name="maximumSize">
+      <size>
+       <width>150</width>
+       <height>40</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>Step</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="3">
+    <widget class="QPushButton" name="resetButton">
+     <property name="maximumSize">
+      <size>
+       <width>150</width>
+       <height>40</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>Reset</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="0">
+    <widget class="QLabel" name="timeLabel">
+     <property name="maximumSize">
+      <size>
+       <width>80</width>
+       <height>40</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>Time:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="1">
+    <widget class="QLabel" name="timeDisplayLabel">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>RtsMap</class>
+   <extends>QOpenGLWidget</extends>
+   <header location="global">rts_map.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

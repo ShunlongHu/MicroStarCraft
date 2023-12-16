@@ -7,8 +7,12 @@ find_package(Qt5 REQUIRED COMPONENTS
         Gui
         Widgets
         UiPlugin
+        OpenGL
+        OpenGLExtensions
+
 )
 find_package(Qt5Widgets REQUIRED)
+find_package(OpenGL REQUIRED)
 
 include_directories(
         "ui"
@@ -19,7 +23,7 @@ aux_source_directory(ui rts_observer)
 aux_source_directory(client rts_observer)
 
 add_executable(${PROJECT_NAME} WIN32 ${rts_observer})
-target_link_libraries(${PROJECT_NAME} Qt5::Core Qt5::Gui Qt5::Widgets Qt5::UiPlugin message_proto)
+target_link_libraries(${PROJECT_NAME} Qt5::Core Qt5::Gui Qt5::Widgets Qt5::UiPlugin Qt5::OpenGL Qt5::OpenGLExtensions OpenGL::GL message_proto)
 
 
 if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)

@@ -75,9 +75,9 @@ const static std::unordered_map<GameObjType, int> OBJ_MOVE_INTERVAL_MAP{ // (移
 };
 
 const static std::unordered_map<GameObjType, std::vector<GameObjType>> OBJ_PRODUCE_MAP{ // sc2 / 50
-        {BASE, {WORKER}},
+        {BASE,    {WORKER}},
         {BARRACK, {LIGHT, HEAVY, RANGED}},
-        {WORKER, {BASE, BARRACK}},
+        {WORKER,  {BASE,  BARRACK}},
 };
 
 struct ActionMask {
@@ -92,17 +92,17 @@ struct ActionMask {
 const static std::unordered_map<GameObjType, ActionMask> OBJ_ACTION_MASK_MAP{ // sc2 / 50
         {TERRAIN, {false, false, false, false, false, false}},
         {MINERAL, {false, false, false, false, false, true}},
-        {BASE, {false, false, false, true, true, false}},
-        {BARRACK, {false, false, false, false, true, false}},
-        {WORKER, {true, true, true, false, true, false}},
-        {LIGHT, {true, true, false, false, true, false}},
-        {HEAVY, {true, true, false, false, true, false}},
-        {RANGED, {true, true, false, false, true, false}},
+        {BASE,    {false, false, false, true,  true,  false}},
+        {BARRACK, {false, false, false, false, true,  false}},
+        {WORKER,  {true,  true,  true,  false, true,  false}},
+        {LIGHT,   {true,  true,  false, false, true,  false}},
+        {HEAVY,   {true,  true,  false, false, true,  false}},
+        {RANGED,  {true,  true,  false, false, true,  false}},
 };
 
-// GAME_ATTACK
-constexpr static int RADIUS_MELEE = 1;
-constexpr static int RADIUS_RANGED = 3;
+const static std::unordered_set<GameObjType> OBJ_BUILDING_SET{
+        {BASE, BARRACK}
+};
 
 // GAME_ECONOMY
 constexpr static int RES_PER_GATHER = 1;
@@ -241,6 +241,7 @@ struct GameObj {
 struct GameState {
     std::unordered_map<Coord, GameObj, UHasher<Coord>> objMap;
     int resource[2]{0, 0};
+    int buildingCnt[2]{0, 0};
     int w = 0;
     int h = 0;
     int time = 0;
@@ -261,23 +262,29 @@ struct GameState {
     }
 };
 
-template<class T> void Serialize(std::ostream& os, const T& t) {
-    os.write(reinterpret_cast<const char*>(&t), sizeof(t));
-}
-template<class T> void Deserialize(std::istream& is, T& t) {
-    is.read(reinterpret_cast<char*>(&t), sizeof(t));
+template<class T>
+void Serialize(std::ostream &os, const T &t) {
+    os.write(reinterpret_cast<const char *>(&t), sizeof(t));
 }
 
-template<class K, class V, class H> std::ostream& operator << (std::ostream& os, const std::unordered_map<K, V, H>& ht) {
+template<class T>
+void Deserialize(std::istream &is, T &t) {
+    is.read(reinterpret_cast<char *>(&t), sizeof(t));
+}
+
+template<class K, class V, class H>
+std::ostream &operator<<(std::ostream &os, const std::unordered_map<K, V, H> &ht) {
     auto size = ht.size();
     Serialize(os, size);
-    for (const auto& [k, v]: ht) {
+    for (const auto &[k, v]: ht) {
         Serialize(os, k);
         Serialize(os, v);
     }
     return os;
 }
-template<class K, class V, class H> std::istream& operator >> (std::istream& is, std::unordered_map<K, V, H>& ht) {
+
+template<class K, class V, class H>
+std::istream &operator>>(std::istream &is, std::unordered_map<K, V, H> &ht) {
     size_t size;
     Deserialize(is, size);
     ht.reserve(size);
@@ -291,20 +298,24 @@ template<class K, class V, class H> std::istream& operator >> (std::istream& is,
     return is;
 }
 
-inline std::ostream& operator << (std::ostream& os, const GameState& state) {
+inline std::ostream &operator<<(std::ostream &os, const GameState &state) {
     os << state.objMap;
     Serialize(os, state.resource[0]);
     Serialize(os, state.resource[1]);
+    Serialize(os, state.buildingCnt[0]);
+    Serialize(os, state.buildingCnt[1]);
     Serialize(os, state.w);
     Serialize(os, state.h);
     Serialize(os, state.time);
     return os;
 }
 
-inline std::istream& operator >> (std::istream& is, GameState& state) {
+inline std::istream &operator>>(std::istream &is, GameState &state) {
     is >> state.objMap;
     Deserialize(is, state.resource[0]);
     Deserialize(is, state.resource[1]);
+    Serialize(is, state.buildingCnt[0]);
+    Serialize(is, state.buildingCnt[1]);
     Deserialize(is, state.w);
     Deserialize(is, state.h);
     Deserialize(is, state.time);

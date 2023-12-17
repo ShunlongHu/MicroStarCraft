@@ -6,6 +6,7 @@
 #define RTS_GAME_TYPES_H
 
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 #include <iostream>
 
@@ -100,8 +101,18 @@ const static std::unordered_map<GameObjType, ActionMask> OBJ_ACTION_MASK_MAP{ //
         {RANGED,  {true,  true,  false, false, true,  false}},
 };
 
-const static std::unordered_set<GameObjType> OBJ_BUILDING_SET{
-        {BASE, BARRACK}
+const static std::unordered_set<GameObjType> OBJ_BUILDING_SET {BASE, BARRACK};
+
+// GAME_ATTACK
+const static std::unordered_map<GameObjType, int> OBJ_ATTACK_RANGE_MAP {
+        {TERRAIN, 0},
+        {MINERAL, 0},
+        {BASE,    0},
+        {BARRACK, 0},
+        {WORKER,  1},
+        {LIGHT,   1},
+        {HEAVY,   1},
+        {RANGED,  3},
 };
 
 // GAME_ECONOMY
@@ -314,8 +325,8 @@ inline std::istream &operator>>(std::istream &is, GameState &state) {
     is >> state.objMap;
     Deserialize(is, state.resource[0]);
     Deserialize(is, state.resource[1]);
-    Serialize(is, state.buildingCnt[0]);
-    Serialize(is, state.buildingCnt[1]);
+    Deserialize(is, state.buildingCnt[0]);
+    Deserialize(is, state.buildingCnt[1]);
     Deserialize(is, state.w);
     Deserialize(is, state.h);
     Deserialize(is, state.time);

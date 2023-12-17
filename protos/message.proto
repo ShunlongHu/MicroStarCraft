@@ -24,6 +24,13 @@ enum Command {
 
 message ObservationRequest {
     Command command = 1;
+    int32 seed = 2;
+    bool isRotSym = 3;
+    bool isAxSym = 4;
+    double terrainProb = 5;
+    int32 expansionCnt = 6;
+    int32 clusterPerExpansion = 7;
+    int32 mineralPerCluster = 8;
 }
 
 message PlayerRequest {

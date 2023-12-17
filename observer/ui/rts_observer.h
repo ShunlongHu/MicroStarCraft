@@ -29,6 +29,11 @@ public:
     Ui::RtsObserver *ui;
     static ThreadPool threadPool;
     QTimer renderTimer;
+    static int seed;
+    static double terrainProb;
+    static int expansionCnt;
+    static int clusterCnt;
+    static int resourceCnt;
 
 private slots:
     void HandleConnectButton() const;
@@ -37,6 +42,11 @@ private slots:
     void HandleStepButton();
     void HandleResetButton();
     void HandleRenderTimer();
+    void HandleSeedLineEdit() const;
+    void HandleTerrainSlide() const;
+    void HandleExpansionSlide() const;
+    void HandleClusterSlide() const;
+    void HandleResourceSlide() const;
     void RefreshButton();
 };
 

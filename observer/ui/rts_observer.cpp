@@ -22,6 +22,7 @@ double RtsObserver::terrainProb {0};
 int RtsObserver::expansionCnt {1};
 int RtsObserver::clusterCnt {1};
 int RtsObserver::resourceCnt {1};
+bool RtsObserver::isAxSym {true};
 
 RtsObserver::RtsObserver(QWidget *parent) :
         QWidget(parent), ui(new Ui::RtsObserver) {
@@ -39,6 +40,7 @@ RtsObserver::RtsObserver(QWidget *parent) :
     connect(ui->expansionSlider, &QSlider::valueChanged, this, &RtsObserver::HandleExpansionSlide);
     connect(ui->clusterSlider, &QSlider::valueChanged, this, &RtsObserver::HandleClusterSlide);
     connect(ui->resourceSlider, &QSlider::valueChanged, this, &RtsObserver::HandleResourceSlide);
+    connect(ui->axialRadio, &QRadioButton::toggled, this, &RtsObserver::HandleIsAxialRadio);
     renderTimer.setInterval(10);
     renderTimer.start();
 }
@@ -123,4 +125,8 @@ void RtsObserver::HandleResourceSlide() const {
 
 void RtsObserver::HandleSeedLineEdit() const {
     seed = stoi(ui->seedLineEdit->text().toStdString());
+}
+
+void RtsObserver::HandleIsAxialRadio() const {
+    isAxSym = ui->axialRadio->isChecked();
 }

@@ -63,6 +63,15 @@ void RtsClient::Connect() {
             }
             ObservationRequest request;
             request.set_command(static_cast<message::Command>(command.load()));
+            if (command == RESET) {
+                request.set_clusterperexpansion(RtsObserver::clusterCnt);
+                request.set_mineralpercluster(RtsObserver::resourceCnt);
+                request.set_expansioncnt(RtsObserver::expansionCnt);
+                request.set_terrainprob(RtsObserver::terrainProb);
+                request.set_seed(RtsObserver::seed);
+                request.set_isaxsym(RtsObserver::isAxSym);
+                request.set_isrotsym(!RtsObserver::isAxSym);
+            }
             stream->Write(request);
             if (command == SpecialCommand::DISCONNECT) {
                 stream->WritesDone();

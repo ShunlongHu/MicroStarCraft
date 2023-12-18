@@ -34,6 +34,7 @@ public:
     static int expansionCnt;
     static int clusterCnt;
     static int resourceCnt;
+    static bool isAxSym; // is axial sym or rotational sym
 
 private slots:
     void HandleConnectButton() const;
@@ -47,6 +48,7 @@ private slots:
     void HandleExpansionSlide() const;
     void HandleClusterSlide() const;
     void HandleResourceSlide() const;
+    void HandleIsAxialRadio() const;
     void RefreshButton();
 };
 

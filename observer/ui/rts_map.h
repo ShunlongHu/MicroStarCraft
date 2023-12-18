@@ -15,6 +15,7 @@ protected:
     void resizeGL(int w, int h) Q_DECL_OVERRIDE;
     void paintGL() Q_DECL_OVERRIDE;
     void graficarLines();
+
 public:
     double y=0;
     double x=0;

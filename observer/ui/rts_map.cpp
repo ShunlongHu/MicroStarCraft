@@ -3,6 +3,10 @@
 //
 
 #include "rts_map.h"
+#include <QtGui/QOpenGLBuffer>
+#include <QtGui/QOpenGLFunctions>
+#include <QtGui/QOpenGLShaderProgram>
+#include <QtGui/QOpenGLVertexArrayObject>
 
 void RtsMap::initializeGL() {
     QOpenGLWidget::initializeGL();
@@ -10,7 +14,10 @@ void RtsMap::initializeGL() {
 }
 
 void RtsMap::resizeGL(int w, int h) {
-    glViewport(0,0,w,h);
+    glViewport(0,0,std::min(w,h),std::min(w, h));
+    if (w != h) {
+        resize(std::min(w,h),std::min(w, h));
+    }
 }
 
 void RtsMap::paintGL() {
@@ -20,6 +27,9 @@ void RtsMap::paintGL() {
     glShadeModel(GL_SMOOTH);
     // Resetear transformaciones
     glLoadIdentity();
+    glTranslatef(-0.5, -0.5, 0);
+    glRotatef(30, 1, 0, 0);
+
 
 
     // LADO IZQUIERDO: lado verde
@@ -35,7 +45,11 @@ void RtsMap::paintGL() {
     glColor3f( 1.0, 0.0, 1.0 );
     glVertex3f( -0.5, -0.5, -0.5 );      // P4 es morado
 
+
+
     glEnd();
+
+
     glFlush();
     this->makeCurrent();
 }

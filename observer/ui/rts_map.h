@@ -13,6 +13,7 @@
 #include <QBasicTimer>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
+#include <memory>
 #include "geometry_engine.h"
 class RtsMap : public QOpenGLWidget, protected QOpenGLFunctions {
 public:
@@ -45,10 +46,10 @@ public:
     int w = 0, h = 0;
 
     QOpenGLShaderProgram program;
-    GeometryEngine *geometries = nullptr;
+    std::unique_ptr<GeometryEngine> geometries = nullptr;
 
-    QOpenGLTexture *texture = nullptr;
-    QOpenGLTexture *texture2 = nullptr;
+    std::unique_ptr<QOpenGLTexture> texture = nullptr;
+    std::unique_ptr<QOpenGLTexture> texture2 = nullptr;
 
     QMatrix4x4 projection;
 

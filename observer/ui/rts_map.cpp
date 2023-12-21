@@ -32,7 +32,7 @@ void RtsMap::initializeGL() {
     glEnable(GL_CULL_FACE);
 //! [2]
 
-    geometries = new GeometryEngine;
+    geometries = make_unique<GeometryEngine>();
 }
 
 void RtsMap::resizeGL(int w, int h) {
@@ -120,7 +120,7 @@ void RtsMap::initShaders() {
 
 void RtsMap::initTextures() {
     // Load cube.png image
-    texture = new QOpenGLTexture(QImage("D:/repo/rts/observer/ui/resource/CG人物/星际2- 诺娃nova/[8%OKO@UE(L_X1O[3HWMNZ9.jpg").mirrored());
+    texture = make_unique<QOpenGLTexture>(QImage("D:/repo/rts/observer/ui/resource/CG人物/星际2- 诺娃nova/[8%OKO@UE(L_X1O[3HWMNZ9.jpg").mirrored());
 
     // Set nearest filtering mode for texture minification
     texture->setMinificationFilter(QOpenGLTexture::Linear);
@@ -134,7 +134,7 @@ void RtsMap::initTextures() {
 
 
     // Load cube.png image
-    texture2 = new QOpenGLTexture(QImage("D:/repo/rts/observer/ui/resource/CG人物/吉姆雷诺raynor/$]V[YKU$Z}`~3V9`{A54{IR.jpg").mirrored());
+    texture2 = make_unique<QOpenGLTexture>(QImage("D:/repo/rts/observer/ui/resource/CG人物/吉姆雷诺raynor/$]V[YKU$Z}`~3V9`{A54{IR.jpg").mirrored());
 
     // Set nearest filtering mode for texture minification
     texture2->setMinificationFilter(QOpenGLTexture::Linear);
@@ -150,8 +150,5 @@ void RtsMap::initTextures() {
 
 RtsMap::~RtsMap() {
     makeCurrent();
-    delete texture;
-    delete texture2;
-    delete geometries;
     doneCurrent();
 }

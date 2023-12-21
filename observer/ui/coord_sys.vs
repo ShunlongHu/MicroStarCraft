@@ -1,16 +1,24 @@
-#version 330 core
-layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec3 aNormal;
-layout (location = 2) in vec2 aTexCoord;
+#ifdef GL_ES
+// Set default precision to medium
+precision mediump int;
+precision mediump float;
+#endif
 
-out vec2 TexCoord;
+uniform mat4 mvp_matrix;
 
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
+attribute vec4 a_position;
+attribute vec2 a_texcoord;
 
+varying vec2 v_texcoord;
+
+//! [0]
 void main()
 {
-    TexCoord = aTexCoord;
-    gl_Position = projection * view * model * vec4(aPos, 1.0f);
+    // Calculate vertex position in screen space
+    gl_Position = mvp_matrix * a_position;
+
+    // Pass texture coordinate to fragment shader
+    // Value will be automatically interpolated to fragments inside polygon faces
+    v_texcoord = a_texcoord;
 }
+//! [0]

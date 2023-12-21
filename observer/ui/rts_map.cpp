@@ -254,6 +254,9 @@ void RtsMap::paintGL() {
     // Calculate model view transformation
     QMatrix4x4 matrix;
     matrix.translate(0.0, 0.0, -5.0);
+    rotationAxis = (rotationAxis*1 + 1 * QVector3D{1,0.6,0.3});
+    rotationAxis = rotationAxis.normalized();
+    rotation = QQuaternion::fromAxisAndAngle(rotationAxis, 1) * rotation;
     matrix.rotate(rotation);
 
     // Set modelview-projection matrix
@@ -331,7 +334,7 @@ void RtsMap::initShaders() {
 
 void RtsMap::initTextures() {
     // Load cube.png image
-    texture = new QOpenGLTexture(QImage("D:/repo/rts/observer/ui/resource/CG人物/星际2- 诺娃nova/[8%OKO@UE(L_X1O[3HWMNZ9.jpg"));
+    texture = new QOpenGLTexture(QImage("D:/repo/rts/observer/ui/resource/CG人物/星际2- 诺娃nova/[8%OKO@UE(L_X1O[3HWMNZ9.jpg").mirrored());
 
     // Set nearest filtering mode for texture minification
     texture->setMinificationFilter(QOpenGLTexture::Linear);

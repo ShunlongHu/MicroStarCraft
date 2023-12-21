@@ -52,7 +52,7 @@ public:
     QMatrix4x4 projection;
 
     QVector2D mousePressPosition;
-    QVector3D rotationAxis;
+    QVector3D rotationAxis {1,1,1};
     qreal angularSpeed = 0;
     QQuaternion rotation;
 };

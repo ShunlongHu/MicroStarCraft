@@ -48,7 +48,8 @@ void RtsMap::paintGL() {
     // Clear color and depth buffer
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    texture->bind();
+    texture->bind(0);
+    texture2->bind(1);
 /*
  * First cube
  */
@@ -73,14 +74,13 @@ void RtsMap::paintGL() {
 /*
  * Second cube
  */
-    texture2->bind();
     // Set modelview-projection matrix
     matrix.translate({-0.5, -0.5,-0.1});
     program.setUniformValue("mvp_matrix", projection * matrix);
 //! [6]
 
     // Use texture unit 0 which contains cube.png
-    program.setUniformValue("texture", 0);
+    program.setUniformValue("texture", 1);
 
     // Draw cube geometry
     geometries->drawCubeGeometry(&program);

@@ -13,8 +13,11 @@
 #include <QBasicTimer>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
+#include <QOpenGLFunctions_3_3_Core>
+#include <QTime>
 #include <memory>
-#include "geometry_engine.h"
+//#include "geometry_engine.h"
+#include "model_engine.h"
 class RtsMap : public QOpenGLWidget, protected QOpenGLFunctions {
 public:
     explicit RtsMap(QWidget* parent);
@@ -46,8 +49,10 @@ public:
     int w = 0, h = 0;
 
     QOpenGLShaderProgram program;
-    std::unique_ptr<GeometryEngine> geometries = nullptr;
-
+    std::unique_ptr<Model> pModel;
+//    QOpenGLShaderProgram program2;
+//    std::unique_ptr<GeometryEngine> geometries = nullptr;
+    QTime time;
     std::unique_ptr<QOpenGLTexture> texture = nullptr;
     std::unique_ptr<QOpenGLTexture> texture2 = nullptr;
 

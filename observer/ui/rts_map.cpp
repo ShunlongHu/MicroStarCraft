@@ -66,7 +66,7 @@ void RtsMap::initializeGL()
     //模型网上自己找个，注意格式要符合assimp库支持的。
     //pmodel = new Model("D:/opengl/opengl/opengl/Resources/ironman/Seahawk.obj");
     //pmodel = new Model("D:/opengl/opengl/opengl/Resources/ironman/UH60/uh60.obj");
-    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\objects\\planet\\planet.obj");
+    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\objects\\nanosuit\\nanosuit.obj");
 
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);

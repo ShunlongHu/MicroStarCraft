@@ -8,7 +8,8 @@ Mesh::Mesh(const std::vector<Vertex> &vertice, const std::vector<GLuint> &indice
         textures(texture),
         isinitialized(false)
 {
-
+    //初始化OpenGL函数
+    initializeOpenGLFunctions();
 }
 Mesh::~Mesh()
 {
@@ -18,8 +19,6 @@ Mesh::~Mesh()
 }
 void Mesh::setupMesh(QOpenGLShaderProgram *program)
 {
-    //初始化OpenGL函数
-    initializeOpenGLFunctions();
     // 创建缓冲区/数组
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
@@ -51,7 +50,6 @@ void Mesh::setupMesh(QOpenGLShaderProgram *program)
     //glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, Bitangent));
     glBindVertexArray(0);
 }
-#include <QMessageBox>
 void Mesh::draw(QOpenGLShaderProgram *program)
 {
 
@@ -59,7 +57,7 @@ void Mesh::draw(QOpenGLShaderProgram *program)
     {
         setupMesh(program);
         //setupMesh进行了初始化，状态置为true
-
+        isinitialized = true;
     }
 
     // bind appropriate textures
@@ -69,29 +67,23 @@ void Mesh::draw(QOpenGLShaderProgram *program)
     unsigned int heightNr = 1;
     for (unsigned int i = 0; i < textures.size(); i++)
     {
+
         // retrieve texture number (the N in diffuse_textureN)
         QString number;
         QString type = textures[i].type;
-        if (type == "texture_diffuse") {
-            number = QString::number(diffuseNr);
-        } else if (type == "texture_specular") {
+        if (type == "texture_diffuse")
+            number = QString::number(diffuseNr++);
+        else if (type == "texture_specular")
             number = QString::number(specularNr++); // transfer unsigned int to stream
-        } else if (type == "texture_normal") {
+        else if (type == "texture_normal")
             number = QString::number(normalNr++);   // transfer unsigned int to stream
-        } else if (type == "texture_height") {
+        else if (type == "texture_height")
             number = QString::number(heightNr++);   // transfer unsigned int to stream
-        }
-
-        if (!isinitialized) {
-            static std::vector<QSharedPointer<QMessageBox>> messageBox;
-            messageBox.emplace_back(new QMessageBox);
-            messageBox.back()->setText((type+number).toLocal8Bit().constData());
-            messageBox.back()->show();
-        }
+        qDebug() << QString(type + number).toLocal8Bit().constData();
         textures[i].texture->bind(static_cast<unsigned int>(i));
-        program->setUniformValue((type+number).toLocal8Bit().constData(), i);
+        program->setUniformValue(QString(type + number).toLocal8Bit().constData(), i);
+
     }
-    isinitialized = true;
 
     // draw mesh
     glBindVertexArray(VAO);

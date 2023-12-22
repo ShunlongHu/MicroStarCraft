@@ -7,10 +7,14 @@
 #include <QMessageBox>
 static QSharedPointer<QOpenGLTexture> textureFromFile(const QString &path, const QString &directory)
 {
-    QString fileName = directory + '\\' + path;
+    QString fileName = directory + '/' + path;
 
-    QImage image(fileName);
+    QImage image("D:\\repo\\rts\\observer\\ui\\resource\\objects\\planet\\mars.png");
     QSharedPointer<QOpenGLTexture> texture(new QOpenGLTexture(image));
+
+    static QMessageBox messageBox;
+    messageBox.setText(fileName);
+    messageBox.show();
 
     texture->setWrapMode(QOpenGLTexture::DirectionS, QOpenGLTexture::Repeat);
     texture->setWrapMode(QOpenGLTexture::DirectionT, QOpenGLTexture::Repeat);
@@ -293,7 +297,7 @@ Mesh *Model::initMesh(const aiScene *pscene, const aiMesh *pmesh)
     }
     return new Mesh(vertices, indices, textures);
 }
-#include <QMessageBox>
+
 std::vector<Texture> Model::loadMaterialTextures(aiMaterial *material, aiTextureType type, const QString &typeName)
 {
     std::vector<Texture> textures;
@@ -303,12 +307,6 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial *material, aiTexture
         material->GetTexture(type, i, &str);
         bool skip(false);
         QString path(str.C_Str());
-
-//        static std::vector<QSharedPointer<QMessageBox>> messageBox;
-//        messageBox.emplace_back(new QMessageBox);
-//        messageBox.back()->setText(str.C_Str());
-//        messageBox.back()->show();
-
         path = path.right(path.length() - path.lastIndexOf('\\') - 1);
         for (unsigned int j = 0; j < textures_loaded.size(); j++)
         {

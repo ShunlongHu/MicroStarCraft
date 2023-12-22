@@ -1,4 +1,4 @@
-#include "model_engine.h"
+#include "model.h"
 #include <string>
 #include <QImage>
 #include <QDebug>

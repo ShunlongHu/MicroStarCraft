@@ -1,5 +1,5 @@
 #include "rts_map.h"
-#include "model_engine.h"
+#include "model.h"
 #include <QOPenglTexture>
 #include <QVector3D>
 #include <QOpenGLShaderProgram>

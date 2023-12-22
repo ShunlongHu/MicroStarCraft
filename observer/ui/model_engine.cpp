@@ -4,17 +4,11 @@
 #include <QDebug>
 #include <QSharedPointer>
 #include <QOpenGLTexture>
-#include <QMessageBox>
 static QSharedPointer<QOpenGLTexture> textureFromFile(const QString &path, const QString &directory)
 {
-    QString fileName = directory + '/' + path;
-
-    QImage image("D:\\repo\\rts\\observer\\ui\\resource\\objects\\planet\\mars.png");
+    QString fileName = directory + '\\' + path;
+    QImage image(fileName);
     QSharedPointer<QOpenGLTexture> texture(new QOpenGLTexture(image));
-
-    static QMessageBox messageBox;
-    messageBox.setText(fileName);
-    messageBox.show();
 
     texture->setWrapMode(QOpenGLTexture::DirectionS, QOpenGLTexture::Repeat);
     texture->setWrapMode(QOpenGLTexture::DirectionT, QOpenGLTexture::Repeat);
@@ -54,7 +48,7 @@ bool Model::loadModel(const QString &path)
         return false;
     }
     //返回路径字符串最后一次出现'/'的最左边的字符串，也就是文件的目录。
-    directory = path.left(path.lastIndexOf('/'));
+    directory = path.left(path.lastIndexOf('\\'));
     bool ret(false);
     if (pscene)
     {

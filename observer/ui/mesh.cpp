@@ -13,24 +13,24 @@ Mesh::Mesh(const std::vector<Vertex> &vertice, const std::vector<GLuint> &indice
 }
 Mesh::~Mesh()
 {
-    glDeleteBuffers(1, &VAO);
-    glDeleteBuffers(1, &VBO);
-    glDeleteBuffers(1, &EBO);
+    VAO.destroy();
+    VBO.destroy();
+    EBO.destroy();
 }
 void Mesh::setupMesh(QOpenGLShaderProgram *program)
 {
     // 创建缓冲区/数组
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
+    VAO.create();
+    VBO.create();
+    EBO.create();
 
-    glBindVertexArray(VAO);
-    //将数据加载到顶点缓冲区中
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    VAO.bind();
+    VBO.bind();
+
     // 关于结构的一个好处是它们的内存布局对于它的所有项都是顺序的。
     // 结果是我们可以简单地将指针传递给结构，并且它完美地转换为glm :: vec3 / 2数组，该数组再次转换为3/2浮点数，转换为字节数组。
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), vertices.data()/*&vertices[0]*/, GL_STATIC_DRAW);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO.bufferId());
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data()/*&indices[0]*/, GL_STATIC_DRAW);
     // 设置顶点属性指针
     // 顶点位置
@@ -48,7 +48,8 @@ void Mesh::setupMesh(QOpenGLShaderProgram *program)
     // v向量
     //glEnableVertexAttribArray(4);
     //glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, Bitangent));
-    glBindVertexArray(0);
+    VAO.release();
+    VBO.release();
 }
 void Mesh::draw(QOpenGLShaderProgram *program)
 {
@@ -86,7 +87,7 @@ void Mesh::draw(QOpenGLShaderProgram *program)
     }
 
     // draw mesh
-    glBindVertexArray(VAO);
+    VAO.bind();
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
-    glBindVertexArray(0);
+    VAO.release();
 }

@@ -5,7 +5,8 @@
 
 #include <vector>
 #include <string>
-
+#include <QOpenGLVertexArrayObject>
+#include <QOpenGLBuffer>
 #include "qopenglfunctions_3_3_core.h"
 class QOpenGLShaderProgram;
 
@@ -27,9 +28,9 @@ public:
     std::vector<Texture> textures;
     //是否进行过setupMesh初始化操作
     bool isinitialized;
-    GLuint VAO;
-    GLuint VBO;
-    GLuint EBO;
+    QOpenGLVertexArrayObject VAO;
+    QOpenGLBuffer VBO;
+    QOpenGLBuffer EBO;
 private:
     // 初始化所有缓冲区对象/数组
     void setupMesh(QOpenGLShaderProgram *program);

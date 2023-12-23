@@ -43,11 +43,11 @@ void Mesh::setupMesh(QOpenGLShaderProgram *program)
     glEnableVertexAttribArray(2);
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, TexCoords));
     // u向量
-    //glEnableVertexAttribArray(3);
-    //glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, Tangent));
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, Tangent));
     // v向量
-    //glEnableVertexAttribArray(4);
-    //glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, Bitangent));
+    glEnableVertexAttribArray(4);
+    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, Bitangent));
     VAO.release();
     VBO.release();
 }
@@ -71,7 +71,7 @@ void Mesh::draw(QOpenGLShaderProgram *program)
 
         // retrieve texture number (the N in diffuse_textureN)
         QString number;
-        QString type = textures[i].type;
+        QString type = "material." + textures[i].type;
         if (type == "texture_diffuse")
             number = QString::number(diffuseNr++);
         else if (type == "texture_specular")

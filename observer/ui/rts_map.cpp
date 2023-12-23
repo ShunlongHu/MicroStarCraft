@@ -96,6 +96,12 @@ void RtsMap::initializeGL()
     program->setUniformValue("model", model);
     program->setUniformValue("projection", projection);
 
+    program->setUniformValue("viewPos", QVector3D(0.0f, 0.0f, 3.0f));
+    program->setUniformValue("lightPos", QVector3D(1.2f, 1.0f, 2.0f));
+    program->setUniformValue("light.ambient", QVector3D(0.2f, 0.2f, 0.2f));
+    program->setUniformValue("light.diffuse", QVector3D(0.5f, 0.5f, 0.5f));
+    program->setUniformValue("light.specular", QVector3D( 1.0f, 1.0f, 1.0f));
+
     /* 固定属性区域 */
     glEnable(GL_DEPTH_TEST);  //开启深度测试
 }

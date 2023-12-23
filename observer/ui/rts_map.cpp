@@ -101,6 +101,7 @@ void RtsMap::initializeGL()
     program->setUniformValue("light.ambient", QVector3D(0.2f, 0.2f, 0.2f));
     program->setUniformValue("light.diffuse", QVector3D(0.5f, 0.5f, 0.5f));
     program->setUniformValue("light.specular", QVector3D( 1.0f, 1.0f, 1.0f));
+    program->setUniformValue("heightScale", GLfloat( 0.1));
 
     /* 固定属性区域 */
     glEnable(GL_DEPTH_TEST);  //开启深度测试
@@ -126,6 +127,9 @@ void RtsMap::paintGL()
 }
 void RtsMap::resizeGL(int width, int height)
 {
-    glViewport(0, 0, width, height);
+    glViewport(0,0,width,height);
+    if (width != height) {
+        resize(std::min(width,height),std::min(width, height));
+    }
     update();
 }

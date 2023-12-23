@@ -39,10 +39,10 @@ void main()
     vec3 viewDir = normalize(fs_in.TangentViewPos - fs_in.TangentFragPos);
     vec2 texCoords = fs_in.TexCoords;
 
-    texCoords = ParallaxMapping(fs_in.TexCoords,  viewDir);
-    if(texCoords.x > 1.0 || texCoords.y > 1.0 || texCoords.x < 0.0 || texCoords.y < 0.0)
-        discard;
-
+//     vec2 a = ParallaxMapping(fs_in.TexCoords,  viewDir);
+//     if(a.x > 1.0 || a.y > 1.0 || a.x < 0.0 || a.y < 0.0) {
+//         discard;
+//     }
     // obtain normal from normal map
     vec3 normal = texture(material.texture_normal1, texCoords).rgb;
     normal = normalize(normal * 2.0 - 1.0);
@@ -60,7 +60,7 @@ void main()
     vec3 halfwayDir = normalize(lightDir + viewDir);
     float spec = pow(max(dot(normal, halfwayDir), 0.0), 32.0);
 
-    vec3 specular = light.specular * spec * texture(material.texture_specular1, TexCoords).rgb;
+    vec3 specular = light.specular * spec * texture(material.texture_specular1, texCoords).rgb;
     vec3 result = ambient + diffuse + specular;
 
     // gamma correction

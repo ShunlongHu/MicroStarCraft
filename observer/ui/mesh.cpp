@@ -51,6 +51,7 @@ void Mesh::setupMesh(QOpenGLShaderProgram *program)
     VAO.release();
     VBO.release();
 }
+#include <QMessageBox>
 void Mesh::draw(QOpenGLShaderProgram *program)
 {
 
@@ -58,7 +59,7 @@ void Mesh::draw(QOpenGLShaderProgram *program)
     {
         setupMesh(program);
         //setupMesh进行了初始化，状态置为true
-        isinitialized = true;
+
     }
 
     // bind appropriate textures
@@ -82,9 +83,15 @@ void Mesh::draw(QOpenGLShaderProgram *program)
             number = QString::number(heightNr++);   // transfer unsigned int to stream
         qDebug() << QString(type + number).toLocal8Bit().constData();
         textures[i].texture->bind(static_cast<unsigned int>(i));
+//        if (!isinitialized) {
+//            static QMessageBox qMessageBox;
+//            qMessageBox.setText(qMessageBox.text() + '\n' + type + QString(number));
+//            qMessageBox.show();
+//        }
         program->setUniformValue(QString(type + number).toLocal8Bit().constData(), i);
 
     }
+    isinitialized = true;
 
     // draw mesh
     VAO.bind();

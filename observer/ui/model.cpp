@@ -4,11 +4,18 @@
 #include <QDebug>
 #include <QSharedPointer>
 #include <QOpenGLTexture>
+#include <QMessageBox>
 static QSharedPointer<QOpenGLTexture> textureFromFile(const QString &path, const QString &directory)
 {
     QString fileName = directory + '\\' + path;
+//    fileName = fileName.left(fileName.lastIndexOf('.')) + ".png";
     QImage image(fileName);
     QSharedPointer<QOpenGLTexture> texture(new QOpenGLTexture(image));
+//    static QMessageBox qMessageBox;
+//    qMessageBox.setText(qMessageBox.text() + '\n' + fileName);
+//    qMessageBox.setText(qMessageBox.text() + '\n' + QString::number(texture->width()));
+//
+//    qMessageBox.show();
 
     texture->setWrapMode(QOpenGLTexture::DirectionS, QOpenGLTexture::Repeat);
     texture->setWrapMode(QOpenGLTexture::DirectionT, QOpenGLTexture::Repeat);

@@ -67,6 +67,7 @@ void Mesh::draw(QOpenGLShaderProgram *program)
     unsigned int specularNr = 1;
     unsigned int normalNr = 1;
     unsigned int heightNr = 1;
+    unsigned int emissionNr = 1;
     for (unsigned int i = 0; i < textures.size(); i++)
     {
 
@@ -81,6 +82,8 @@ void Mesh::draw(QOpenGLShaderProgram *program)
             number = QString::number(normalNr++);   // transfer unsigned int to stream
         else if (type == "texture_height")
             number = QString::number(heightNr++);   // transfer unsigned int to stream
+        else if (type == "texture_emission")
+            number = QString::number(emissionNr++);   // transfer unsigned int to stream
         type = "material." + type;
         qDebug() << QString(type + number).toLocal8Bit().constData();
         textures[i].texture->bind(static_cast<unsigned int>(i));

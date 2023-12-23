@@ -72,7 +72,7 @@ void Mesh::draw(QOpenGLShaderProgram *program)
 
         // retrieve texture number (the N in diffuse_textureN)
         QString number;
-        QString type = "material." + textures[i].type;
+        QString type = textures[i].type;
         if (type == "texture_diffuse")
             number = QString::number(diffuseNr++);
         else if (type == "texture_specular")
@@ -81,13 +81,14 @@ void Mesh::draw(QOpenGLShaderProgram *program)
             number = QString::number(normalNr++);   // transfer unsigned int to stream
         else if (type == "texture_height")
             number = QString::number(heightNr++);   // transfer unsigned int to stream
+        type = "material." + type;
         qDebug() << QString(type + number).toLocal8Bit().constData();
         textures[i].texture->bind(static_cast<unsigned int>(i));
-        if (!isinitialized) {
-            static QMessageBox qMessageBox;
-            qMessageBox.setText(qMessageBox.text() + '\n' + QString(type + number));
-            qMessageBox.show();
-        }
+//        if (!isinitialized) {
+//            static QMessageBox qMessageBox;
+//            qMessageBox.setText(qMessageBox.text() + '\n' + type + number);
+//            qMessageBox.show();
+//        }
         program->setUniformValue(QString(type + number).toLocal8Bit().constData(), i);
 
     }

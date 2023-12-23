@@ -97,11 +97,12 @@ void RtsMap::initializeGL()
     program->setUniformValue("projection", projection);
 
     program->setUniformValue("viewPos", QVector3D(0.0f, 0.0f, 3.0f));
-    program->setUniformValue("lightPos", QVector3D(1.2f, 1.0f, 2.0f));
-    program->setUniformValue("light.ambient", QVector3D(0.2f, 0.2f, 0.2f));
-    program->setUniformValue("light.diffuse", QVector3D(0.5f, 0.5f, 0.5f));
-    program->setUniformValue("light.specular", QVector3D( 1.0f, 1.0f, 1.0f));
+    program->setUniformValue("light.position", QVector3D(1.2f, 1.0f, 2.0f));
+    program->setUniformValue("light.ambient", QVector3D(0.01f, 0.01f, 0.01f));
+    program->setUniformValue("light.diffuse", QVector3D(0.1f, 0.1f, 0.1f));
+    program->setUniformValue("light.specular", QVector3D( 0.1f, 0.1f, 0.1f));
     program->setUniformValue("heightScale", GLfloat( 0.1));
+    program->setUniformValue("material.shininess", GLfloat(65.0f));
 
     /* 固定属性区域 */
     glEnable(GL_DEPTH_TEST);  //开启深度测试
@@ -112,7 +113,7 @@ void RtsMap::paintGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // also clear the depth buffer now!
     QMatrix4x4 model;
     //model.scale(0.005f, 0.005f, 0.005f);
-    model.scale(0.10f, 0.10f, 0.10f);
+    model.scale(0.075f, 0.075f, 0.075f);
 //    model.scale(0.10f, 0.15f, 0.15f);
     //model.rotate((float)time.elapsed() / 10, QVector3D(0.5f, 1.0f, 0.0f));
     model.rotate((float)time.elapsed() / 20, QVector3D(0.0f, 0.5f, 1.0f));

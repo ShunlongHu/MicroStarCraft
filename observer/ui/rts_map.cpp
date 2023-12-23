@@ -81,7 +81,7 @@ void RtsMap::initializeGL()
 
     //给着色器变量赋值,projextion,view默认构造是生成单位矩阵
     QMatrix4x4 projection, view, model;
-    view.translate(QVector3D(-0.5f, 0.0f, -5.0f));
+    view.translate(QVector3D(0, 0, -5.0f));
     projection.perspective(30.0f, (GLfloat)width() / (GLfloat)height(), 0.1f, 100.0f);
     /*
     将此程序绑定到active的OPenGLContext，并使其成为当前着色器程序
@@ -112,8 +112,8 @@ void RtsMap::paintGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // also clear the depth buffer now!
     QMatrix4x4 model;
     //model.scale(0.005f, 0.005f, 0.005f);
-    //model.scale(0.010f, 0.010f, 0.010f);
-    model.scale(0.15f, 0.15f, 0.15f);
+    model.scale(0.10f, 0.10f, 0.10f);
+//    model.scale(0.10f, 0.15f, 0.15f);
     //model.rotate((float)time.elapsed() / 10, QVector3D(0.5f, 1.0f, 0.0f));
     model.rotate((float)time.elapsed() / 20, QVector3D(0.0f, 0.5f, 1.0f));
     if (!program->bind())

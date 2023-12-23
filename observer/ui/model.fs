@@ -61,7 +61,8 @@ void main()
     float spec = pow(max(dot(normal, halfwayDir), 0.0), 32.0);
 
     vec3 specular = light.specular * spec * texture(material.texture_specular1, texCoords).rgb;
-    vec3 result = ambient + diffuse + specular;
+//     vec3 result = abs(texture(material.texture_diffuse1, texCoords).rgb - texture(material.texture_specular1, texCoords).rgb);
+    vec3 result = texture(material.texture_specular1, texCoords).rgb;
 
     // gamma correction
     float gamma = 2.2;

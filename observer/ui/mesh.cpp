@@ -83,11 +83,11 @@ void Mesh::draw(QOpenGLShaderProgram *program)
             number = QString::number(heightNr++);   // transfer unsigned int to stream
         qDebug() << QString(type + number).toLocal8Bit().constData();
         textures[i].texture->bind(static_cast<unsigned int>(i));
-//        if (!isinitialized) {
-//            static QMessageBox qMessageBox;
-//            qMessageBox.setText(qMessageBox.text() + '\n' + type + QString(number));
-//            qMessageBox.show();
-//        }
+        if (!isinitialized) {
+            static QMessageBox qMessageBox;
+            qMessageBox.setText(qMessageBox.text() + '\n' + QString(type + number));
+            qMessageBox.show();
+        }
         program->setUniformValue(QString(type + number).toLocal8Bit().constData(), i);
 
     }

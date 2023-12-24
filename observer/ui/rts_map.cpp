@@ -115,7 +115,7 @@ void RtsMap::paintGL()
     QMatrix4x4 model;
     //model.scale(0.005f, 0.005f, 0.005f);
 //    model.scale(0.075f, 0.075f, 0.075f);
-    model.scale(1.0f, 1.0f, 1.0f);
+    model.scale(2.0f, 2.0f, 2.0f);
     //model.rotate((float)time.elapsed() / 10, QVector3D(0.5f, 1.0f, 0.0f));
     model.rotate((float)time.elapsed() / 20, QVector3D(0.0f, 0.5f, 1.0f));
     if (!program->bind())

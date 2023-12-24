@@ -146,7 +146,7 @@ Mesh* Model::processMesh(aiMesh *pmesh, const aiScene *pscene)
         for (unsigned int j = 0; j < face.mNumIndices; j++)
             indices.push_back(face.mIndices[j]);
     }
-
+    float shininess = 1.0;
     //场景中包含材质？
     if (pscene->HasMaterials())
     {
@@ -157,17 +157,23 @@ Mesh* Model::processMesh(aiMesh *pmesh, const aiScene *pscene)
         // 2. specular maps
         std::vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
         textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-        // 3. normal maps
-        std::vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_NORMALS, "texture_normal");
+        // 3. normal maps, assimp treat as height
+        std::vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
         textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
         // 4. height maps
-        std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_height");
-        textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
+//        std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_NORMALS, "texture_height");
+//        textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
         // 5. emission maps
         std::vector<Texture> emissionMaps = loadMaterialTextures(material, aiTextureType_EMISSIVE, "texture_emission");
-        textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
+        textures.insert(textures.end(), emissionMaps.begin(), emissionMaps.end());
+        // 6. opacity maps
+        std::vector<Texture> opacityMaps = loadMaterialTextures(material, aiTextureType_OPACITY, "texture_opacity");
+        textures.insert(textures.end(), opacityMaps.begin(), opacityMaps.end());
+        material->Get(AI_MATKEY_SHININESS, shininess);
     }
-    return new Mesh(vertices, indices, textures);
+    auto mesh = new Mesh(vertices, indices, textures);
+    mesh->shininess = shininess;
+    return mesh;
 }
 bool Model::initFromScene(const aiScene *pscene, const QString &filename)
 {

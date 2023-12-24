@@ -26,6 +26,8 @@ public:
     std::vector<GLuint> indices;
     //纹理
     std::vector<Texture> textures;
+    //material
+    float shininess;
     //是否进行过setupMesh初始化操作
     bool isinitialized;
     QOpenGLVertexArrayObject VAO;

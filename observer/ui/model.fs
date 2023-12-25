@@ -56,7 +56,7 @@ void main()
         vec3 viewDir = normalize(viewPos - FragPos);
         vec3 reflectDir = reflect(-lightDir, norm);
         float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-        vec3 specular = light.specular * spec * texture(material.texture_specular1, TexCoords).rgb;
+        specular = light.specular * spec * texture(material.texture_specular1, TexCoords).rgb;
     }
 
     // emission
@@ -89,7 +89,7 @@ void main()
             for(int i = 0; i < 9; i++) {
                 col += sampleTex[i] * kernel[i];
             }
-            vec3 emission = col;
+            emission = col;
     }
 
     vec3 result = ambient + diffuse + specular + emission;

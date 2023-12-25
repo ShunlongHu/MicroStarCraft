@@ -67,8 +67,8 @@ void RtsMap::initializeGL()
     //pmodel = new Model("D:/opengl/opengl/opengl/Resources/ironman/Seahawk.obj");
     //pmodel = new Model("D:/opengl/opengl/opengl/Resources/ironman/UH60/uh60.obj");
 //    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\objects\\nanosuit\\nanosuit.obj");
-    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\cg character\\nova\\dump_obj\\nova.obj");
-
+//    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\cg character\\nova\\dump_obj\\nova.obj");
+    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Zerg\\drone\\drone.obj");
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);//结束记录状态信息

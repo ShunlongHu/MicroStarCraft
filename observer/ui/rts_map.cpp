@@ -69,11 +69,11 @@ void RtsMap::initializeGL()
 //    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\objects\\nanosuit\\nanosuit.obj");
 //    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\cg character\\nova\\dump_obj\\nova.obj");
 //    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Zerg\\drone\\drone.obj");
-//    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Zerg\\zergline\\zergline.obj");
+    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Zerg\\zergline\\zergline.obj");
 //    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Zerg\\hydralisk\\hydralisk.obj");
 //    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Zerg\\ultralisk\\ultralisk.obj");
 //    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\buildings\\zerg\\zerg_hive.obj");
-    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\buildings\\zerg\\zerg_gas.obj");
+//    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\buildings\\zerg\\zerg_gas.obj");
 
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);

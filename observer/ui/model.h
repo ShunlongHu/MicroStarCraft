@@ -6,6 +6,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <qmatrix4x4.h>
 
 struct aiMesh;
 struct aiScene;
@@ -38,5 +39,8 @@ public:
     QString directory;
     std::vector<Mesh *> meshes;
     std::vector<Texture> textures_loaded;
+
+    // translation offset
+    QMatrix4x4 model;
 };
 #endif // !MODEL_H

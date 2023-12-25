@@ -79,6 +79,10 @@ void Model::processNode(aiNode *node, const aiScene *scene)
 }
 Mesh* Model::processMesh(aiMesh *pmesh, const aiScene *pscene)
 {
+    float vMax[3] = {FLT_MIN, FLT_MIN, FLT_MIN};
+    float vMin[3] = {FLT_MAX, FLT_MAX, FLT_MAX};
+    float vAvg[3] = {0, 0, 0};
+    uint32_t vCount = 1;
     std::vector<Vertex> vertices;
     std::vector<GLuint> indices;
     std::vector<Texture> textures;
@@ -95,6 +99,16 @@ Mesh* Model::processMesh(aiMesh *pmesh, const aiScene *pscene)
             vector.setX(pmesh->mVertices[i].x);
             vector.setY(pmesh->mVertices[i].y);
             vector.setZ(pmesh->mVertices[i].z);
+            vMax[0] = std::max(vMax[0], pmesh->mVertices[i].x);
+            vMax[1] = std::max(vMax[1], pmesh->mVertices[i].y);
+            vMax[2] = std::max(vMax[2], pmesh->mVertices[i].z);
+            vMin[0] = std::min(vMin[0], pmesh->mVertices[i].x);
+            vMin[1] = std::min(vMin[1], pmesh->mVertices[i].y);
+            vMin[2] = std::min(vMin[2], pmesh->mVertices[i].z);
+            vAvg[0] += pmesh->mVertices[i].x;
+            vAvg[1] += pmesh->mVertices[i].y;
+            vAvg[2] += pmesh->mVertices[i].z;
+            vCount++;
             vertex.Position = vector;
             //法线是否存在？
             if (pmesh->HasNormals())
@@ -137,6 +151,11 @@ Mesh* Model::processMesh(aiMesh *pmesh, const aiScene *pscene)
             }
             vertices.push_back(vertex);
         }
+        auto maxDim = std::max(std::abs(vMax[0] - vMin[0]), std::abs(vMax[1] - vMin[1])) / 2;
+        model.rotate(90, 1, 0, 0);
+        model.scale(1/maxDim);
+        model.translate(-vAvg[0]/vCount, -vAvg[1]/vCount, -vAvg[2]/vCount);
+//        model.translate(10,-0.5,0);
     }
     //现在遍历每个网格面（一个面是一个三角形的网格）并检索相应的顶点索引。
     for (unsigned int i = 0; i < pmesh->mNumFaces; i++)

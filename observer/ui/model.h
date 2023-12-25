@@ -41,6 +41,10 @@ public:
     std::vector<Texture> textures_loaded;
 
     // translation offset
+    float vMax[3] = {FLT_MIN, FLT_MIN, FLT_MIN};
+    float vMin[3] = {FLT_MAX, FLT_MAX, FLT_MAX};
+    float vAvg[3] = {0, 0, 0};
+    uint32_t vCount = 1;
     QMatrix4x4 model;
 };
 #endif // !MODEL_H

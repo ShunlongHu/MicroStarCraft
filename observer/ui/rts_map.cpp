@@ -77,7 +77,11 @@ void RtsMap::initializeGL()
 //    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\buildings\\zerg\\zerg_tower.obj");
 //    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\buildings\\protoss\\nexus.obj");
 //    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\buildings\\protoss\\gateway.obj");
-    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\buildings\\protoss\\crystal.obj");
+//    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\buildings\\protoss\\crystal.obj");
+//    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Protoss\\probe\\probe.obj");
+//    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Protoss\\zealot\\krz.obj");
+//    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Protoss\\stalker\\stalker.obj");
+    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Protoss\\colossus\\colossus.obj");
 
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);

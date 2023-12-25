@@ -64,6 +64,10 @@ bool Model::loadModel(const QString &path)
         //int a = pscene->mRootNode->mNumChildren;
         //ret = initFromScene(pscene, path);
         processNode(pscene->mRootNode, pscene);
+        auto maxDim = std::max(std::abs(vMax[0] - vMin[0]), std::abs(vMax[2] - vMin[2])) / 2;
+        model.rotate(90, 1, 0, 0);
+        model.scale(1/maxDim);
+        model.translate(-vAvg[0]/vCount, -vMin[1], -vAvg[2]/vCount);
     }
     return ret;
 }
@@ -79,10 +83,6 @@ void Model::processNode(aiNode *node, const aiScene *scene)
 }
 Mesh* Model::processMesh(aiMesh *pmesh, const aiScene *pscene)
 {
-    float vMax[3] = {FLT_MIN, FLT_MIN, FLT_MIN};
-    float vMin[3] = {FLT_MAX, FLT_MAX, FLT_MAX};
-    float vAvg[3] = {0, 0, 0};
-    uint32_t vCount = 1;
     std::vector<Vertex> vertices;
     std::vector<GLuint> indices;
     std::vector<Texture> textures;
@@ -151,11 +151,6 @@ Mesh* Model::processMesh(aiMesh *pmesh, const aiScene *pscene)
             }
             vertices.push_back(vertex);
         }
-        // y is doubled because y occupies half of the screen
-        auto maxDim = std::max(std::abs(vMax[0] - vMin[0]), std::max(std::abs(vMax[1] - vMin[1])*2, std::abs(vMax[2] - vMin[2]))) / 2;
-        model.rotate(90, 1, 0, 0);
-        model.scale(1/maxDim);
-        model.translate(-vAvg[0]/vCount, -vMin[1], -vAvg[2]/vCount);
     }
     //现在遍历每个网格面（一个面是一个三角形的网格）并检索相应的顶点索引。
     for (unsigned int i = 0; i < pmesh->mNumFaces; i++)

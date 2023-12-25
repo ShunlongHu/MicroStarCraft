@@ -151,11 +151,11 @@ Mesh* Model::processMesh(aiMesh *pmesh, const aiScene *pscene)
             }
             vertices.push_back(vertex);
         }
-        auto maxDim = std::max(std::abs(vMax[0] - vMin[0]), std::abs(vMax[1] - vMin[1])) / 2;
+        // y is doubled because y occupies half of the screen
+        auto maxDim = std::max(std::abs(vMax[0] - vMin[0]), std::max(std::abs(vMax[1] - vMin[1])*2, std::abs(vMax[2] - vMin[2]))) / 2;
         model.rotate(90, 1, 0, 0);
         model.scale(1/maxDim);
-        model.translate(-vAvg[0]/vCount, -vAvg[1]/vCount, -vAvg[2]/vCount);
-//        model.translate(10,-0.5,0);
+        model.translate(-vAvg[0]/vCount, -vMin[1], -vAvg[2]/vCount);
     }
     //现在遍历每个网格面（一个面是一个三角形的网格）并检索相应的顶点索引。
     for (unsigned int i = 0; i < pmesh->mNumFaces; i++)

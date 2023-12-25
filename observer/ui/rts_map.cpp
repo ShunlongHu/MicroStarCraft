@@ -68,7 +68,13 @@ void RtsMap::initializeGL()
     //pmodel = new Model("D:/opengl/opengl/opengl/Resources/ironman/UH60/uh60.obj");
 //    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\objects\\nanosuit\\nanosuit.obj");
 //    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\cg character\\nova\\dump_obj\\nova.obj");
-    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Zerg\\drone\\drone.obj");
+//    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Zerg\\drone\\drone.obj");
+//    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Zerg\\zergline\\zergline.obj");
+//    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Zerg\\hydralisk\\hydralisk.obj");
+//    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Zerg\\ultralisk\\ultralisk.obj");
+    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\buildings\\zerg\\zerg_hive.obj");
+//    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\buildings\\zerg\\zerg_gas.obj");
+
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);//结束记录状态信息
@@ -115,7 +121,7 @@ void RtsMap::paintGL()
     QMatrix4x4 model;
     //model.scale(0.005f, 0.005f, 0.005f);
 //    model.scale(0.075f, 0.075f, 0.075f);
-    model.scale(2.0f, 2.0f, 2.0f);
+    model.scale(1.0f, 1.0f, 1.0f);
     //model.rotate((float)time.elapsed() / 10, QVector3D(0.5f, 1.0f, 0.0f));
     model.rotate((float)time.elapsed() / 20, QVector3D(0.0f, 0.5f, 1.0f));
     if (!program->bind())

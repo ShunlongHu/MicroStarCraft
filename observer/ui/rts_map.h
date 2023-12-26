@@ -8,7 +8,8 @@
 #include <QString>
 #include <QOpenGLFunctions_3_3_Core>
 #include <QTime>
-class Model;
+#include "map_model.h"
+#include "model.h"
 class QOpenGLTexture;
 class QOpenGLShaderProgram;
 
@@ -25,7 +26,9 @@ protected:
 private:
     //着色器程序
     std::shared_ptr<QOpenGLShaderProgram> program;
+    std::shared_ptr<QOpenGLShaderProgram> colorProgram;
     std::vector<std::shared_ptr<Model>> pModelVec;
+    std::shared_ptr<MapModel> mModel;
     //时间
     QTime time;
 

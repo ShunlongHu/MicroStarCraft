@@ -4,13 +4,14 @@
 #include <QOpenGLShaderProgram>
 #include <QDebug>
 #include <unordered_map>
-#include "model.h"
+#include <QMessageBox>
 #include "rpc_client.h"
 
 using namespace std;
 
 RtsMap::RtsMap(QWidget *parent) : QOpenGLWidget(parent),
-                                                      program(make_shared<QOpenGLShaderProgram>())
+                                                      program(make_shared<QOpenGLShaderProgram>()),
+                                                      colorProgram(make_shared<QOpenGLShaderProgram>())
 {
     //设置OpenGL的版本信息`
     QSurfaceFormat format;
@@ -25,6 +26,7 @@ RtsMap::~RtsMap()
 {
     //删除所有之前添加到program的着色器
     program->removeAllShaders();
+    colorProgram->removeAllShaders();
 }
 void RtsMap::initializeGL()
 {
@@ -40,19 +42,33 @@ void RtsMap::initializeGL()
     //将文件内容编译为指定类型的着色器，并将其添加到着色器程序program
     if (!program->addShaderFromSourceFile(QOpenGLShader::Vertex, "D:\\repo\\rts\\observer\\ui\\model.vs"))
     {
-        //如果执行不成功，打印错误信息
         qDebug() << "compile error" << program->log();
     }
     if (!program->addShaderFromSourceFile(QOpenGLShader::Fragment, "D:\\repo\\rts\\observer\\ui\\model.fs"))
     {
-        //如果执行不成功，打印错误信息
         qDebug() << "compile error" << program->log();
     }
-    //将顶点着色器跟片元着色器链接起来
     if (!program->link())
     {
-        //如果连接不成功，打印错误信息
         qDebug() << "link error" << program->log();
+    }
+    if (!colorProgram->addShaderFromSourceFile(QOpenGLShader::Vertex, "D:\\repo\\rts\\observer\\ui\\color.vs"))
+    {
+        static QMessageBox messageBox;
+        messageBox.setText("compile vs error" + colorProgram->log());
+        messageBox.show();
+    }
+    if (!colorProgram->addShaderFromSourceFile(QOpenGLShader::Fragment, "D:\\repo\\rts\\observer\\ui\\color.fs"))
+    {
+        static QMessageBox messageBox;
+        messageBox.setText("compile fs error" + colorProgram->log());
+        messageBox.show();
+    }
+    if (!colorProgram->link())
+    {
+        static QMessageBox messageBox;
+        messageBox.setText("link error" + colorProgram->log());
+        messageBox.show();
     }
     //模型网上自己找个，注意格式要符合assimp库支持的。
 //    pModelVec = new Model("D:\\repo\\rts\\observer\\ui\\resource\\objects\\nanosuit\\nanosuit.obj");
@@ -70,7 +86,7 @@ void RtsMap::initializeGL()
     pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\buildings\\protoss\\nexus.obj"));
     pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\buildings\\protoss\\gateway.obj"));
     pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\buildings\\protoss\\crystal.obj"));
-
+    mModel = make_shared<MapModel>(RpcClient::GetObservation());
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);//结束记录状态信息
@@ -107,7 +123,16 @@ void RtsMap::initializeGL()
     program->setUniformValue("light.specular", QVector3D(0.5f, 0.5f, 0.5f));
     program->setUniformValue("heightScale", GLfloat( 0.1));
     program->setUniformValue("material.shininess", GLfloat(65.0f));
+    program->release();
 
+    if (!colorProgram->bind())
+    {
+        qDebug() << "bind error" << colorProgram->log();
+    }
+    colorProgram->setUniformValue("view", view);
+    colorProgram->setUniformValue("model", model);
+    colorProgram->setUniformValue("projection", projection);
+    colorProgram->release();
     /* 固定属性区域 */
     glEnable(GL_DEPTH_TEST);  //开启深度测试
 }
@@ -140,7 +165,9 @@ void RtsMap::paintGL()
         idx++;
     }
     program->release();
-
+    colorProgram->bind();
+    mModel->draw(colorProgram.get());
+    colorProgram->release();
     update();
 }
 void RtsMap::resizeGL(int width, int height)

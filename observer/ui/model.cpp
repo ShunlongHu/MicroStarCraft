@@ -11,11 +11,11 @@ static QSharedPointer<QOpenGLTexture> textureFromFile(const QString &path, const
 //    fileName = fileName.left(fileName.lastIndexOf('.')) + ".png";
     QImage image(fileName);
     QSharedPointer<QOpenGLTexture> texture(new QOpenGLTexture(image));
-    static QMessageBox qMessageBox;
-    qMessageBox.setText(qMessageBox.text() + '\n' + fileName);
-    qMessageBox.setText(qMessageBox.text() + '\n' + QString::number(texture->width()));
+//    static QMessageBox qMessageBox;
+//    qMessageBox.setText(qMessageBox.text() + '\n' + fileName);
+//    qMessageBox.setText(qMessageBox.text() + '\n' + QString::number(texture->width()));
 
-    qMessageBox.show();
+//    qMessageBox.show();
 
     texture->setWrapMode(QOpenGLTexture::DirectionS, QOpenGLTexture::Repeat);
     texture->setWrapMode(QOpenGLTexture::DirectionT, QOpenGLTexture::Repeat);

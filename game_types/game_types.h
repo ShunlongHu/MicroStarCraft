@@ -253,8 +253,8 @@ struct GameState {
     std::unordered_map<Coord, GameObj, UHasher<Coord>> objMap;
     int resource[2]{0, 0};
     int buildingCnt[2]{0, 0};
-    int w = 0;
-    int h = 0;
+    int w = 32;
+    int h = 32;
     int time = 0;
 
     inline bool operator==(const GameState &state2) const {

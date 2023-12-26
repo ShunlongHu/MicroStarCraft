@@ -12,7 +12,6 @@
 #include <vector>
 #include "rts_observer.h"
 #include "message.grpc.pb.h"
-#include "game_types.h"
 
 using namespace std;
 using namespace message;
@@ -27,7 +26,7 @@ using namespace std::chrono; // nanoseconds, system_clock, seconds
 using namespace message;
 
 static atomic<int> command {INVALID_COMMAND};
-static int frameCount {0};
+static GameState state;
 static mutex stateLock;
 atomic<bool> RpcClient::stop { true };
 static vector<int> rx;
@@ -87,10 +86,8 @@ void RtsClient::Connect() {
 
     while (!RpcClient::stop && stream->Read(&result)) {
         istringstream iss(result.data(), ios::binary);
-        GameState state;
-        iss >> state;
         unique_lock<mutex> lockGuard(stateLock);
-        frameCount = state.time;
+        iss >> state;
     }
     writer.join();
 }
@@ -116,7 +113,7 @@ void RpcClient::SendCommand(Command cmd){
     }
 }
 
-int RpcClient::GetObservation() {
+GameState RpcClient::GetObservation() {
     unique_lock<mutex> lockGuard(stateLock);
-    return frameCount;
+    return state;
 };

@@ -24,8 +24,8 @@ protected:
     virtual void resizeGL(int width, int height) override;
 private:
     //着色器程序
-    QOpenGLShaderProgram *program;
-    Model *pmodel;
+    std::shared_ptr<QOpenGLShaderProgram> program;
+    std::vector<std::shared_ptr<Model>> pModelVec;
     //时间
     QTime time;
 

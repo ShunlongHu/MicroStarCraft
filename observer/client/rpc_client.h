@@ -6,6 +6,7 @@
 #define RTS_RPC_CLIENT_H
 #include <string>
 #include "message.pb.h"
+#include "game_types.h"
 
 enum SpecialCommand {
     INVALID_COMMAND = -1,
@@ -17,7 +18,7 @@ namespace RpcClient {
 
     void SendCommand(message::Command cmd);
 
-    int GetObservation();
+    GameState GetObservation();
 
     extern std::atomic<bool> stop;
 }

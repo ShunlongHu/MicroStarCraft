@@ -62,7 +62,7 @@ void RtsObserver::HandleConnectButton() const {
 }
 
 void RtsObserver::HandleRenderTimer() {
-    ui->timeDisplayLabel->setText(QString::fromStdString(to_string(RpcClient::GetObservation())));
+    ui->timeDisplayLabel->setText(QString::fromStdString(to_string(RpcClient::GetObservation().time)));
     this->RefreshButton();
 
 }

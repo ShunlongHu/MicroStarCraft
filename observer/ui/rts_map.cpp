@@ -1,15 +1,15 @@
 #include "rts_map.h"
-#include "model.h"
 #include <QOPenglTexture>
 #include <QVector3D>
 #include <QOpenGLShaderProgram>
 #include <QDebug>
+#include "model.h"
+#include "rpc_client.h"
 
-
+using namespace std;
 
 RtsMap::RtsMap(QWidget *parent) : QOpenGLWidget(parent),
-                                                      program(new QOpenGLShaderProgram),
-                                                      pmodel(nullptr)
+                                                      program(make_shared<QOpenGLShaderProgram>())
 {
     //设置OpenGL的版本信息`
     QSurfaceFormat format;
@@ -24,16 +24,6 @@ RtsMap::~RtsMap()
 {
     //删除所有之前添加到program的着色器
     program->removeAllShaders();
-    if (program)
-    {
-        delete program;
-        program = nullptr;
-    }
-    if (pmodel)
-    {
-        delete pmodel;
-        pmodel = nullptr;
-    }
 }
 void RtsMap::initializeGL()
 {
@@ -64,24 +54,21 @@ void RtsMap::initializeGL()
         qDebug() << "link error" << program->log();
     }
     //模型网上自己找个，注意格式要符合assimp库支持的。
-    //pmodel = new Model("D:/opengl/opengl/opengl/Resources/ironman/Seahawk.obj");
-    //pmodel = new Model("D:/opengl/opengl/opengl/Resources/ironman/UH60/uh60.obj");
-//    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\objects\\nanosuit\\nanosuit.obj");
-//    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\cg character\\nova\\dump_obj\\nova.obj");
-//    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Zerg\\drone\\drone.obj");
-//    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Zerg\\zergline\\zergline.obj");
-//    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Zerg\\hydralisk\\hydralisk.obj");
-//    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Zerg\\ultralisk\\ultralisk.obj");
-//    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\buildings\\zerg\\zerg_hive.obj");
-//    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\buildings\\zerg\\zerg_gas.obj");
-//    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\buildings\\zerg\\zerg_tower.obj");
-//    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\buildings\\protoss\\nexus.obj");
-//    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\buildings\\protoss\\gateway.obj");
-//    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\buildings\\protoss\\crystal.obj");
-//    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Protoss\\probe\\probe.obj");
-//    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Protoss\\zealot\\krz.obj");
-//    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Protoss\\stalker\\stalker.obj");
-    pmodel = new Model("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Protoss\\colossus\\colossus.obj");
+//    pModelVec = new Model("D:\\repo\\rts\\observer\\ui\\resource\\objects\\nanosuit\\nanosuit.obj");
+//    pModelVec = new Model("D:\\repo\\rts\\observer\\ui\\resource\\cg character\\nova\\dump_obj\\nova.obj");
+    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Zerg\\drone\\drone.obj"));
+    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Zerg\\zergline\\zergline.obj"));
+    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Zerg\\hydralisk\\hydralisk.obj"));
+    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Zerg\\ultralisk\\ultralisk.obj"));
+    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\buildings\\zerg\\zerg_hive.obj"));
+    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\buildings\\zerg\\zerg_tower.obj"));
+    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\buildings\\protoss\\nexus.obj"));
+    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\buildings\\protoss\\gateway.obj"));
+    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\buildings\\protoss\\crystal.obj"));
+    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Protoss\\probe\\probe.obj"));
+    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Protoss\\zealot\\krz.obj"));
+    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Protoss\\stalker\\stalker.obj"));
+    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Protoss\\colossus\\colossus.obj"));
 
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -97,6 +84,7 @@ void RtsMap::initializeGL()
     //给着色器变量赋值,projextion,view默认构造是生成单位矩阵
     QMatrix4x4 projection, view, model;
     view.translate(QVector3D(0, 0, -5.0f));
+    view.rotate(-30, 1, 0, 0);
     projection.perspective(30.0f, (GLfloat)width() / (GLfloat)height(), 0.1f, 100.0f);
     /*
     将此程序绑定到active的OPenGLContext，并使其成为当前着色器程序
@@ -126,20 +114,27 @@ void RtsMap::paintGL()
 {
     //清理屏幕
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // also clear the depth buffer now!
-    QMatrix4x4 model = pmodel->model;
-    //model.scale(0.005f, 0.005f, 0.005f);
-//    model.scale(0.075f, 0.075f, 0.075f);
-//    model.translate(6,0,50);
-//    model.scale(1.0f, 1.0f, 1.0f);
-    //model.rotate((float)time.elapsed() / 10, QVector3D(0.5f, 1.0f, 0.0f));
-//    model.rotate((float)time.elapsed() / 20, QVector3D(0.0f, 0.5f, 1.0f));
-    if (!program->bind())
-    {
-        qDebug() << "bind error" << program->log();
+    int idx = 30;
+    auto game = RpcClient::GetObservation();
+
+    for (auto& model: pModelVec) {
+        QMatrix4x4 mMatrix;
+        auto x = idx % game.w;
+        auto y = idx / game.h;
+        auto xLoc = 2.0f * static_cast<float>(x) / game.w + 1.0f / game.w - 1.0f;
+        auto yLoc = 2.0f * static_cast<float>(y) / game.h + 1.0f / game.h - 1.0f;
+        mMatrix.translate(xLoc, yLoc);
+        mMatrix.scale(1.0f / game.w);
+        if (!program->bind())
+        {
+            qDebug() << "bind error" << program->log();
+        }
+        program->setUniformValue("model", mMatrix * model->model);
+        model->draw(program.get());
+        program->release();
+        idx++;
     }
-    program->setUniformValue("model", model);
-    pmodel->draw(program);
-    program->release();
+
     update();
 }
 void RtsMap::resizeGL(int width, int height)

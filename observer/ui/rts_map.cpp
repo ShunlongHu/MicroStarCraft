@@ -3,6 +3,7 @@
 #include <QVector3D>
 #include <QOpenGLShaderProgram>
 #include <QDebug>
+#include <unordered_map>
 #include "model.h"
 #include "rpc_client.h"
 
@@ -62,13 +63,13 @@ void RtsMap::initializeGL()
     pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Zerg\\ultralisk\\ultralisk.obj"));
     pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\buildings\\zerg\\zerg_hive.obj"));
     pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\buildings\\zerg\\zerg_tower.obj"));
+    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Protoss\\probe\\probe.obj"));
+    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Protoss\\zealot\\Zealot.obj"));
+    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Protoss\\stalker\\stalker.obj"));
+    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Protoss\\colossus\\colossus.obj"));
     pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\buildings\\protoss\\nexus.obj"));
     pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\buildings\\protoss\\gateway.obj"));
     pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\buildings\\protoss\\crystal.obj"));
-    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Protoss\\probe\\probe.obj"));
-    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Protoss\\zealot\\krz.obj"));
-    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Protoss\\stalker\\stalker.obj"));
-    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Protoss\\colossus\\colossus.obj"));
 
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -84,7 +85,7 @@ void RtsMap::initializeGL()
     //给着色器变量赋值,projextion,view默认构造是生成单位矩阵
     QMatrix4x4 projection, view, model;
     view.translate(QVector3D(0, 0, -5.0f));
-    view.rotate(-30, 1, 0, 0);
+    view.rotate(-45, 1, 0, 0);
     projection.perspective(30.0f, (GLfloat)width() / (GLfloat)height(), 0.1f, 100.0f);
     /*
     将此程序绑定到active的OPenGLContext，并使其成为当前着色器程序
@@ -110,30 +111,35 @@ void RtsMap::initializeGL()
     /* 固定属性区域 */
     glEnable(GL_DEPTH_TEST);  //开启深度测试
 }
+const static unordered_map<int, unordered_map<GameObjType, int>> playerObjModelMap {
+        {-1, {{WORKER, 0}, {LIGHT, 1}, {RANGED, 2}, {HEAVY, 3}, {BASE, 4}, {BARRACK, 5}}},
+        {1, {{WORKER, 6}, {LIGHT, 7}, {RANGED, 8}, {HEAVY, 9}, {BASE, 10}, {BARRACK, 11}}},
+        {0, {{MINERAL, 12}}}
+};
 void RtsMap::paintGL()
 {
     //清理屏幕
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // also clear the depth buffer now!
     int idx = 30;
     auto game = RpcClient::GetObservation();
-
+    if (!program->bind())
+    {
+        qDebug() << "bind error" << program->log();
+    }
+    QMatrix4x4 mMatrix;
     for (auto& model: pModelVec) {
-        QMatrix4x4 mMatrix;
+        mMatrix.setToIdentity();
         auto x = idx % game.w;
         auto y = idx / game.h;
         auto xLoc = 2.0f * static_cast<float>(x) / game.w + 1.0f / game.w - 1.0f;
         auto yLoc = 2.0f * static_cast<float>(y) / game.h + 1.0f / game.h - 1.0f;
         mMatrix.translate(xLoc, yLoc);
         mMatrix.scale(1.0f / game.w);
-        if (!program->bind())
-        {
-            qDebug() << "bind error" << program->log();
-        }
         program->setUniformValue("model", mMatrix * model->model);
         model->draw(program.get());
-        program->release();
         idx++;
     }
+    program->release();
 
     update();
 }

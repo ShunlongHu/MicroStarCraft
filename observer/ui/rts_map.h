@@ -29,9 +29,6 @@ private:
     std::shared_ptr<QOpenGLShaderProgram> colorProgram;
     std::vector<std::shared_ptr<Model>> pModelVec;
     std::shared_ptr<MapModel> mModel;
-    //时间
-    QTime time;
-
 };
 
 #endif // !LOADMODEL_H

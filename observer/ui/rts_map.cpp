@@ -94,8 +94,6 @@ void RtsMap::initializeGL()
     {
         qDebug() << "bind error" << program->log();
     }
-    //开启定时器
-    time.start();
 
     //给着色器变量赋值,projextion,view默认构造是生成单位矩阵
     QMatrix4x4 projection, view, model;

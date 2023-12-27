@@ -21,6 +21,7 @@ namespace RpcClient {
     GameState GetObservation();
 
     extern std::atomic<bool> stop;
+    extern std::atomic<bool> newState;
 }
 
 

@@ -9,6 +9,7 @@
 #include <QOpenGLFunctions_3_3_Core>
 #include <QTime>
 #include "map_model.h"
+#include "game_types.h"
 #include "model.h"
 class QOpenGLTexture;
 class QOpenGLShaderProgram;
@@ -18,7 +19,7 @@ class RtsMap : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
 Q_OBJECT
 public:
     explicit RtsMap(QWidget *parent = 0);
-    void initMap();
+    void initMap(const GameState& gameState);
     ~RtsMap();
 protected:
     virtual void initializeGL() override;

@@ -17,7 +17,7 @@ using namespace chrono;
 using namespace this_thread;
 
 ThreadPool RtsObserver::threadPool {8};
-int RtsObserver::seed {1};
+int RtsObserver::seed {0};
 double RtsObserver::terrainProb {0};
 int RtsObserver::expansionCnt {1};
 int RtsObserver::clusterCnt {1};
@@ -50,7 +50,7 @@ RtsObserver::~RtsObserver() {
     delete ui;
 }
 
-void RtsObserver::HandleConnectButton() const {
+void RtsObserver::HandleConnectButton() {
     auto ip = ui->ipLineEdit->text().toStdString();
     auto port = ui->portLineEdit->text().toStdString();
     if (!RpcClient::stop) {
@@ -59,12 +59,15 @@ void RtsObserver::HandleConnectButton() const {
         return;
     }
     threadPool.enqueue(RpcClient::Connect, ip + ":" + port);
+    HandleResetButton();
 }
 
 void RtsObserver::HandleRenderTimer() {
-    ui->timeDisplayLabel->setText(QString::fromStdString(to_string(RpcClient::GetObservation().time)));
     this->RefreshButton();
-
+    if (RpcClient::newState.exchange(false)) {
+        ui->timeDisplayLabel->setText(QString::fromStdString(to_string(RpcClient::GetObservation().time)));
+        this->ui->mapWidget->repaint();
+    }
 }
 
 void RtsObserver::HandleStartButton() {

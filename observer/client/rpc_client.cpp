@@ -30,6 +30,7 @@ static GameState state;
 static mutex stateLock;
 atomic<bool> RpcClient::stop { true };
 static vector<int> rx;
+atomic<bool> RpcClient::newState { false };
 
 class RtsClient {
 public:
@@ -88,6 +89,7 @@ void RtsClient::Connect() {
         istringstream iss(result.data(), ios::binary);
         unique_lock<mutex> lockGuard(stateLock);
         iss >> state;
+        newState = true;
     }
     writer.join();
 }

@@ -37,7 +37,7 @@ public:
     static bool isAxSym; // is axial sym or rotational sym
 
 private slots:
-    void HandleConnectButton() const;
+    void HandleConnectButton();
     void HandleStartButton();
     void HandleStopButton();
     void HandleStepButton();

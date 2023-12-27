@@ -85,7 +85,7 @@ void RtsMap::initializeGL()
     pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\buildings\\protoss\\nexus.obj"));
     pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\buildings\\protoss\\gateway.obj"));
     pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\buildings\\protoss\\crystal.obj"));
-    initMap();
+    initMap(RpcClient::GetObservation());
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);//结束记录状态信息
@@ -146,6 +146,11 @@ void RtsMap::paintGL()
 
     // draw board
     auto game = RpcClient::GetObservation();
+    static int w = -1;
+    if (game.w != w) {
+        w = game.w;
+        initMap(game);
+    }
     colorProgram->bind();
     mModel->draw(colorProgram.get());
     colorProgram->release();
@@ -181,6 +186,6 @@ void RtsMap::resizeGL(int width, int height)
     update();
 }
 
-void RtsMap::initMap() {
-    mModel = make_shared<MapModel>(RpcClient::GetObservation());
+void RtsMap::initMap(const GameState& gameState) {
+    mModel = make_shared<MapModel>(gameState);
 }

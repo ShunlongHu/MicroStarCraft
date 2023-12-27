@@ -26,6 +26,8 @@ static atomic<bool> gameStart {true};
 static atomic<bool> serverStart {true};
 static mutex stateLock;
 
+static ObservationRequest initParam;
+
 Status RtsServiceImpl::ConnectObserver(ServerContext* context, ServerReaderWriter<Message, ObservationRequest>* stream) {
     cout << "Connected!" << endl;
     atomic<bool> isEnd {false};
@@ -69,6 +71,7 @@ Status RtsServiceImpl::ConnectObserver(ServerContext* context, ServerReaderWrite
         }
         if (msg.command() == message::RESET) {
             cout << "observer cmd reset!" << endl;
+            initParam = msg;
             reset = true;
         }
     }
@@ -93,6 +96,21 @@ void RtsServiceImpl::mainLoop() {
         sleep_for(microseconds (100));
         unique_lock<mutex> lockGuard(stateLock);
         if (reset) {
+            cout << "seed: " << initParam.seed()
+                    << " isRotSym: " << initParam.isrotsym()
+                    << " isAxSym: " << !initParam.isrotsym()
+                    << " terrainProb: " << initParam.terrainprob()
+                    << " expansionCnt: " << initParam.expansioncnt()
+                    << " clusterPerExpansion: " << initParam.clusterperexpansion()
+                    << " mineralPerCluster: " << initParam.mineralpercluster() << endl;
+
+            (void) Reset(initParam.seed(),
+                  initParam.isrotsym(),
+                  !initParam.isrotsym(),
+                  initParam.terrainprob(),
+                  initParam.expansioncnt(),
+                  initParam.clusterperexpansion(),
+                  initParam.mineralpercluster());
             GetGameState(0).time = 0;
             reset = false;
         }

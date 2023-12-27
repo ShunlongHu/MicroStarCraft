@@ -34,7 +34,7 @@ void RtsMap::initializeGL()
     //初始化OpenGL函数
     initializeOpenGLFunctions();
 
-    glEnable(GL_CULL_FACE);
+//    glEnable(GL_CULL_FACE);
     //设置全局变量
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     //这里不指定父类，我们自己来管理这个类

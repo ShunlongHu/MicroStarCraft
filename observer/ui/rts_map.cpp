@@ -85,7 +85,7 @@ void RtsMap::initializeGL()
     pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\buildings\\protoss\\nexus.obj"));
     pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\buildings\\protoss\\gateway.obj"));
     pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\buildings\\protoss\\crystal.obj"));
-    mModel = make_shared<MapModel>(RpcClient::GetObservation());
+    initMap();
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);//结束记录状态信息
@@ -179,4 +179,8 @@ void RtsMap::resizeGL(int width, int height)
         resize(std::min(width,height),std::min(width, height));
     }
     update();
+}
+
+void RtsMap::initMap() {
+    mModel = make_shared<MapModel>(RpcClient::GetObservation());
 }

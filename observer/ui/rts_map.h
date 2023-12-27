@@ -18,6 +18,7 @@ class RtsMap : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
 Q_OBJECT
 public:
     explicit RtsMap(QWidget *parent = 0);
+    void initMap();
     ~RtsMap();
 protected:
     virtual void initializeGL() override;

@@ -34,7 +34,6 @@ void RtsMap::initializeGL()
     //初始化OpenGL函数
     initializeOpenGLFunctions();
 
-//    glEnable(GL_CULL_FACE);
     //设置全局变量
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     //这里不指定父类，我们自己来管理这个类
@@ -145,12 +144,21 @@ void RtsMap::paintGL()
 {
     //清理屏幕
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // also clear the depth buffer now!
-    int idx = 30;
+
+    // draw board
     auto game = RpcClient::GetObservation();
+    glDisable(GL_CULL_FACE);
+    colorProgram->bind();
+    mModel->draw(colorProgram.get());
+    colorProgram->release();
+
+    // draw units
+    int idx = 30;
     if (!program->bind())
     {
         qDebug() << "bind error" << program->log();
     }
+    glEnable(GL_CULL_FACE);
     QMatrix4x4 mMatrix;
     for (auto& model: pModelVec) {
         mMatrix.setToIdentity();
@@ -165,9 +173,6 @@ void RtsMap::paintGL()
         idx++;
     }
     program->release();
-    colorProgram->bind();
-    mModel->draw(colorProgram.get());
-    colorProgram->release();
     update();
 }
 void RtsMap::resizeGL(int width, int height)

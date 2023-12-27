@@ -32,7 +32,7 @@ bool MapModel::loadModel(const GameState& state)
             float xMin = (float)j * 2.0f / state.h - 1.0f + hEdge;
             float xMax = ((float)j * 2.0f + 2.0f) / state.w - 1.0f - hEdge;
             vector<QVector3D> coord {{yMin, xMin, 0}, {yMin, xMax, 0}, {yMax, xMax, 0}, {yMax, xMin, 0}};
-            vector<GLuint> idx {0,1,2,0,2,3};
+            vector<GLuint> idx {2,1,0,3,2,0};
             meshes.emplace_back(make_shared<MapMesh>(coord, idx, color[i * state.w + j]));
         }
     }

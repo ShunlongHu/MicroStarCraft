@@ -132,6 +132,7 @@ void RtsMap::initializeGL()
     colorProgram->release();
     /* 固定属性区域 */
     glEnable(GL_DEPTH_TEST);  //开启深度测试
+    glEnable(GL_CULL_FACE);
 }
 const static unordered_map<int, unordered_map<GameObjType, int>> playerObjModelMap {
         {-1, {{WORKER, 0}, {LIGHT, 1}, {RANGED, 2}, {HEAVY, 3}, {BASE, 4}, {BARRACK, 5}}},
@@ -145,7 +146,6 @@ void RtsMap::paintGL()
 
     // draw board
     auto game = RpcClient::GetObservation();
-    glDisable(GL_CULL_FACE);
     colorProgram->bind();
     mModel->draw(colorProgram.get());
     colorProgram->release();
@@ -156,7 +156,6 @@ void RtsMap::paintGL()
     {
         qDebug() << "bind error" << program->log();
     }
-    glEnable(GL_CULL_FACE);
     QMatrix4x4 mMatrix;
     for (auto& model: pModelVec) {
         mMatrix.setToIdentity();

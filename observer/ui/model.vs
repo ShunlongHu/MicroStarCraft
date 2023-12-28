@@ -31,9 +31,10 @@ void main()
     vec3 B = cross(N, T);
 
     mat3 TBN = transpose(mat3(T, B, N));
-    TangentLightPos = TBN * lightPos;
-    TangentViewPos  = TBN * viewPos;
-    TangentFragPos  = TBN * FragPos;
+    TBN=inverse(TBN);
+    TangentLightPos = TBN[0];
+    TangentViewPos  = TBN[1];
+    TangentFragPos  = TBN[2];
 
     gl_Position = projection * view * model * vec4(position, 1.0);
 }

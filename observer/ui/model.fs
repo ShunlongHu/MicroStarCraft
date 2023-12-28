@@ -54,12 +54,14 @@ void main()
     vec3 norm = normalize(Normal);
     vec3 lightDir = normalize(light.position - FragPos);
     vec3 viewDir = normalize(viewPos - FragPos);
+    mat3 TBN = mat3( TangentLightPos,TangentViewPos,TangentFragPos);
     if (material.is_normal) {
         vec3 nt = texture(material.texture_normal1, TexCoords).rgb;
         norm = vec3(nt.x,nt.y,nt.z);
         norm = normalize(norm * 2.0 - 1.0);
-        lightDir = normalize(TangentLightPos - TangentFragPos);
-        viewDir = normalize(TangentViewPos - TangentFragPos);
+        norm = TBN*norm;
+//         lightDir = normalize(TangentLightPos - TangentFragPos);
+//         viewDir = normalize(TangentViewPos - TangentFragPos);
     }
 
     // diffuse
@@ -106,7 +108,7 @@ void main()
             emission = col;
     }
 
-    vec3 result = specular + diffuse;
+    vec3 result = norm;
     if (TexCoords.x < 0 || TexCoords.x > 1 || TexCoords.y < 0 || TexCoords.y > 1) {
         discard;
     }

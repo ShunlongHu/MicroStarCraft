@@ -106,7 +106,10 @@ void main()
             emission = col;
     }
 
-    vec3 result = ambient + diffuse + specular + emission;
+    vec3 result = specular + diffuse;
+    if (TexCoords.x < 0 || TexCoords.x > 1 || TexCoords.y < 0 || TexCoords.y > 1) {
+        discard;
+    }
 
     // gamma correction
     float gamma = 2.2;

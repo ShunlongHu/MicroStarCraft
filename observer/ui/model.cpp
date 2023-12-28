@@ -163,7 +163,7 @@ Mesh* Model::processMesh(aiMesh *pmesh, const aiScene *pscene)
         for (unsigned int j = 0; j < face.mNumIndices; j++)
             indices.push_back(face.mIndices[j]);
     }
-    ComputeTangentSpace(vertices, indices);
+//    ComputeTangentSpace(vertices, indices);
     float shininess = 1.0;
     //场景中包含材质？
     if (pscene->HasMaterials())

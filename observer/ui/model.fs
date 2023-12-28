@@ -25,8 +25,12 @@ struct Light {
 in vec3 FragPos;  
 in vec3 Normal;  
 in vec2 TexCoords;
+in vec3 TangentLightPos;
+in vec3 TangentViewPos;
+in vec3 TangentFragPos;
   
 uniform vec3 viewPos;
+uniform vec3 lightPos;
 uniform Material material;
 uniform Light light;
 
@@ -44,16 +48,26 @@ void main()
     // ambient
     vec3 ambient = light.ambient * texture(material.texture_diffuse1, TexCoords).rgb;
 
-    // diffuse
+    vec3 diffuse = vec3(0,0,0);
+    vec3 specular = vec3(0,0,0);
+
     vec3 norm = normalize(Normal);
     vec3 lightDir = normalize(light.position - FragPos);
+    vec3 viewDir = normalize(viewPos - FragPos);
+//     if (material.is_normal) {
+//         vec3 nt = texture(material.texture_normal1, TexCoords).rgb;
+//         norm = vec3(nt.z,nt.x,nt.y);
+//         norm = normalize(norm * 2.0 - 1.0);
+//         lightDir = normalize(TangentLightPos - TangentFragPos);
+//         viewDir = normalize(TangentViewPos - TangentFragPos);
+//     }
+
+    // diffuse
     float diff = max(dot(norm, lightDir), 0.0);
-    vec3 diffuse = light.diffuse * diff * texture(material.texture_diffuse1, TexCoords).rgb;
+    diffuse = light.diffuse * diff * texture(material.texture_diffuse1, TexCoords).rgb;
 
     // specular
-    vec3 specular = vec3(0,0,0);
     if (material.is_specular) {
-        vec3 viewDir = normalize(viewPos - FragPos);
         vec3 halfwayDir = normalize(lightDir + viewDir);
         float spec = pow(max(dot(norm, halfwayDir), 0.0), material.shininess);
         specular = light.specular * spec * texture(material.texture_specular1, TexCoords).rgb;

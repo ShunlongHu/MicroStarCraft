@@ -70,8 +70,8 @@ void RtsMap::initializeGL()
         messageBox.show();
     }
     //模型网上自己找个，注意格式要符合assimp库支持的。
-//    pModelVec = new Model("D:\\repo\\rts\\observer\\ui\\resource\\objects\\nanosuit\\nanosuit.obj");
-//    pModelVec = new Model("D:\\repo\\rts\\observer\\ui\\resource\\cg character\\nova\\dump_obj\\nova.obj");
+//    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\objects\\nanosuit\\nanosuit.obj"));
+//    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\cg character\\nova\\dump_obj\\nova.obj"));
     pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Zerg\\drone\\drone.obj"));
     pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Zerg\\zergline\\zergline.obj"));
     pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Zerg\\hydralisk\\hydralisk.obj"));
@@ -114,7 +114,8 @@ void RtsMap::initializeGL()
     program->setUniformValue("projection", projection);
 
     program->setUniformValue("viewPos", QVector3D(0.0f, 0.0f, 3.0f));
-    program->setUniformValue("light.position", QVector3D(1.2f, 1.0f, 2.0f));
+    program->setUniformValue("lightPos", QVector3D(1.2f, -1.0f, 2.0f));
+    program->setUniformValue("light.position", QVector3D(1.2f, -1.0f, 2.0f));
     program->setUniformValue("light.ambient", QVector3D(0.5f, 0.5f, 0.5f));
     program->setUniformValue("light.diffuse", QVector3D(0.5f, 0.5f, 0.5f));
     program->setUniformValue("light.specular", QVector3D(0.5f, 0.5f, 0.5f));
@@ -156,7 +157,7 @@ void RtsMap::paintGL()
     colorProgram->release();
 
     // draw units
-    int idx = 30;
+    int idx = 0;
     if (!program->bind())
     {
         qDebug() << "bind error" << program->log();

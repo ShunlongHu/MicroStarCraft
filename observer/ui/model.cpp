@@ -47,7 +47,7 @@ bool Model::loadModel(const QString &path)
     }
     // 通过ASSIMP读文件
     Assimp::Importer importer;
-    const aiScene *pscene = importer.ReadFile(path.toLocal8Bit().constData(), aiProcess_Triangulate | aiProcess_FlipUVs);
+    const aiScene *pscene = importer.ReadFile(path.toLocal8Bit().constData(), aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
     // 检查错误
     if (!pscene || pscene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !pscene->mRootNode) // 如果不是0
     {

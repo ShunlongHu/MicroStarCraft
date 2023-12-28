@@ -163,7 +163,7 @@ Mesh* Model::processMesh(aiMesh *pmesh, const aiScene *pscene)
         for (unsigned int j = 0; j < face.mNumIndices; j++)
             indices.push_back(face.mIndices[j]);
     }
-//    ComputeTangentSpace(vertices, indices);
+    ComputeTangentSpace(vertices, indices);
     float shininess = 1.0;
     //场景中包含材质？
     if (pscene->HasMaterials())
@@ -418,7 +418,7 @@ void ComputeTangentSpace(vector<Vertex> & vertexVec, vector<unsigned int>& idxVe
         n.normalize();
         // Calculate handedness
         if (QVector3D::dotProduct(QVector3D::crossProduct(n, t), b) < 0.0f) {
-            t = t * -1.0f;
+//            t = t * -1.0f;
             //t.setX(-t.x());
         }
     }

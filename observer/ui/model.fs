@@ -25,9 +25,9 @@ struct Light {
 in vec3 FragPos;  
 in vec3 Normal;  
 in vec2 TexCoords;
-in vec3 TangentLightPos;
-in vec3 TangentViewPos;
-in vec3 TangentFragPos;
+in vec3 tangentBasis;
+in vec3 bitangentBasis;
+in vec3 normalBasis;
   
 uniform vec3 viewPos;
 uniform vec3 lightPos;
@@ -54,14 +54,14 @@ void main()
     vec3 norm = normalize(Normal);
     vec3 lightDir = normalize(light.position - FragPos);
     vec3 viewDir = normalize(viewPos - FragPos);
-    mat3 TBN = mat3( TangentLightPos,TangentViewPos,TangentFragPos);
+    mat3 TBN = mat3( tangentBasis,bitangentBasis,normalBasis);
     if (material.is_normal) {
         vec3 nt = texture(material.texture_normal1, TexCoords).rgb;
         norm = vec3(nt.x,nt.y,nt.z);
         norm = normalize(norm * 2.0 - 1.0);
         norm = TBN*norm;
-//         lightDir = normalize(TangentLightPos - TangentFragPos);
-//         viewDir = normalize(TangentViewPos - TangentFragPos);
+//         lightDir = normalize(tangentBasis - normalBasis);
+//         viewDir = normalize(bitangentBasis - normalBasis);
     }
 
     // diffuse
@@ -108,10 +108,7 @@ void main()
             emission = col;
     }
 
-    vec3 result = norm;
-    if (TexCoords.x < 0 || TexCoords.x > 1 || TexCoords.y < 0 || TexCoords.y > 1) {
-        discard;
-    }
+    vec3 result = ambient + diffuse + specular + emission;
 
     // gamma correction
     float gamma = 2.2;

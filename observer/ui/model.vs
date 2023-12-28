@@ -25,7 +25,7 @@ void main()
     TexCoords = texCoords;
 
     mat3 normalMatrix = transpose(inverse(mat3(model)));
-    vec3 T = normalize(normalMatrix * vec3(0,0,1)+normal);
+    vec3 T = normalize(normalMatrix * tangent);
     vec3 N = normalize(normalMatrix * normal);
     T = normalize(T - dot(T, N) * N);
     vec3 B = cross(N, T);

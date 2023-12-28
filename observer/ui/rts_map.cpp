@@ -70,6 +70,7 @@ void RtsMap::initializeGL()
         messageBox.show();
     }
     //模型网上自己找个，注意格式要符合assimp库支持的。
+    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\cyborg\\cyborg.obj"));
     pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\objects\\nanosuit\\nanosuit.obj"));
 //    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\cg character\\nova\\dump_obj\\nova.obj"));
     pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Zerg\\drone\\drone.obj"));

@@ -56,14 +56,14 @@ void main()
     vec3 viewDir = normalize(viewPos - FragPos);
     if (material.is_normal) {
         vec3 nt = texture(material.texture_normal1, TexCoords).rgb;
-        norm = vec3(nt.z,nt.x,nt.y);
+        norm = vec3(nt.x,nt.y,nt.z);
         norm = normalize(norm * 2.0 - 1.0);
         lightDir = normalize(TangentLightPos - TangentFragPos);
         viewDir = normalize(TangentViewPos - TangentFragPos);
     }
 
     // diffuse
-    float diff = max(dot(norm, lightDir), 0.0);
+    float diff = clamp(dot(norm, lightDir), 0,1);
     diffuse = light.diffuse * diff * texture(material.texture_diffuse1, TexCoords).rgb;
 
     // specular

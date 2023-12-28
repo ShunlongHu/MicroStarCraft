@@ -5,6 +5,9 @@
 #include <QSharedPointer>
 #include <QOpenGLTexture>
 #include <QMessageBox>
+using namespace std;
+void ComputeTangentSpace(vector<Vertex> & vertexVec, vector<unsigned int>& idxVec);
+
 static QSharedPointer<QOpenGLTexture> textureFromFile(const QString &path, const QString &directory)
 {
     QString fileName = directory + '\\' + path;
@@ -47,7 +50,7 @@ bool Model::loadModel(const QString &path)
     }
     // 通过ASSIMP读文件
     Assimp::Importer importer;
-    const aiScene *pscene = importer.ReadFile(path.toLocal8Bit().constData(), aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+    const aiScene *pscene = importer.ReadFile(path.toLocal8Bit().constData(), aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals);
     // 检查错误
     if (!pscene || pscene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !pscene->mRootNode) // 如果不是0
     {
@@ -160,6 +163,7 @@ Mesh* Model::processMesh(aiMesh *pmesh, const aiScene *pscene)
         for (unsigned int j = 0; j < face.mNumIndices; j++)
             indices.push_back(face.mIndices[j]);
     }
+    ComputeTangentSpace(vertices, indices);
     float shininess = 1.0;
     //场景中包含材质？
     if (pscene->HasMaterials())
@@ -356,4 +360,66 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial *material, aiTexture
 
     }
     return textures;
+}
+
+void ComputeTangentSpace(vector<Vertex> & vertexVec, vector<unsigned int>& idxVec)
+{
+    for (unsigned int i=0; i<vertexVec.size(); i+=3 ){
+
+        // Shortcuts for vertices
+        auto & v0 = vertexVec[i+0].Position;
+        auto & v1 = vertexVec[i+1].Position;
+        auto & v2 = vertexVec[i+2].Position;
+
+        // Shortcuts for UVs
+        auto & uv0 = vertexVec[i+0].TexCoords;
+        auto & uv1 = vertexVec[i+1].TexCoords;
+        auto & uv2 = vertexVec[i+2].TexCoords;
+
+        // Edges of the triangle : postion delta
+        auto deltaPos1 = v1-v0;
+        auto deltaPos2 = v2-v0;
+
+        // UV delta
+        auto deltaUV1 = uv1-uv0;
+        auto deltaUV2 = uv2-uv0;
+        QVector3D duv1(deltaUV1);
+        QVector3D duv2(deltaUV2);
+//        if (QVector3D::crossProduct(duv1, duv2).z() < 0) {
+//            deltaUV1.setX(-deltaUV1.x());
+//            deltaUV2.setX(-deltaUV2.x());
+//        }
+
+        float r = 1.0f / (deltaUV1.x() * deltaUV2.y() - deltaUV1.y() * deltaUV2.x());
+        auto t = (deltaPos1 * deltaUV2.y()   - deltaPos2 * deltaUV1.y())*r;
+        auto b = (deltaPos2 * deltaUV1.x()   - deltaPos1 * deltaUV2.x())*r;
+
+        // Set the same tangent for all three vertices of the triangle.
+        // They will be merged later, in vboindexer.cpp
+
+
+        vertexVec[i+0].Tangent = t;
+        vertexVec[i+1].Tangent = t;
+        vertexVec[i+2].Tangent = t;
+
+        vertexVec[i+0].Bitangent = b;
+        vertexVec[i+1].Bitangent = b;
+        vertexVec[i+2].Bitangent = b;
+    }
+
+    // See "Going Further"
+    for (auto& vertex: vertexVec)
+    {
+        auto & n = vertex.Normal;
+        auto & t = vertex.Tangent;
+        auto & b = vertex.Bitangent;
+        t = (t - n * QVector3D::dotProduct(n, t));
+        t.normalize();
+        n.normalize();
+        // Calculate handedness
+        if (QVector3D::dotProduct(QVector3D::crossProduct(n, t), b) < 0.0f) {
+            t = t * -1.0f;
+            //t.setX(-t.x());
+        }
+    }
 }

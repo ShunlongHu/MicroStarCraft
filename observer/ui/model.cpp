@@ -64,7 +64,7 @@ bool Model::loadModel(const QString &path)
         //int a = pscene->mRootNode->mNumChildren;
         //ret = initFromScene(pscene, path);
         processNode(pscene->mRootNode, pscene);
-        auto maxDim = std::max(std::abs(vMax[0] - vMin[0]), std::abs(vMax[2] - vMin[2])) / 2;
+        auto maxDim = std::max(std::abs(vMax[0] - vMin[0]), std::abs(vMax[1] - vMin[1]) * 2) / 2;
         model.rotate(90, 1, 0, 0);
         model.scale(1/maxDim);
         model.translate(-vAvg[0]/vCount, -vMin[1], -vAvg[2]/vCount);

@@ -54,13 +54,13 @@ void main()
     vec3 norm = normalize(Normal);
     vec3 lightDir = normalize(light.position - FragPos);
     vec3 viewDir = normalize(viewPos - FragPos);
-//     if (material.is_normal) {
-//         vec3 nt = texture(material.texture_normal1, TexCoords).rgb;
-//         norm = vec3(nt.z,nt.x,nt.y);
-//         norm = normalize(norm * 2.0 - 1.0);
-//         lightDir = normalize(TangentLightPos - TangentFragPos);
-//         viewDir = normalize(TangentViewPos - TangentFragPos);
-//     }
+    if (material.is_normal) {
+        vec3 nt = texture(material.texture_normal1, TexCoords).rgb;
+        norm = vec3(nt.z,nt.x,nt.y);
+        norm = normalize(norm * 2.0 - 1.0);
+        lightDir = normalize(TangentLightPos - TangentFragPos);
+        viewDir = normalize(TangentViewPos - TangentFragPos);
+    }
 
     // diffuse
     float diff = max(dot(norm, lightDir), 0.0);

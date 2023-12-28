@@ -24,11 +24,9 @@ void main()
     Normal = mat3(transpose(inverse(model))) * normal;
     TexCoords = texCoords;
 
-//    mat3 normalMatrix = transpose(inverse(mat3(model)));
-//    vec3 T = normalize(normalMatrix * tangent);
-//    vec3 N = normalize(normalMatrix * normal);
-    vec3 T = normalize(vec3(model * vec4(tangent, 0.0)));
-    vec3 N = normalize(vec3(model * vec4(normal, 0.0)));
+    mat3 normalMatrix = transpose(inverse(mat3(model)));
+    vec3 T = normalize(normalMatrix * vec3(0,0,1)+normal);
+    vec3 N = normalize(normalMatrix * normal);
     T = normalize(T - dot(T, N) * N);
     vec3 B = cross(N, T);
 

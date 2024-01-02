@@ -212,7 +212,7 @@ void RtsMap::paintGL()
 
     textProgram->bind();
     idx = 0;
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < game.w * game.h; ++i) {
         mMatrix.setToIdentity();
         auto x = idx % game.w;
         auto y = idx / game.h;

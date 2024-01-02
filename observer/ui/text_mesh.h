@@ -27,7 +27,7 @@ private:
         QVector2D   bearing;   // Offset from baseline to left/top of glyph
         unsigned int advance;   // Horizontal offset to advance to next glyph
     };
-    std::map<GLchar, Character> charTextureMap;
+    std::unordered_map<GLchar, Character> charTextureMap;
     QOpenGLVertexArrayObject VAO;
     QOpenGLBuffer VBO;
     std::shared_ptr<QOpenGLContext> context;

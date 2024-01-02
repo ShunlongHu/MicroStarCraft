@@ -58,7 +58,7 @@ void TextMesh::RenderText(QOpenGLShaderProgram &shader, const string& text, floa
             };
             ch.texture->bind();
             VBO.bind();
-            glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices); // be sure to use glBufferSubData and not glBufferData
+            glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW); // be sure to use glBufferSubData and not glBufferData
             VBO.release();
             glDrawArrays(GL_TRIANGLES, 0, 6);
             x += (ch.advance >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
@@ -88,7 +88,7 @@ void TextMesh::Init() {
         box.show();
         return;
     } else {
-        FT_Set_Pixel_Sizes(face, 0, 48);
+        FT_Set_Pixel_Sizes(face, 0, 24);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         for (unsigned char c = 0; c < 128; c++)        {
             // Load character glyph

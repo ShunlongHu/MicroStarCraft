@@ -199,17 +199,19 @@ void RtsMap::paintGL()
         qDebug() << "bind error" << program->log();
     }
     QMatrix4x4 mMatrix;
-    for (auto& model: pModelVec) {
-        mMatrix.setToIdentity();
-        auto x = idx % game.w;
-        auto y = idx / game.h;
-        auto xLoc = 2.0f * static_cast<float>(x) / game.w + 1.0f / game.w - 1.0f;
-        auto yLoc = 2.0f * static_cast<float>(y) / game.h + 1.0f / game.h - 1.0f;
-        mMatrix.translate(xLoc, yLoc);
-        mMatrix.scale(1.0f / game.w);
-        program->setUniformValue("model", mMatrix * model->model);
-        model->draw(program.get());
-        idx++;
+    for (int i = 0; i < game.w * game.h / pModelVec.size()/2; ++i) {
+        for (auto& model: pModelVec) {
+            mMatrix.setToIdentity();
+            auto x = idx % game.w;
+            auto y = idx / game.h;
+            auto xLoc = 2.0f * static_cast<float>(x) / game.w + 1.0f / game.w - 1.0f;
+            auto yLoc = 2.0f * static_cast<float>(y) / game.h + 1.0f / game.h - 1.0f;
+            mMatrix.translate(xLoc, yLoc);
+            mMatrix.scale(1.0f / game.w);
+            program->setUniformValue("model", mMatrix * model->model);
+            model->draw(program.get());
+            idx++;
+        }
     }
     program->release();
 

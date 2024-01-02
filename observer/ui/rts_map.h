@@ -11,6 +11,7 @@
 #include "map_model.h"
 #include "game_types.h"
 #include "model.h"
+#include "text_mesh.h"
 class QOpenGLTexture;
 class QOpenGLShaderProgram;
 
@@ -29,8 +30,10 @@ private:
     //着色器程序
     std::shared_ptr<QOpenGLShaderProgram> program;
     std::shared_ptr<QOpenGLShaderProgram> colorProgram;
+    std::shared_ptr<QOpenGLShaderProgram> textProgram;
     std::vector<std::shared_ptr<Model>> pModelVec;
     std::shared_ptr<MapModel> mModel;
+    std::shared_ptr<TextMesh> tMesh;
 };
 
 #endif // !LOADMODEL_H

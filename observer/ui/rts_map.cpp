@@ -11,7 +11,8 @@ using namespace std;
 
 RtsMap::RtsMap(QWidget *parent) : QOpenGLWidget(parent),
                                                       program(make_shared<QOpenGLShaderProgram>()),
-                                                      colorProgram(make_shared<QOpenGLShaderProgram>())
+                                                      colorProgram(make_shared<QOpenGLShaderProgram>()),
+                                                      textProgram(make_shared<QOpenGLShaderProgram>())
 {
     //设置OpenGL的版本信息`
     QSurfaceFormat format;
@@ -27,6 +28,7 @@ RtsMap::~RtsMap()
     //删除所有之前添加到program的着色器
     program->removeAllShaders();
     colorProgram->removeAllShaders();
+    textProgram->removeAllShaders();
 }
 void RtsMap::initializeGL()
 {
@@ -67,6 +69,24 @@ void RtsMap::initializeGL()
     {
         static QMessageBox messageBox;
         messageBox.setText("link error" + colorProgram->log());
+        messageBox.show();
+    }
+    if (!textProgram->addShaderFromSourceFile(QOpenGLShader::Vertex, "D:\\repo\\rts\\observer\\ui\\font.vs"))
+    {
+        static QMessageBox messageBox;
+        messageBox.setText("compile vs error" + textProgram->log());
+        messageBox.show();
+    }
+    if (!textProgram->addShaderFromSourceFile(QOpenGLShader::Fragment, "D:\\repo\\rts\\observer\\ui\\font.fs"))
+    {
+        static QMessageBox messageBox;
+        messageBox.setText("compile fs error" + textProgram->log());
+        messageBox.show();
+    }
+    if (!textProgram->link())
+    {
+        static QMessageBox messageBox;
+        messageBox.setText("link error" + textProgram->log());
         messageBox.show();
     }
     //模型网上自己找个，注意格式要符合assimp库支持的。
@@ -132,6 +152,13 @@ void RtsMap::initializeGL()
     colorProgram->setUniformValue("model", model);
     colorProgram->setUniformValue("projection", projection);
     colorProgram->release();
+
+    tMesh = make_shared<TextMesh>();
+    if (!textProgram->bind())
+    {
+        qDebug() << "bind error" << textProgram->log();
+    }
+    textProgram->release();
     /* 固定属性区域 */
     glEnable(GL_DEPTH_TEST);  //开启深度测试
     glEnable(GL_CULL_FACE);
@@ -156,6 +183,10 @@ void RtsMap::paintGL()
     colorProgram->bind();
     mModel->draw(colorProgram.get());
     colorProgram->release();
+
+    textProgram->bind();
+    tMesh->RenderText(*textProgram, "hello", 25.0f, 25.0f, 1.0f,{1,1,1});
+    textProgram->release();
 
     // draw units
     int idx = 0;

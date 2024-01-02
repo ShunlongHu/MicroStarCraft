@@ -184,10 +184,6 @@ void RtsMap::paintGL()
     mModel->draw(colorProgram.get());
     colorProgram->release();
 
-    textProgram->bind();
-    tMesh->RenderText(*textProgram, "hello", 25.0f, 25.0f, 1.0f,{1,1,1});
-    textProgram->release();
-
     // draw units
     int idx = 0;
     if (!program->bind())
@@ -208,6 +204,10 @@ void RtsMap::paintGL()
         idx++;
     }
     program->release();
+
+    textProgram->bind();
+    tMesh->RenderText(*textProgram, "hello", 0.0f, 0.0f, 0.01f,{1,1,1});
+    textProgram->release();
     update();
 }
 void RtsMap::resizeGL(int width, int height)

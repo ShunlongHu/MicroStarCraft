@@ -93,7 +93,7 @@ Status RtsServiceImpl::ConnectPlayer(ServerContext* context, ServerReaderWriter<
 void RtsServiceImpl::mainLoop() {
     static auto time = chrono::high_resolution_clock::now();
     while (serverStart) {
-        sleep_for(microseconds (100));
+        sleep_for(microseconds (200));
         unique_lock<mutex> lockGuard(stateLock);
         if (reset) {
             cout << "seed: " << initParam.seed()

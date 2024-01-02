@@ -20,6 +20,7 @@ public:
     ~TextMesh();
     void RenderText(QOpenGLShaderProgram &shader, const std::string& text, float x, float y, float scale, QVector3D color);
     void Init();
+    int fontSize = 48;
 private:
     struct Character {
         std::shared_ptr<QOpenGLTexture> texture; // ID handle of the glyph texture

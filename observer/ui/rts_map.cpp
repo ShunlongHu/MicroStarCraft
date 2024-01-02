@@ -5,9 +5,11 @@
 #include <QDebug>
 #include <unordered_map>
 #include <QMessageBox>
+#include <chrono>
 #include "rpc_client.h"
 
 using namespace std;
+using namespace chrono;
 
 RtsMap::RtsMap(QWidget *parent) : QOpenGLWidget(parent),
                                                       program(make_shared<QOpenGLShaderProgram>()),
@@ -175,6 +177,7 @@ const static unordered_map<int, unordered_map<GameObjType, int>> playerObjModelM
 };
 void RtsMap::paintGL()
 {
+    auto start = high_resolution_clock::now();
     //清理屏幕
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // also clear the depth buffer now!
 
@@ -211,8 +214,9 @@ void RtsMap::paintGL()
     program->release();
 
     textProgram->bind();
+    const static float fontSize = 0.75;
     idx = 0;
-    for (int i = 0; i < game.w * game.h; ++i) {
+    for (int i = 0; i < game.w * game.h/2; ++i) {
         mMatrix.setToIdentity();
         auto x = idx % game.w;
         auto y = idx / game.h;
@@ -222,9 +226,21 @@ void RtsMap::paintGL()
         mMatrix.scale(1.0f / game.w);
         mMatrix.rotate(45.0f, 1, 0, 0);
         textProgram->setUniformValue("model", mMatrix);
-        tMesh->RenderText(*textProgram, "h", 0.0f, 0.0f, 0.01f,{1,0,1});
+        tMesh->RenderText(*textProgram, "h", -fontSize/2, -1.0f, fontSize / tMesh->fontSize,{1,0,1});
+        tMesh->RenderText(*textProgram, "e", -fontSize/2, -1.0f + fontSize, fontSize / tMesh->fontSize,{1,0,1});
         idx++;
     }
+    auto duration = duration_cast<milliseconds>(high_resolution_clock::now() - start).count();
+
+    QMatrix4x4 identity;
+    identity.setToIdentity();
+
+    mMatrix.setToIdentity();
+    mMatrix.translate(-1.0f, 2);
+    mMatrix.scale(0.1f);
+    mMatrix.rotate(45.0f, 1, 0, 0);
+    textProgram->setUniformValue("model", mMatrix);
+    tMesh->RenderText(*textProgram, "frame time: " + to_string(duration) + "ms", -1, 0, fontSize / tMesh->fontSize,{1,1,0});
     textProgram->release();
     update();
 }

@@ -88,7 +88,7 @@ void TextMesh::Init() {
         box.show();
         return;
     } else {
-        FT_Set_Pixel_Sizes(face, 0, 24);
+        FT_Set_Pixel_Sizes(face, 0, fontSize);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         for (unsigned char c = 0; c < 128; c++)        {
             // Load character glyph

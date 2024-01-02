@@ -158,6 +158,11 @@ void RtsMap::initializeGL()
     {
         qDebug() << "bind error" << textProgram->log();
     }
+    QMatrix4x4 textView;
+    textView.translate(QVector3D(0, 0, -5.0f));
+    textView.rotate(0, 1, 0, 0);
+    textProgram->setUniformValue("view", view);
+    textProgram->setUniformValue("projection", projection);
     textProgram->release();
     /* 固定属性区域 */
     glEnable(GL_DEPTH_TEST);  //开启深度测试
@@ -206,7 +211,20 @@ void RtsMap::paintGL()
     program->release();
 
     textProgram->bind();
-    tMesh->RenderText(*textProgram, "hello", 0.0f, 0.0f, 0.01f,{1,1,1});
+    idx = 0;
+    for (int i = 0; i < 10; ++i) {
+        mMatrix.setToIdentity();
+        auto x = idx % game.w;
+        auto y = idx / game.h;
+        auto xLoc = 2.0f * static_cast<float>(x) / game.w + 1.0f / game.w - 1.0f;
+        auto yLoc = 2.0f * static_cast<float>(y) / game.h + 1.0f / game.h - 1.0f;
+        mMatrix.translate(xLoc, yLoc, 1.0 / game.w);
+        mMatrix.scale(1.0f / game.w);
+        mMatrix.rotate(45.0f, 1, 0, 0);
+        textProgram->setUniformValue("model", mMatrix);
+        tMesh->RenderText(*textProgram, "h", 0.0f, 0.0f, 0.01f,{1,0,1});
+        idx++;
+    }
     textProgram->release();
     update();
 }

@@ -99,22 +99,16 @@ void TextMesh::Init() {
                 continue;
             }
             // generate texture
+            QImage img(face->glyph->bitmap.width, face->glyph->bitmap.rows, QImage::Format::Format_Alpha8);
+            for (int i = 0; i < face->glyph->bitmap.width * face->glyph->bitmap.rows; ++i) {
+                img.scanLine(i/face->glyph->bitmap.width)[i % face->glyph->bitmap.width]=face->glyph->bitmap.buffer[i];
+            }
+
             Character ch;
-            ch.texture = make_shared<QOpenGLTexture>(QOpenGLTexture::Target2D);
+            ch.texture = make_shared<QOpenGLTexture>(img);
             ch.texture->setMinificationFilter(QOpenGLTexture::Nearest);
             ch.texture->setMagnificationFilter(QOpenGLTexture::Linear);
             ch.texture->setWrapMode(QOpenGLTexture::Repeat);
-            ch.texture->create();
-            ch.texture->setSize(face->glyph->bitmap.width, face->glyph->bitmap.rows, 1);
-#ifdef PC_SETTINGS
-            text->setFormat(QOpenGLTexture::RGBA8_UNorm);
-#endif // PC_SETTINGS
-#ifdef BOARD_SETTINGS
-            text->setFormat(QOpenGLTexture::AlphaFormat);
-#endif // BOARD_SETTINGS
-            //    text->allocateStorage();
-            ch.texture->allocateStorage(QOpenGLTexture::Alpha, QOpenGLTexture::UInt8);
-            ch.texture->setData(QOpenGLTexture::Alpha, QOpenGLTexture::UInt8, face->glyph->bitmap.buffer);
             ch.size = QVector2D(face->glyph->bitmap.width, face->glyph->bitmap.rows);
             ch.bearing = QVector2D(face->glyph->bitmap_left, face->glyph->bitmap_top);
             ch.advance = face->glyph->advance.x;
@@ -134,49 +128,3 @@ void TextMesh::Init() {
     VAO.release();
     VBO.release();
 }
-//
-//
-//void TextMesh::RenderText(QOpenGLShaderProgram &shader, std::string text, float x, float y, float scale, QVector3D color)
-//{
-//    // activate corresponding render state
-//    shader.bind();
-//    glUniform3f(glGetUniformLocation(shader.programId(), "textColor"), color.x(), color.y(), color.z());
-//    txtVAO.bind();
-//    glActiveTexture(GL_TEXTURE0);
-//    glBindVertexArray(VAO);
-//
-//    // iterate through all characters
-//    for (const auto& c:text)
-//    {
-//        Character ch = Characters[c];
-//
-//        float xpos = x +  ch.Bearing.x() * scale;
-//        float ypos = y - (ch.Size.y() - ch.Bearing.y()) * scale;
-//
-//        float w = ch.Size.x() * scale;
-//        float h = ch.Size.y() * scale;
-//        // update VBO for each character
-//        float vertices[6][4] = {
-//                { xpos,     ypos + h,   0.0f, 0.0f },
-//                { xpos,     ypos,       0.0f, 1.0f },
-//                { xpos + w, ypos,       1.0f, 1.0f },
-//
-//                { xpos,     ypos + h,   0.0f, 0.0f },
-//                { xpos + w, ypos,       1.0f, 1.0f },
-//                { xpos + w, ypos + h,   1.0f, 0.0f }
-//        };
-//        // render glyph texture over quad
-//        glBindTexture(GL_TEXTURE_2D, ch.TextureID);
-//        // update content of VBO memory
-//        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-//        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices); // be sure to use glBufferSubData and not glBufferData
-//
-//        glBindBuffer(GL_ARRAY_BUFFER, 0);
-//        // render quad
-//        glDrawArrays(GL_TRIANGLES, 0, 6);
-//        // now advance cursors for next glyph (note that advance is number of 1/64 pixels)
-//        x += (ch.Advance >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
-//    }
-//    glBindVertexArray(0);
-//    glBindTexture(GL_TEXTURE_2D, 0);
-//}

@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <QMessageBox>
 #include <chrono>
+#include <QCursor>
 #include "rpc_client.h"
 
 using namespace std;
@@ -178,6 +179,9 @@ const static unordered_map<int, unordered_map<GameObjType, int>> playerObjModelM
 void RtsMap::paintGL()
 {
     auto start = high_resolution_clock::now();
+    auto mousePos = mapFromGlobal(QCursor::pos());
+    float mouseY = -(static_cast<float>(mousePos.y()) / QWidget::height() * 2.0f - 1);
+    float mouseX = static_cast<float>(mousePos.x()) / QWidget::width() * 2.0f - 1;
     //清理屏幕
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // also clear the depth buffer now!
 
@@ -242,7 +246,7 @@ void RtsMap::paintGL()
     mMatrix.scale(0.1f);
     mMatrix.rotate(45.0f, 1, 0, 0);
     textProgram->setUniformValue("model", mMatrix);
-    tMesh->RenderText(*textProgram, "frame time: " + to_string(duration) + "ms", -1, 0, fontSize / tMesh->fontSize,{1,1,0});
+    tMesh->RenderText(*textProgram, "frame time: " + to_string(duration) + "ms" + " " + to_string(mouseX) + "," + to_string(mouseY), -1, 0, fontSize / tMesh->fontSize,{1,1,0});
     textProgram->release();
     update();
 }

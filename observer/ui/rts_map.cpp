@@ -120,7 +120,6 @@ void RtsMap::initializeGL()
     }
 
     //给着色器变量赋值,projextion,view默认构造是生成单位矩阵
-    QMatrix4x4 projection, view, model;
     view.translate(QVector3D(0, 0, -5.0f));
     view.rotate(-45, 1, 0, 0);
     projection.perspective(30.0f, (GLfloat)width() / (GLfloat)height(), 0.1f, 100.0f);
@@ -161,9 +160,6 @@ void RtsMap::initializeGL()
     {
         qDebug() << "bind error" << textProgram->log();
     }
-    QMatrix4x4 textView;
-    textView.translate(QVector3D(0, 0, -5.0f));
-    textView.rotate(0, 1, 0, 0);
     textProgram->setUniformValue("view", view);
     textProgram->setUniformValue("projection", projection);
     textProgram->release();
@@ -179,9 +175,6 @@ const static unordered_map<int, unordered_map<GameObjType, int>> playerObjModelM
 void RtsMap::paintGL()
 {
     auto start = high_resolution_clock::now();
-    auto mousePos = mapFromGlobal(QCursor::pos());
-    float mouseY = -(static_cast<float>(mousePos.y()) / QWidget::height() * 2.0f - 1);
-    float mouseX = static_cast<float>(mousePos.x()) / QWidget::width() * 2.0f - 1;
     //清理屏幕
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // also clear the depth buffer now!
 
@@ -191,9 +184,35 @@ void RtsMap::paintGL()
     if (game.w != w) {
         w = game.w;
         initMap(game);
+        QVector4D bottomLeft {0,0,0,1};
+        QVector4D topRight {0,0,0,1};
+        for (int i = 0; i < mModel->tileLimits.size(); ++i) {
+            auto& limit = mModel->tileLimits[i];
+            bottomLeft.setX(limit[0]);
+            bottomLeft.setY(limit[2]);
+            topRight.setX(limit[1]);
+            topRight.setY(limit[3]);
+            auto mouseBottomLeft = projection * view * bottomLeft;
+            auto mouseTopRight = projection * view * topRight;
+            limit[0] = mouseBottomLeft.x() / mouseBottomLeft.w();
+            limit[2] = mouseBottomLeft.y() / mouseBottomLeft.w();
+            limit[1] = mouseTopRight.x() / mouseTopRight.w();
+            limit[3] = mouseTopRight.y() / mouseTopRight.w();
+        }
     }
     colorProgram->bind();
-    mModel->draw(colorProgram.get());
+    // 计算鼠标指向的方格
+    auto mousePos = mapFromGlobal(QCursor::pos());
+    float mouseY = -(static_cast<float>(mousePos.y()) / QWidget::height() * 2.0f - 1);
+    float mouseX = static_cast<float>(mousePos.x()) / QWidget::width() * 2.0f - 1;
+    int tileIdx = -1;
+    for (int i = 0; i < mModel->tileLimits.size(); ++i) {
+        const auto& limit = mModel->tileLimits[i];
+        if (limit[0] <= mouseX && limit[2] <= mouseY && limit[1] >= mouseX && limit[3] >= mouseY) {
+            tileIdx = i;
+        }
+    }
+    mModel->draw(colorProgram.get(), tileIdx);
     colorProgram->release();
 
     // draw units
@@ -204,7 +223,7 @@ void RtsMap::paintGL()
     }
     QMatrix4x4 mMatrix;
     for (int i = 0; i < game.w * game.h / pModelVec.size()/2; ++i) {
-        for (auto& model: pModelVec) {
+        for (auto& m: pModelVec) {
             mMatrix.setToIdentity();
             auto x = idx % game.w;
             auto y = idx / game.h;
@@ -212,8 +231,8 @@ void RtsMap::paintGL()
             auto yLoc = 2.0f * static_cast<float>(y) / game.h + 1.0f / game.h - 1.0f;
             mMatrix.translate(xLoc, yLoc);
             mMatrix.scale(1.0f / game.w);
-            program->setUniformValue("model", mMatrix * model->model);
-            model->draw(program.get());
+            program->setUniformValue("model", mMatrix * m->model);
+            m->draw(program.get());
             idx++;
         }
     }
@@ -246,7 +265,7 @@ void RtsMap::paintGL()
     mMatrix.scale(0.1f);
     mMatrix.rotate(45.0f, 1, 0, 0);
     textProgram->setUniformValue("model", mMatrix);
-    tMesh->RenderText(*textProgram, "frame time: " + to_string(duration) + "ms" + " " + to_string(mouseX) + "," + to_string(mouseY), -1, 0, fontSize / tMesh->fontSize,{1,1,0});
+    tMesh->RenderText(*textProgram, "frame time: " + to_string(duration) + "ms" + " " + to_string(mModel->tileLimits[0][0]) + "," + to_string(mModel->tileLimits[0][1]) + "," + to_string(mModel->tileLimits[0][2]) + "," + to_string(mModel->tileLimits[0][3]) + "," + to_string(mouseX)+ "," +  to_string(mouseY), -1, 0, fontSize / tMesh->fontSize,{1,1,0});
     textProgram->release();
     update();
 }

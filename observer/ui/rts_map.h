@@ -34,6 +34,7 @@ private:
     std::vector<std::shared_ptr<Model>> pModelVec;
     std::shared_ptr<MapModel> mModel;
     std::shared_ptr<TextMesh> tMesh;
+    QMatrix4x4 projection, view, model;
 };
 
 #endif // !LOADMODEL_H

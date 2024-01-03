@@ -184,35 +184,13 @@ void RtsMap::paintGL()
     if (game.w != w) {
         w = game.w;
         initMap(game);
-        QVector4D bottomLeft {0,0,0,1};
-        QVector4D topRight {0,0,0,1};
-        for (int i = 0; i < mModel->tileLimits.size(); ++i) {
-            auto& limit = mModel->tileLimits[i];
-            bottomLeft.setX(limit[0]);
-            bottomLeft.setY(limit[2]);
-            topRight.setX(limit[1]);
-            topRight.setY(limit[3]);
-            auto mouseBottomLeft = projection * view * bottomLeft;
-            auto mouseTopRight = projection * view * topRight;
-            limit[0] = mouseBottomLeft.x() / mouseBottomLeft.w();
-            limit[2] = mouseBottomLeft.y() / mouseBottomLeft.w();
-            limit[1] = mouseTopRight.x() / mouseTopRight.w();
-            limit[3] = mouseTopRight.y() / mouseTopRight.w();
-        }
     }
     colorProgram->bind();
     // 计算鼠标指向的方格
     auto mousePos = mapFromGlobal(QCursor::pos());
     float mouseY = -(static_cast<float>(mousePos.y()) / QWidget::height() * 2.0f - 1);
     float mouseX = static_cast<float>(mousePos.x()) / QWidget::width() * 2.0f - 1;
-    int tileIdx = -1;
-    for (int i = 0; i < mModel->tileLimits.size(); ++i) {
-        const auto& limit = mModel->tileLimits[i];
-        if (limit[0] <= mouseX && limit[2] <= mouseY && limit[1] >= mouseX && limit[3] >= mouseY) {
-            tileIdx = i;
-        }
-    }
-    mModel->draw(colorProgram.get(), tileIdx);
+    mModel->draw(colorProgram.get(), mouseX, mouseY, game.w);
     colorProgram->release();
 
     // draw units
@@ -265,7 +243,7 @@ void RtsMap::paintGL()
     mMatrix.scale(0.1f);
     mMatrix.rotate(45.0f, 1, 0, 0);
     textProgram->setUniformValue("model", mMatrix);
-    tMesh->RenderText(*textProgram, "frame time: " + to_string(duration) + "ms" + " " + to_string(mModel->tileLimits[0][0]) + "," + to_string(mModel->tileLimits[0][1]) + "," + to_string(mModel->tileLimits[0][2]) + "," + to_string(mModel->tileLimits[0][3]) + "," + to_string(mouseX)+ "," +  to_string(mouseY), -1, 0, fontSize / tMesh->fontSize,{1,1,0});
+    tMesh->RenderText(*textProgram, "frame time: " + to_string(duration) + "ms", -1, 0, fontSize / tMesh->fontSize,{1,1,0});
     textProgram->release();
     update();
 }
@@ -280,4 +258,32 @@ void RtsMap::resizeGL(int width, int height)
 
 void RtsMap::initMap(const GameState& gameState) {
     mModel = make_shared<MapModel>(gameState);
+    for (auto& y:mModel->tileYMin) {
+        QVector4D pt{0, y, 0, 1};
+        pt = projection * view * pt;
+        y = pt.y() / pt.w();
+    }
+    for (auto& y:mModel->tileYMax) {
+        QVector4D pt{0, y, 0, 1};
+        pt = projection * view * pt;
+        y = pt.y() / pt.w();
+    }
+    for (int i = 0; i < mModel->tileXMin.size(); ++i) {
+        QVector4D pt1{mModel->tileXMin[i], -1, 0, 1};
+        QVector4D pt2{mModel->tileXMin[i], 1, 0, 1};
+        pt1 = projection * view * pt1;
+        pt2 = projection * view * pt2;
+        pt1 /= pt1.w();
+        pt2 /= pt2.w();
+        mModel->verticalSpliterMin.emplace_back((pt1.x() - pt2.x())/(pt1.y() - pt2.y()),-pt2.y() * (pt1.x() - pt2.x())/(pt1.y() - pt2.y()) + pt2.x());
+    }
+    for (int i = 0; i < mModel->tileXMax.size(); ++i) {
+        QVector4D pt1{mModel->tileXMax[i], -1, 0, 1};
+        QVector4D pt2{mModel->tileXMax[i], 1, 0, 1};
+        pt1 = projection * view * pt1;
+        pt2 = projection * view * pt2;
+        pt1 /= pt1.w();
+        pt2 /= pt2.w();
+        mModel->verticalSpliterMax.emplace_back((pt1.x() - pt2.x())/(pt1.y() - pt2.y()),-pt2.y() * (pt1.x() - pt2.x())/(pt1.y() - pt2.y()) + pt2.x());
+    }
 }

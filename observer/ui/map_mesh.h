@@ -26,6 +26,7 @@ public:
     std::vector<GLuint> indices;
     //material
     QVector4D color;
+    QVector4D origColor;
     //是否进行过setupMesh初始化操作
     bool isinitialized;
     QOpenGLVertexArrayObject VAO;

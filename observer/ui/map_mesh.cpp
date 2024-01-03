@@ -5,6 +5,7 @@ MapMesh::MapMesh(const std::vector<QVector3D> &vertice, const std::vector<GLuint
         vertices(vertice),
         indices(indice),
         color(color),
+        origColor(color),
         isinitialized(false)
 {
     //初始化OpenGL函数

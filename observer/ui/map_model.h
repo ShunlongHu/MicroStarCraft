@@ -21,8 +21,14 @@ public:
     explicit MapModel(const GameState& state);
     //加载模型
     bool loadModel(const GameState& state);
-    void draw(QOpenGLShaderProgram *program, int tileIdx);
+    void draw(QOpenGLShaderProgram *program, float mouseX, float mouseY, int w);
     std::vector<std::shared_ptr<MapMesh>> meshes;
-    std::vector<std::array<float, 4>> tileLimits;
+    std::vector<float> tileXMin;
+    std::vector<float> tileXMax;
+    std::vector<float> tileYMin;
+    std::vector<float> tileYMax;
+    std::vector<QVector2D> verticalSpliterMin; // x = ky + b
+    std::vector<QVector2D> verticalSpliterMax; // x = ky + b
+    int lastTileIdx = -1;
 };
 #endif // !MAP_MODEL_H

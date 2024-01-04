@@ -168,6 +168,9 @@ struct Coord {
         this->y = state2.y;
         return *this;
     }
+
+    Coord(int y, int x) : y(y), x(x) {}
+    Coord() : y(0), x(0) {}
 };
 
 using ActionTarget = Coord;
@@ -221,12 +224,7 @@ struct GameObj {
     uint8_t moveInterval;
 
     // action mask
-    bool canMove;
-    bool canAttack;
-    bool canGather;
-    bool canStore; // can store resource
-    bool canBeAttacked;
-    bool canBeGathered;
+    ActionMask actionMask;
 
     inline bool operator==(const GameObj &state2) const {
         auto ptrA = reinterpret_cast<const char *> (this);

@@ -35,6 +35,7 @@ private:
     std::shared_ptr<MapModel> mModel;
     std::shared_ptr<TextMesh> tMesh;
     QMatrix4x4 projection, view, model;
+    const static std::unordered_map<int, const std::unordered_map<GameObjType, int>> MODEL_MAP;
 };
 
 #endif // !LOADMODEL_H

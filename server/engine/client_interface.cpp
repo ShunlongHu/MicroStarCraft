@@ -33,7 +33,7 @@ ResetThread(int idx, int seed, bool isRotSym, bool isAxSym, double terrainProb, 
     game.resource[1] = 10;
     game.buildingCnt[0] = 1;
     game.buildingCnt[1] = 1;
-    game.objMap.clear();
+    game.objMap = {};
 
     const int MINERAL_DISTANCE = 2;
     vector<Coord> expansionVec;
@@ -90,6 +90,9 @@ ResetThread(int idx, int seed, bool isRotSym, bool isAxSym, double terrainProb, 
     terrainFlagVec.resize(remainingTileCnt, false);
     shuffle(terrainFlagVec.begin(), terrainFlagVec.end(), engine);
     for (int i = 0; i < game.w * game.h / 2; ++i){
+        if (!terrainFlagVec[i]) {
+            continue;
+        }
         auto x = i % game.w;
         auto y = i / game.h;
         bool isValidTerrain = true;
@@ -138,6 +141,7 @@ ResetThread(int idx, int seed, bool isRotSym, bool isAxSym, double terrainProb, 
         }
         game.objMap.emplace(newLoc, newObj);
     }
+    cout << game.objMap.size() << endl;
     taskCounter++;
 }
 

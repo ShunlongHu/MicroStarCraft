@@ -12,6 +12,12 @@
 using namespace std;
 using namespace chrono;
 
+const unordered_map<int, const unordered_map<GameObjType, int>> RtsMap::MODEL_MAP {
+        {0, {{MINERAL, 12}}},
+        {-1, {{WORKER, 0}, {LIGHT, 1}, {RANGED, 2}, {HEAVY, 3}, {BASE, 4}, {BARRACK, 5}}},
+        {1, {{WORKER, 6}, {LIGHT, 7}, {RANGED, 8}, {HEAVY, 9}, {BASE, 10}, {BARRACK, 11}}},
+};
+
 RtsMap::RtsMap(QWidget *parent) : QOpenGLWidget(parent),
                                                       program(make_shared<QOpenGLShaderProgram>()),
                                                       colorProgram(make_shared<QOpenGLShaderProgram>()),
@@ -94,7 +100,7 @@ void RtsMap::initializeGL()
     }
     //模型网上自己找个，注意格式要符合assimp库支持的。
 //    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\cyborg\\cyborg.obj"));
-    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\objects\\nanosuit\\nanosuit.obj"));
+//    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\objects\\nanosuit\\nanosuit.obj"));
 //    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\cg character\\nova\\dump_obj\\nova.obj"));
     pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Zerg\\drone\\drone.obj"));
     pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Zerg\\zergline\\zergline.obj"));
@@ -200,19 +206,19 @@ void RtsMap::paintGL()
         qDebug() << "bind error" << program->log();
     }
     QMatrix4x4 mMatrix;
-    for (int i = 0; i < game.w * game.h / pModelVec.size()/2; ++i) {
-        for (auto& m: pModelVec) {
-            mMatrix.setToIdentity();
-            auto x = idx % game.w;
-            auto y = idx / game.h;
-            auto xLoc = 2.0f * static_cast<float>(x) / game.w + 1.0f / game.w - 1.0f;
-            auto yLoc = 2.0f * static_cast<float>(y) / game.h + 1.0f / game.h - 1.0f;
-            mMatrix.translate(xLoc, yLoc);
-            mMatrix.scale(1.0f / game.w);
-            program->setUniformValue("model", mMatrix * m->model);
-            m->draw(program.get());
-            idx++;
+    for (const auto& [loc, obj]: game.objMap) {
+        if (obj.type == TERRAIN) {
+            continue;
         }
+        mMatrix.setToIdentity();
+        auto xLoc = 2.0f * static_cast<float>(loc.x) / game.w + 1.0f / game.w - 1.0f;
+        auto yLoc = 2.0f * static_cast<float>(loc.y) / game.h + 1.0f / game.h - 1.0f;
+        mMatrix.translate(xLoc, yLoc);
+        mMatrix.scale(1.0f / game.w);
+        auto& m = pModelVec[MODEL_MAP.at(obj.owner).at(obj.type)];
+        program->setUniformValue("model", mMatrix * m->model);
+        m->draw(program.get());
+        idx++;
     }
     program->release();
 

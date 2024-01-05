@@ -226,19 +226,26 @@ void RtsMap::paintGL()
     textProgram->bind();
     const static float fontSize = 0.75;
     idx = 0;
-    for (int i = 0; i < game.w * game.h/2; ++i) {
+    for (const auto& [loc, obj]: game.objMap) {
         mMatrix.setToIdentity();
-        auto x = idx % game.w;
-        auto y = idx / game.h;
-        auto xLoc = 2.0f * static_cast<float>(x) / game.w + 1.0f / game.w - 1.0f;
-        auto yLoc = 2.0f * static_cast<float>(y) / game.h + 1.0f / game.h - 1.0f;
+        auto xLoc = 2.0f * static_cast<float>(loc.x) / game.w + 1.0f / game.w - 1.0f;
+        auto yLoc = 2.0f * static_cast<float>(loc.y) / game.h + 1.0f / game.h - 1.0f;
         mMatrix.translate(xLoc, yLoc, 1.0 / game.w);
         mMatrix.scale(1.0f / game.w);
         mMatrix.rotate(45.0f, 1, 0, 0);
         textProgram->setUniformValue("model", mMatrix);
-        tMesh->RenderText(*textProgram, "h", -fontSize/2, -1.0f, fontSize / tMesh->fontSize,{1,0,1});
-        tMesh->RenderText(*textProgram, "e", -fontSize/2, -1.0f + fontSize, fontSize / tMesh->fontSize,{1,0,1});
-        idx++;
+        if (obj.type == BASE || obj.type == MINERAL || obj.type == WORKER) {
+            tMesh->RenderText(*textProgram, to_string(obj.resource), -fontSize/2, -1.0f, fontSize / tMesh->fontSize,{0,1,1});
+        }
+        if (OBJ_HP_MAP.count(obj.type)) {
+            auto maxHp = OBJ_HP_MAP.at(obj.type);
+            tMesh->RenderText(*textProgram,
+                              to_string(obj.hitPoint) + "/" + to_string(maxHp),
+                              -fontSize/2,
+                              -1.0f + fontSize,
+                              fontSize / tMesh->fontSize,
+                              {1.0f * (maxHp - obj.hitPoint) / maxHp,1.0f * obj.hitPoint / maxHp,0});
+        }
     }
     auto duration = duration_cast<milliseconds>(high_resolution_clock::now() - start).count();
 

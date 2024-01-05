@@ -16,6 +16,8 @@ using namespace std;
 using namespace std::this_thread; // sleep_for, sleep_until
 using namespace std::chrono; // nanoseconds, system_clock, seconds
 
+constexpr static int INIT_RESOURCE = 10;
+
 static vector<signed char> observationVec[2]; // NUM_WORKER * FLATTENED_FEATURE
 static vector<int> rewardVec[2]; // NUM_WORKER * FEATURE
 static vector<GameState> gameStateVec;
@@ -29,8 +31,8 @@ ResetThread(int idx, int seed, bool isRotSym, bool isAxSym, double terrainProb, 
             int mineralPerCluster) {
     auto &game = gameStateVec[idx];
     game.time = 0;
-    game.resource[0] = 10;
-    game.resource[1] = 10;
+    game.resource[0] = INIT_RESOURCE;
+    game.resource[1] = INIT_RESOURCE;
     game.buildingCnt[0] = 1;
     game.buildingCnt[1] = 1;
     game.objMap = {};
@@ -65,7 +67,9 @@ ResetThread(int idx, int seed, bool isRotSym, bool isAxSym, double terrainProb, 
             break;
         }
         if (expansionVec.empty()) {
-            game.objMap.emplace(Coord{y, x}, GameObj{BASE});
+            GameObj base{BASE};
+            base.resource = INIT_RESOURCE;
+            game.objMap.emplace(Coord{y, x}, base);
         }
         expansionVec.emplace_back(y, x);
         for (int tileY = -MINERAL_DISTANCE; tileY <= MINERAL_DISTANCE; ++tileY) {

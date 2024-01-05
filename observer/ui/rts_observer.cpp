@@ -83,6 +83,12 @@ void RtsObserver::HandleStepButton() {
 }
 
 void RtsObserver::HandleResetButton() {
+    terrainProb = ui->terrainSlider->value();
+    expansionCnt = ui->expansionSlider->value();
+    clusterCnt = ui->clusterSlider->value();
+    resourceCnt = ui->resourceSlider->value();
+    seed = stoi(ui->seedLineEdit->text().toStdString());
+    isAxSym = ui->axialRadio->isChecked();
     RpcClient::SendCommand(message::RESET);
 }
 

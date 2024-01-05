@@ -77,7 +77,7 @@ void MapModel::draw(QOpenGLShaderProgram *program, float mouseX, float mouseY, i
     }
     for (int i = 0; i < meshes.size(); ++i) {
         if (i == tileIdx) {
-            meshes[i]->color = {0,1,0,1};
+            meshes[i]->color = {1,1,1,1};
         }
         meshes[i]->draw(program);
     }

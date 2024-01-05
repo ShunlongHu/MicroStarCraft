@@ -215,7 +215,7 @@ struct GameObj {
     ActionTarget actionTarget;
     uint8_t actionProgress;
     uint8_t actionTotalProgress;
-    uint8_t attackCD;
+    uint8_t attackCD;   // is not used
 
     // static attributes
     uint8_t attackRange;

@@ -93,20 +93,21 @@ ResetThread(int idx, int seed, bool isRotSym, bool isAxSym, double terrainProb, 
     vector<bool> terrainFlagVec(terrainCnt, true);
     terrainFlagVec.resize(remainingTileCnt, false);
     shuffle(terrainFlagVec.begin(), terrainFlagVec.end(), engine);
+    int validIdx = 0;
     for (int i = 0; i < game.w * game.h / 2; ++i){
-        if (!terrainFlagVec[i]) {
-            continue;
-        }
         auto x = i % game.w;
         auto y = i / game.h;
         bool isValidTerrain = true;
         for (const auto& expansion: expansionVec) {
-            if (abs(expansion.x - x) <= 2 * MINERAL_DISTANCE && abs(expansion.y - y) <= 2 * MINERAL_DISTANCE) {
+            if (abs(expansion.x - x) <= MINERAL_DISTANCE && abs(expansion.y - y) <= MINERAL_DISTANCE) {
                 isValidTerrain = false;
                 break;
             }
         }
         if (!isValidTerrain) {
+            continue;
+        }
+        if (!terrainFlagVec[validIdx++]) {
             continue;
         }
         game.objMap.emplace(Coord{y, x}, GameObj{TERRAIN});

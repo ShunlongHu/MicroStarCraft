@@ -224,7 +224,7 @@ void RtsMap::paintGL()
     program->release();
 
     textProgram->bind();
-    const static float fontSize = 0.75;
+    const static float fontSize = 0.50;
     idx = 0;
     for (const auto& [loc, obj]: game.objMap) {
         mMatrix.setToIdentity();
@@ -245,6 +245,15 @@ void RtsMap::paintGL()
                               -1.0f + fontSize,
                               fontSize / tMesh->fontSize,
                               {1.0f * (maxHp - obj.hitPoint) / maxHp,1.0f * obj.hitPoint / maxHp,0});
+        }
+        if (obj.actionTotalProgress != 0) {
+            tMesh->RenderText(*textProgram,
+                              to_string(obj.actionProgress) + "/" + to_string(obj.actionTotalProgress),
+                              -fontSize/2,
+                              -1.0f - fontSize,
+                              fontSize / tMesh->fontSize,
+                              {0,0,1});
+
         }
     }
     auto duration = duration_cast<milliseconds>(high_resolution_clock::now() - start).count();

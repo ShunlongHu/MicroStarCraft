@@ -296,6 +296,7 @@ template<class K, class V, class H>
 std::istream &operator>>(std::istream &is, std::unordered_map<K, V, H> &ht) {
     size_t size;
     Deserialize(is, size);
+    ht.clear();
     ht.reserve(size);
     for (size_t i = 0; i < size; ++i) {
         K key;

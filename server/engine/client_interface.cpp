@@ -141,7 +141,6 @@ ResetThread(int idx, int seed, bool isRotSym, bool isAxSym, double terrainProb, 
         }
         game.objMap.emplace(newLoc, newObj);
     }
-    cout << game.objMap.size() << endl;
     taskCounter++;
 }
 

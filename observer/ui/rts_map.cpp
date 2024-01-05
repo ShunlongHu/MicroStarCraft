@@ -196,6 +196,7 @@ void RtsMap::paintGL()
     auto mousePos = mapFromGlobal(QCursor::pos());
     float mouseY = -(static_cast<float>(mousePos.y()) / QWidget::height() * 2.0f - 1);
     float mouseX = static_cast<float>(mousePos.x()) / QWidget::width() * 2.0f - 1;
+    mModel->refreshModel(game);
     mModel->draw(colorProgram.get(), mouseX, mouseY, game.w);
     colorProgram->release();
 

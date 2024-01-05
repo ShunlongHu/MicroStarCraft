@@ -17,8 +17,7 @@ MapModel::MapModel(const GameState& state)
 
 bool MapModel::loadModel(const GameState& state)
 {
-    const static QVector4D tileColor = {0.7,0.7,0.7,1.0f};
-    const static QVector4D terrainColor = {0.,0.,0.,1.0f};
+
     vector<bool> isTerrain(state.w * state.h, false);
 
     for (const auto& [loc, obj]: state.objMap) {
@@ -46,12 +45,13 @@ bool MapModel::loadModel(const GameState& state)
             }
 
             if (isTerrain[i * state.w + j]) {
-                meshes.emplace_back(make_shared<MapMesh>(coord, idx, terrainColor));
+                meshes.emplace_back(make_shared<MapMesh>(coord, idx, TERRAIN_COLOR));
                 continue;
             }
-            meshes.emplace_back(make_shared<MapMesh>(coord, idx, tileColor));
+            meshes.emplace_back(make_shared<MapMesh>(coord, idx, TILE_COLOR));
         }
     }
+    lastState = state;
     return true;
 }
 void MapModel::draw(QOpenGLShaderProgram *program, float mouseX, float mouseY, int w) {
@@ -72,8 +72,8 @@ void MapModel::draw(QOpenGLShaderProgram *program, float mouseX, float mouseY, i
     if (tileX != -1 && tileY != -1) {
         tileIdx = tileX + tileY * w;
     }
-    if (lastTileIdx != -1) {
-        meshes[lastTileIdx]->color = meshes[lastTileIdx]->origColor;
+    if (prevSelTileIdx != -1) {
+        meshes[prevSelTileIdx]->color = meshes[prevSelTileIdx]->origColor;
     }
     for (int i = 0; i < meshes.size(); ++i) {
         if (i == tileIdx) {
@@ -81,5 +81,33 @@ void MapModel::draw(QOpenGLShaderProgram *program, float mouseX, float mouseY, i
         }
         meshes[i]->draw(program);
     }
-    lastTileIdx = tileIdx;
+    prevSelTileIdx = tileIdx;
+}
+
+void MapModel::refreshModel(const GameState &state) {
+    if (state.time != 0) {
+        return;
+    }
+    if (lastState == state) {
+        return;
+    }
+    vector<bool> isTerrain(state.w * state.h, false);
+    for (const auto& [loc, obj]: state.objMap) {
+        if (obj.type == TERRAIN) {
+            isTerrain[loc.x + loc.y * state.w] = true;
+        }
+    }
+    for (auto i = 0; i < state.h; ++i) {
+        for (auto j = 0; j < state.w; ++j) {
+            vector<GLuint> idx {2,1,0,3,2,0};
+            if (isTerrain[i * state.w + j]) {
+                meshes[i * state.w + j]->origColor = TERRAIN_COLOR;
+                meshes[i * state.w + j]->color = TERRAIN_COLOR;
+                continue;
+            }
+            meshes[i * state.w + j]->origColor = TILE_COLOR;
+            meshes[i * state.w + j]->color = TILE_COLOR;
+        }
+    }
+    lastState = state;
 }

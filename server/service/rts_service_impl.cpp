@@ -72,6 +72,7 @@ Status RtsServiceImpl::ConnectObserver(ServerContext* context, ServerReaderWrite
         if (msg.command() == message::RESET) {
             cout << "observer cmd reset!" << endl;
             initParam = msg;
+            tickingCycle = INT32_MAX;
             reset = true;
         }
     }

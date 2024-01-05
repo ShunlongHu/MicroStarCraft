@@ -21,6 +21,7 @@ public:
     explicit MapModel(const GameState& state);
     //加载模型
     bool loadModel(const GameState& state);
+    void refreshModel(const GameState& state);
     void draw(QOpenGLShaderProgram *program, float mouseX, float mouseY, int w);
     std::vector<std::shared_ptr<MapMesh>> meshes;
     std::vector<float> tileXMin;
@@ -29,6 +30,11 @@ public:
     std::vector<float> tileYMax;
     std::vector<QVector2D> verticalSpliterMin; // x = ky + b
     std::vector<QVector2D> verticalSpliterMax; // x = ky + b
-    int lastTileIdx = -1;
+    int prevSelTileIdx = -1;
+
+    constexpr const static QVector4D TILE_COLOR {0.7,0.7,0.7,1.0f};
+    constexpr const static QVector4D TERRAIN_COLOR {0.,0.,0.,1.0f};
+private:
+    GameState lastState;
 };
 #endif // !MAP_MODEL_H

@@ -5,8 +5,9 @@
 #include <QSharedPointer>
 #include <QOpenGLTexture>
 #include <QMessageBox>
+#include <cmath>
 using namespace std;
-MapModel::MapModel(const GameState& state)
+MapModel::MapModel(const string& state)
 {
     //Clear();
     if (!loadModel(state))
@@ -15,24 +16,24 @@ MapModel::MapModel(const GameState& state)
     }
 }
 
-bool MapModel::loadModel(const GameState& state)
+bool MapModel::loadModel(const string& state)
 {
-
-    vector<bool> isTerrain(state.w * state.h, false);
-
-    for (const auto& [loc, obj]: state.objMap) {
-        if (obj.type == TERRAIN) {
-            isTerrain[loc.x + loc.y * state.w] = true;
+    auto size = state.size() / OBSERVATION_PLANE_NUM;
+    int w = 0;
+    for (int i = 0; i < size; ++i) {
+        if (i * i == size) {
+            w = i;
+            break;
         }
     }
-    float vEdge = 1.0f / state.h/10;
-    float hEdge = 1.0f / state.w/10;
-    for (auto i = 0; i < state.h; ++i) {
-        for (auto j = 0; j < state.w; ++j) {
-            float yMin = (float)i * 2.0f / state.h - 1.0f + vEdge;
-            float yMax = ((float)i * 2.0f + 2.0f) / state.h - 1.0f - vEdge;
-            float xMin = (float)j * 2.0f / state.w - 1.0f + hEdge;
-            float xMax = ((float)j * 2.0f + 2.0f) / state.w - 1.0f - hEdge;
+    float vEdge = 1.0f / w/10;
+    float hEdge = 1.0f / w/10;
+    for (auto i = 0; i < w; ++i) {
+        for (auto j = 0; j < w; ++j) {
+            float yMin = (float)i * 2.0f / w - 1.0f + vEdge;
+            float yMax = ((float)i * 2.0f + 2.0f) / w - 1.0f - vEdge;
+            float xMin = (float)j * 2.0f / w - 1.0f + hEdge;
+            float xMax = ((float)j * 2.0f + 2.0f) / w - 1.0f - hEdge;
             vector<QVector3D> coord {{xMin,yMin, 0}, {xMin, yMax, 0}, {xMax, yMax, 0}, {xMax, yMin, 0}};
             vector<GLuint> idx {2,1,0,3,2,0};
             if (i == 0) {
@@ -44,7 +45,7 @@ bool MapModel::loadModel(const GameState& state)
                 tileYMax.emplace_back(yMax);
             }
 
-            if (isTerrain[i * state.w + j]) {
+            if (state[(OBJ_TYPE + TERRAIN) * w * w + i * w + j]) {
                 meshes.emplace_back(make_shared<MapMesh>(coord, idx, TERRAIN_COLOR));
                 continue;
             }
@@ -84,29 +85,28 @@ void MapModel::draw(QOpenGLShaderProgram *program, float mouseX, float mouseY, i
     prevSelTileIdx = tileIdx;
 }
 
-void MapModel::refreshModel(const GameState &state) {
-    if (state.time != 0) {
-        return;
-    }
+void MapModel::refreshModel(const string &state) {
     if (lastState == state) {
         return;
     }
-    vector<bool> isTerrain(state.w * state.h, false);
-    for (const auto& [loc, obj]: state.objMap) {
-        if (obj.type == TERRAIN) {
-            isTerrain[loc.x + loc.y * state.w] = true;
+    auto size = state.size() / OBSERVATION_PLANE_NUM;
+    int w = 0;
+    for (int i = 0; i < size; ++i) {
+        if (i * i == size) {
+            w = i;
+            break;
         }
     }
-    for (auto i = 0; i < state.h; ++i) {
-        for (auto j = 0; j < state.w; ++j) {
+    for (auto i = 0; i < w; ++i) {
+        for (auto j = 0; j < w; ++j) {
             vector<GLuint> idx {2,1,0,3,2,0};
-            if (isTerrain[i * state.w + j]) {
-                meshes[i * state.w + j]->origColor = TERRAIN_COLOR;
-                meshes[i * state.w + j]->color = TERRAIN_COLOR;
+            if (state[(OBJ_TYPE + TERRAIN) * w * w + i * w + j]) {
+                meshes[i * w + j]->origColor = TERRAIN_COLOR;
+                meshes[i * w + j]->color = TERRAIN_COLOR;
                 continue;
             }
-            meshes[i * state.w + j]->origColor = TILE_COLOR;
-            meshes[i * state.w + j]->color = TILE_COLOR;
+            meshes[i * w + j]->origColor = TILE_COLOR;
+            meshes[i * w + j]->color = TILE_COLOR;
         }
     }
     lastState = state;

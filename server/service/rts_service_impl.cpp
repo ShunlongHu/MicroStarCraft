@@ -25,15 +25,18 @@ static atomic<bool> tick {false};
 static atomic<bool> gameStart {true};
 static atomic<bool> serverStart {true};
 static mutex stateLock;
-
+static std::atomic<bool> isAConnected {false};
+static std::atomic<bool> isBConnected {false};
 static ObservationRequest initParam;
 
+static string action[2];
+static TotalObservation totalObs;
+
 Status RtsServiceImpl::ConnectObserver(ServerContext* context, ServerReaderWriter<Message, ObservationRequest>* stream) {
-    cout << "Connected!" << endl;
+    cout << "Observer Connected!" << endl;
     atomic<bool> isEnd {false};
     std::thread writer([stream, &isEnd]() {
         Message msg;
-        msg.mutable_msg()->append("hello");
         GameState lastGameState;
         while (!isEnd) {
             sleep_for(milliseconds(10));
@@ -82,12 +85,47 @@ Status RtsServiceImpl::ConnectObserver(ServerContext* context, ServerReaderWrite
     return Status::OK;
 }
 Status RtsServiceImpl::ConnectPlayer(ServerContext* context, ServerReaderWriter<Message, PlayerRequest>* stream) {
-    Message msg;
-    msg.set_msg("hello!");
-    while(true) {
-        stream->Write(msg);
-        sleep_for(milliseconds (500));
+    cout << "Player Connected!" << endl;
+    atomic<bool> isEnd {false};
+    atomic<int> side {-1};
+    std::thread writer([stream, &isEnd, &side]() {
+        Message msg;
+        GameState lastGameState;
+        while (!isEnd) {
+            sleep_for(milliseconds(10));
+            if (side == -1) {
+                continue;
+            }
+            {
+                unique_lock<mutex> lockGuard(stateLock);
+                if (lastGameState == GetGameState(0)) {
+                    continue;
+                }
+                lastGameState = GetGameState(0);
+                auto &ob = side == 0 ? totalObs.ob1 : totalObs.ob2;
+                msg.mutable_data()->resize(ob.size);
+                for (int i = 0; i < ob.size; ++i) {
+                    (*msg.mutable_data())[i] = ob.data[i];
+                }
+            }
+            stream->Write(msg);
+        }
+    });
+    PlayerRequest msg;
+    while(stream->Read(&msg)) {
+        side = msg.role();
+        if (msg.command() == message::DISCONNECT) {
+            cout << "player " << static_cast<char>('A' + static_cast<char>(msg.role())) << " disconnect!" << endl;
+            isEnd = true;
+            continue;
+        }
+        cout << "player " << static_cast<char>('A' + static_cast<char>(msg.role())) << " act!" << endl;
+        unique_lock<mutex> lockGuard(stateLock);
+        auto& act = action[msg.role()];
+        act.swap(*msg.mutable_data());
     }
+    writer.join();
+    cout << "player " << static_cast<char>('A' + static_cast<char>(side)) << " disconnect!" << endl;
     return Status::OK;
 }
 
@@ -116,7 +154,10 @@ void RtsServiceImpl::mainLoop() {
             reset = false;
         }
         if (tick) {
-            GetGameState(0).time++;
+            totalObs = Step(TotalAction{
+                {reinterpret_cast<signed char*>(action[0].data()), static_cast<int>(action[0].size())},
+                {reinterpret_cast<signed char*>(action[1].data()), static_cast<int>(action[1].size())}});
+//            GetGameState(0).time++;
             tick = false;
         }
         if (gameStart) {

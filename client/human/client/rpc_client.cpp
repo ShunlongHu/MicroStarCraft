@@ -26,7 +26,9 @@ using namespace std::chrono; // nanoseconds, system_clock, seconds
 using namespace message;
 
 static atomic<int> command {INVALID_COMMAND};
-static GameState state;
+static int role = 0;
+static string action;
+static string ob;
 static mutex stateLock;
 atomic<bool> RpcClient::stop { true };
 static vector<int> rx;
@@ -44,8 +46,8 @@ private:
 RtsClient::RtsClient(const std::shared_ptr<Channel>& channel) : stub_(Rts::NewStub(channel)), channel_(channel){}
 void RtsClient::Connect() {
     ClientContext context;
-    std::shared_ptr<ClientReaderWriter<ObservationRequest, Message> > stream(
-            stub_->ConnectObserver(&context));
+    std::shared_ptr<ClientReaderWriter<PlayerRequest, Message> > stream(
+            stub_->ConnectPlayer(&context));
     if (channel_->GetState(false) != GRPC_CHANNEL_READY) {
         return;
     }
@@ -61,17 +63,10 @@ void RtsClient::Connect() {
                 sleep_for(microseconds (100));
                 continue;
             }
-            ObservationRequest request;
+            PlayerRequest request;
             request.set_command(static_cast<message::Command>(command.load()));
-            if (command == RESET) {
-                request.set_clusterperexpansion(RtsHuman::clusterCnt);
-                request.set_mineralpercluster(RtsHuman::resourceCnt);
-                request.set_expansioncnt(RtsHuman::expansionCnt);
-                request.set_terrainprob(RtsHuman::terrainProb);
-                request.set_seed(RtsHuman::seed);
-                request.set_isaxsym(RtsHuman::isAxSym);
-                request.set_isrotsym(!RtsHuman::isAxSym);
-            }
+            request.set_role(role == 0 ? Role::PLAYER_A : Role::PLAYER_B);
+            request.set_data(action);
             stream->Write(request);
             if (command == SpecialCommand::DISCONNECT) {
                 stream->WritesDone();
@@ -86,9 +81,10 @@ void RtsClient::Connect() {
     Message result;
 
     while (!RpcClient::stop && stream->Read(&result)) {
-        istringstream iss(result.data(), ios::binary);
-        unique_lock<mutex> lockGuard(stateLock);
-        iss >> state;
+        ob.resize(result.data().size());
+        for (int i = 0; i < result.data().size(); ++i) {
+            ob[i] = result.data()[i];
+        }
         newState = true;
     }
     writer.join();
@@ -115,7 +111,7 @@ void RpcClient::SendCommand(Command cmd){
     }
 }
 
-GameState RpcClient::GetObservation() {
+string RpcClient::GetObservation() {
     unique_lock<mutex> lockGuard(stateLock);
-    return state;
+    return ob;
 };

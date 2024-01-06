@@ -186,9 +186,17 @@ void RtsMap::paintGL()
 
     // draw board
     auto game = RpcClient::GetObservation();
-    static int w = -1;
-    if (game.w != w) {
-        w = game.w;
+    auto size = game.size() / OBSERVATION_PLANE_NUM;
+    int w = 1;
+    for (int i = 0; i < size; ++i) {
+        if (i * i == size) {
+            w = i;
+            break;
+        }
+    }
+    static int lastW = -1;
+    if (w != lastW) {
+        lastW = w;
         initMap(game);
     }
     colorProgram->bind();
@@ -197,65 +205,68 @@ void RtsMap::paintGL()
     float mouseY = -(static_cast<float>(mousePos.y()) / QWidget::height() * 2.0f - 1);
     float mouseX = static_cast<float>(mousePos.x()) / QWidget::width() * 2.0f - 1;
     mModel->refreshModel(game);
-    mModel->draw(colorProgram.get(), mouseX, mouseY, game.w);
+    mModel->draw(colorProgram.get(), mouseX, mouseY, w);
     colorProgram->release();
 
     // draw units
-    int idx = 0;
     if (!program->bind())
     {
         qDebug() << "bind error" << program->log();
     }
     QMatrix4x4 mMatrix;
-    for (const auto& [loc, obj]: game.objMap) {
-        if (obj.type == TERRAIN) {
-            continue;
+    for (int y = 0; y < w; ++y) {
+        for (int x = 0; x < w; ++x) {
+            for (int type = 0; type < GAME_OBJ_TYPE_NUM; ++type){
+                if (!game[(OBJ_TYPE + type) * w * w + y * w + x]) {
+                    continue;
+                }
+                mMatrix.setToIdentity();
+                auto xLoc = 2.0f * static_cast<float>(x) / w + 1.0f / w - 1.0f;
+                auto yLoc = 2.0f * static_cast<float>(y) / w + 1.0f / w - 1.0f;
+                mMatrix.translate(xLoc, yLoc);
+                mMatrix.scale(1.0f / w);
+                int owner = game[OWNER_2 * w * w + y * w + x] == 1;
+                auto& m = pModelVec[MODEL_MAP.at(owner).at(GameObjType(type))];
+                program->setUniformValue("model", mMatrix * m->model);
+                m->draw(program.get());
+                break;
+            }
         }
-        mMatrix.setToIdentity();
-        auto xLoc = 2.0f * static_cast<float>(loc.x) / game.w + 1.0f / game.w - 1.0f;
-        auto yLoc = 2.0f * static_cast<float>(loc.y) / game.h + 1.0f / game.h - 1.0f;
-        mMatrix.translate(xLoc, yLoc);
-        mMatrix.scale(1.0f / game.w);
-        auto& m = pModelVec[MODEL_MAP.at(obj.owner).at(obj.type)];
-        program->setUniformValue("model", mMatrix * m->model);
-        m->draw(program.get());
-        idx++;
     }
     program->release();
 
     textProgram->bind();
     const static float fontSize = 0.50;
-    idx = 0;
-    for (const auto& [loc, obj]: game.objMap) {
-        mMatrix.setToIdentity();
-        auto xLoc = 2.0f * static_cast<float>(loc.x) / game.w + 1.0f / game.w - 1.0f;
-        auto yLoc = 2.0f * static_cast<float>(loc.y) / game.h + 1.0f / game.h - 1.0f;
-        mMatrix.translate(xLoc, yLoc, 1.0 / game.w);
-        mMatrix.scale(1.0f / game.w);
-        mMatrix.rotate(45.0f, 1, 0, 0);
-        textProgram->setUniformValue("model", mMatrix);
-        if (obj.type == BASE || obj.type == MINERAL || obj.type == WORKER) {
-            tMesh->RenderText(*textProgram, to_string(obj.resource), -fontSize/2, -1.0f, fontSize / tMesh->fontSize,{0,1,1});
-        }
-        if (OBJ_HP_MAP.count(obj.type)) {
-            auto maxHp = OBJ_HP_MAP.at(obj.type);
-            tMesh->RenderText(*textProgram,
-                              to_string(obj.hitPoint) + "/" + to_string(maxHp),
-                              -fontSize/2,
-                              -1.0f + fontSize,
-                              fontSize / tMesh->fontSize,
-                              {1.0f * (maxHp - obj.hitPoint) / maxHp,1.0f * obj.hitPoint / maxHp,0});
-        }
-        if (obj.actionTotalProgress != 0) {
-            tMesh->RenderText(*textProgram,
-                              to_string(obj.actionProgress) + "/" + to_string(obj.actionTotalProgress),
-                              -fontSize/2,
-                              -1.0f - fontSize,
-                              fontSize / tMesh->fontSize,
-                              {0,0,1});
-
-        }
-    }
+//    for (const auto& [loc, obj]: game.objMap) {
+//        mMatrix.setToIdentity();
+//        auto xLoc = 2.0f * static_cast<float>(loc.x) / w + 1.0f / w - 1.0f;
+//        auto yLoc = 2.0f * static_cast<float>(loc.y) / w + 1.0f / w - 1.0f;
+//        mMatrix.translate(xLoc, yLoc, 1.0 / w);
+//        mMatrix.scale(1.0f / w);
+//        mMatrix.rotate(45.0f, 1, 0, 0);
+//        textProgram->setUniformValue("model", mMatrix);
+//        if (obj.type == BASE || obj.type == MINERAL || obj.type == WORKER) {
+//            tMesh->RenderText(*textProgram, to_string(obj.resource), -fontSize/2, -1.0f, fontSize / tMesh->fontSize,{0,1,1});
+//        }
+//        if (OBJ_HP_MAP.count(obj.type)) {
+//            auto maxHp = OBJ_HP_MAP.at(obj.type);
+//            tMesh->RenderText(*textProgram,
+//                              to_string(obj.hitPoint) + "/" + to_string(maxHp),
+//                              -fontSize/2,
+//                              -1.0f + fontSize,
+//                              fontSize / tMesh->fontSize,
+//                              {1.0f * (maxHp - obj.hitPoint) / maxHp,1.0f * obj.hitPoint / maxHp,0});
+//        }
+//        if (obj.actionTotalProgress != 0) {
+//            tMesh->RenderText(*textProgram,
+//                              to_string(obj.actionProgress) + "/" + to_string(obj.actionTotalProgress),
+//                              -fontSize/2,
+//                              -1.0f - fontSize,
+//                              fontSize / tMesh->fontSize,
+//                              {0,0,1});
+//
+//        }
+//    }
     auto duration = duration_cast<milliseconds>(high_resolution_clock::now() - start).count();
 
     QMatrix4x4 identity;
@@ -279,7 +290,7 @@ void RtsMap::resizeGL(int width, int height)
     update();
 }
 
-void RtsMap::initMap(const GameState& gameState) {
+void RtsMap::initMap(const string& gameState) {
     mModel = make_shared<MapModel>(gameState);
     for (auto& y:mModel->tileYMin) {
         QVector4D pt{0, y, 0, 1};

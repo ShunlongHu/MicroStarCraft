@@ -18,10 +18,10 @@ class MapModel
 {
 public:
     MapModel() = default;
-    explicit MapModel(const GameState& state);
+    explicit MapModel(const std::string& state);
     //加载模型
-    bool loadModel(const GameState& state);
-    void refreshModel(const GameState& state);
+    bool loadModel(const std::string& state);
+    void refreshModel(const std::string& state);
     void draw(QOpenGLShaderProgram *program, float mouseX, float mouseY, int w);
     std::vector<std::shared_ptr<MapMesh>> meshes;
     std::vector<float> tileXMin;
@@ -35,6 +35,6 @@ public:
     constexpr const static QVector4D TILE_COLOR {0.7,0.7,0.7,1.0f};
     constexpr const static QVector4D TERRAIN_COLOR {0.,0.,0.,1.0f};
 private:
-    GameState lastState;
+    std::string lastState;
 };
 #endif // !MAP_MODEL_H

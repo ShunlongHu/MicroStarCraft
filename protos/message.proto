@@ -34,8 +34,9 @@ message ObservationRequest {
 }
 
 message PlayerRequest {
-    Role role = 1;
-    bytes data = 2;
+    Command command = 1;
+    Role role = 2;
+    bytes data = 3;
 }
 
 service Rts {

@@ -18,7 +18,7 @@ namespace RpcClient {
 
     void SendCommand(message::Command cmd);
 
-    GameState GetObservation();
+    std::string GetObservation();
 
     extern std::atomic<bool> stop;
     extern std::atomic<bool> newState;

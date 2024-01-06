@@ -65,7 +65,7 @@ void RtsHuman::HandleConnectButton() {
 void RtsHuman::HandleRenderTimer() {
     this->RefreshButton();
     if (RpcClient::newState.exchange(false)) {
-        ui->timeDisplayLabel->setText(QString::fromStdString(to_string(RpcClient::GetObservation().time)));
+//        ui->timeDisplayLabel->setText(QString::fromStdString(to_string(RpcClient::GetObservation().time)));
         this->ui->mapWidget->repaint();
     }
 }

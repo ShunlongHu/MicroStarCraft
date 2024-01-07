@@ -59,6 +59,7 @@ void RtsObserver::HandleConnectButton() {
         return;
     }
     threadPool.enqueue(RpcClient::Connect, ip + ":" + port);
+    sleep_for(milliseconds(10));
     HandleResetButton();
 }
 

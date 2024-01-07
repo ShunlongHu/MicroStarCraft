@@ -119,6 +119,10 @@ Status RtsServiceImpl::ConnectPlayer(ServerContext* context, ServerReaderWriter<
             isEnd = true;
             continue;
         }
+        if (msg.command() == message::START) {
+            cout << "player " << static_cast<char>('A' + static_cast<char>(msg.role())) << " echo!" << endl;
+            continue;
+        }
         cout << "player " << static_cast<char>('A' + static_cast<char>(msg.role())) << " act!" << endl;
         unique_lock<mutex> lockGuard(stateLock);
         auto& act = action[msg.role()];

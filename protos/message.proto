@@ -33,10 +33,17 @@ message ObservationRequest {
     int32 mineralPerCluster = 8;
 }
 
+message Action {
+    int32 id = 1;
+    int32 action = 2;
+    int32 targetX = 3;
+    int32 targetY = 4;
+}
+
 message PlayerRequest {
     Command command = 1;
     Role role = 2;
-    bytes data = 3;
+    repeated Action actions = 3;
 }
 
 service Rts {

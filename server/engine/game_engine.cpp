@@ -49,9 +49,9 @@ void GameReset(GameState *ptrGameState, int seed, bool isRotSym, bool isAxSym, d
             break;
         }
         if (expansionVec.empty()) {
-            GameObj base{BASE};
+            GameObj base{BASE, {y,x}};
             base.resource = INIT_RESOURCE;
-            game.objMap.emplace(Coord{y, x}, base);
+            game.objMap.emplace(game.objCnt++, base);
         }
         expansionVec.emplace_back(y, x);
         for (int tileY = -MINERAL_DISTANCE; tileY <= MINERAL_DISTANCE; ++tileY) {
@@ -67,7 +67,7 @@ void GameReset(GameState *ptrGameState, int seed, bool isRotSym, bool isAxSym, d
                 {{-2,2},{-1,2},{0,2},{1,2},{2,2}}};
         for (int exp = 0; exp < clusterPerExpansion; ++exp) {
             const auto &coord = DIRECTION_OFFSET_MAP[dir][exp];
-            game.objMap.emplace(Coord{y + coord.y, x + coord.x}, GameObj{MINERAL});
+            game.objMap.emplace(game.objCnt++, GameObj{MINERAL, Coord{y + coord.y, x + coord.x}});
         }
     }
     int remainingTileCnt = game.h * game.w / 2 - (MINERAL_DISTANCE * 2 + 1) * (MINERAL_DISTANCE * 2 + 1) * expansionCnt;
@@ -92,7 +92,7 @@ void GameReset(GameState *ptrGameState, int seed, bool isRotSym, bool isAxSym, d
         if (!terrainFlagVec[validIdx++]) {
             continue;
         }
-        game.objMap.emplace(Coord{y, x}, GameObj{TERRAIN});
+        game.objMap.emplace(game.objCnt++, GameObj{TERRAIN, {y, x}});
     }
     for (auto& [_, obj]: game.objMap) {
         if (obj.type == MINERAL) {
@@ -116,8 +116,8 @@ void GameReset(GameState *ptrGameState, int seed, bool isRotSym, bool isAxSym, d
         obj.actionMask = OBJ_ACTION_MASK_MAP.at(obj.type);
     }
     auto cpy = game.objMap;
-    for (const auto& [loc, obj]: cpy) {
-        auto newLoc = loc;
+    for (const auto& [_, obj]: cpy) {
+        auto newLoc = obj.coord;
         auto newObj = obj;
         newLoc.y = game.h - newLoc.y - 1;
         if (isRotSym) {
@@ -126,14 +126,19 @@ void GameReset(GameState *ptrGameState, int seed, bool isRotSym, bool isAxSym, d
         if (newObj.owner == -1) {
             newObj.owner = 1;
         }
-        game.objMap.emplace(newLoc, newObj);
+        newObj.coord = newLoc;
+        game.objMap.emplace(game.objCnt++, newObj);
     }
     taskCounter++;
 }
 
 void GameStep(GameState* ptrGameState, atomic<int>* ptrCounter) {
-    auto& gameState = *ptrGameState;
+    auto& game = *ptrGameState;
     auto& counter = *ptrCounter;
 
     counter++;
+}
+
+void GameStepSingle(GameState& game, TotalDiscreteAction action) {
+    game.time++;
 }

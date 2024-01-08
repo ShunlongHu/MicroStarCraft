@@ -29,8 +29,7 @@ static std::atomic<bool> isAConnected {false};
 static std::atomic<bool> isBConnected {false};
 static ObservationRequest initParam;
 
-static string action[2];
-static TotalObservation totalObs;
+static TotalDiscreteAction totalAction;
 
 Status RtsServiceImpl::ConnectObserver(ServerContext* context, ServerReaderWriter<Message, ObservationRequest>* stream) {
     cout << "Observer Connected!" << endl;
@@ -102,11 +101,11 @@ Status RtsServiceImpl::ConnectPlayer(ServerContext* context, ServerReaderWriter<
                     continue;
                 }
                 lastGameState = GetGameState(0);
-                auto &ob = side == 0 ? totalObs.ob1 : totalObs.ob2;
-                msg.mutable_data()->resize(ob.size);
-                for (int i = 0; i < ob.size; ++i) {
-                    (*msg.mutable_data())[i] = ob.data[i];
-                }
+                ostringstream oss(ios::binary);
+                oss << lastGameState;
+
+                msg.set_data(oss.str());
+                stream->Write(msg);
             }
             stream->Write(msg);
         }
@@ -125,8 +124,12 @@ Status RtsServiceImpl::ConnectPlayer(ServerContext* context, ServerReaderWriter<
         }
         cout << "player " << static_cast<char>('A' + static_cast<char>(msg.role())) << " act!" << endl;
         unique_lock<mutex> lockGuard(stateLock);
-        auto& act = action[msg.role()];
-        act.swap(*msg.mutable_data());
+        auto& act = totalAction.action[msg.role()];
+        act.clear();
+        act.reserve(msg.actions_size());
+        for (const auto& a: msg.actions()) {
+            act.emplace(a.id(), DiscreteAction{static_cast<ActionType>(a.action()), {a.targety(), a.targetx()}});
+        }
     }
     writer.join();
     cout << "player " << static_cast<char>('A' + static_cast<char>(side)) << " disconnect!" << endl;
@@ -158,17 +161,14 @@ void RtsServiceImpl::mainLoop() {
             reset = false;
         }
         if (tick) {
-            totalObs = Step(TotalAction{
-                {reinterpret_cast<signed char*>(action[0].data()), static_cast<int>(action[0].size())},
-                {reinterpret_cast<signed char*>(action[1].data()), static_cast<int>(action[1].size())}});
-            GetGameState(0).time++;
+            Step(totalAction);
             tick = false;
         }
         if (gameStart) {
             auto now = chrono::high_resolution_clock::now();
             if (duration_cast<milliseconds>(now - time).count() >= tickingCycle) {
                 time = now;
-                GetGameState(0).time++;
+                Step(totalAction);
             }
         }
     }

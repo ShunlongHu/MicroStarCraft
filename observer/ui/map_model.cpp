@@ -20,9 +20,9 @@ bool MapModel::loadModel(const GameState& state)
 
     vector<bool> isTerrain(state.w * state.h, false);
 
-    for (const auto& [loc, obj]: state.objMap) {
+    for (const auto& [_, obj]: state.objMap) {
         if (obj.type == TERRAIN) {
-            isTerrain[loc.x + loc.y * state.w] = true;
+            isTerrain[obj.coord.x + obj.coord.y * state.w] = true;
         }
     }
     float vEdge = 1.0f / state.h/10;
@@ -92,9 +92,9 @@ void MapModel::refreshModel(const GameState &state) {
         return;
     }
     vector<bool> isTerrain(state.w * state.h, false);
-    for (const auto& [loc, obj]: state.objMap) {
+    for (const auto& [_, obj]: state.objMap) {
         if (obj.type == TERRAIN) {
-            isTerrain[loc.x + loc.y * state.w] = true;
+            isTerrain[obj.coord.x + obj.coord.y * state.w] = true;
         }
     }
     for (auto i = 0; i < state.h; ++i) {

@@ -13,4 +13,6 @@ void GameReset(GameState *ptrGameState, int seed, bool isRotSym, bool isAxSym, d
 
 void GameStep(GameState *ptrGameState, std::atomic<int> *ptrCounter);
 
+void GameStepSingle(GameState& game, TotalDiscreteAction action);
+
 #endif //RTS_GAME_ENGINE_H

@@ -16,8 +16,8 @@ void StateToObservation(const GameState* ptrGameState, std::vector<signed char>*
         ob[0][i] = false;
     }
 
-    for (const auto& [loc, obj]: game.objMap) {
-        auto coord = loc.x + loc.y * game.w;
+    for (const auto& [_, obj]: game.objMap) {
+        auto coord = obj.coord.x + obj.coord.y * game.w;
         if (OBJ_HP_MAP.count(obj.type)) {
             auto layer = HP_1 + obj.hitPoint -1;
             layer = max<int>(layer, HP_6_PLUS);

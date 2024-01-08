@@ -82,3 +82,7 @@ Reset(int seed, bool isRotSym, bool isAxSym, double terrainProb, int expansionCn
     }
     return totalObservation;
 }
+
+void Step(const TotalDiscreteAction& action) {
+    GameStepSingle(gameStateVec[0], action);
+}

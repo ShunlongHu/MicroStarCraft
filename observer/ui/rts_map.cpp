@@ -244,13 +244,13 @@ void RtsMap::paintGL()
         qDebug() << "bind error" << program->log();
     }
     QMatrix4x4 mMatrix;
-    for (const auto& [loc, obj]: game.objMap) {
+    for (const auto& [_, obj]: game.objMap) {
         if (obj.type == TERRAIN) {
             continue;
         }
         mMatrix.setToIdentity();
-        auto xLoc = 2.0f * static_cast<float>(loc.x) / game.w + 1.0f / game.w - 1.0f;
-        auto yLoc = 2.0f * static_cast<float>(loc.y) / game.h + 1.0f / game.h - 1.0f;
+        auto xLoc = 2.0f * static_cast<float>(obj.coord.x) / game.w + 1.0f / game.w - 1.0f;
+        auto yLoc = 2.0f * static_cast<float>(obj.coord.y) / game.h + 1.0f / game.h - 1.0f;
         mMatrix.translate(xLoc, yLoc);
         mMatrix.scale(1.0f / game.w);
         auto& m = pModelVec[MODEL_MAP.at(obj.owner).at(obj.type)];
@@ -263,10 +263,10 @@ void RtsMap::paintGL()
     textProgram->bind();
     const static float fontSize = 0.50;
     idx = 0;
-    for (const auto& [loc, obj]: game.objMap) {
+    for (const auto& [_, obj]: game.objMap) {
         mMatrix.setToIdentity();
-        auto xLoc = 2.0f * static_cast<float>(loc.x) / game.w + 1.0f / game.w - 1.0f;
-        auto yLoc = 2.0f * static_cast<float>(loc.y) / game.h + 1.0f / game.h - 1.0f;
+        auto xLoc = 2.0f * static_cast<float>(obj.coord.x) / game.w + 1.0f / game.w - 1.0f;
+        auto yLoc = 2.0f * static_cast<float>(obj.coord.y) / game.h + 1.0f / game.h - 1.0f;
         mMatrix.translate(xLoc, yLoc, 1.0 / game.w);
         mMatrix.scale(1.0f / game.w);
         mMatrix.rotate(45.0f, 1, 0, 0);

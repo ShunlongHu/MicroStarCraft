@@ -208,6 +208,7 @@ const static std::vector<ActionTarget> DIRECTION_TARGET_MAP{{-1, 0},
 
 struct GameObj {
     GameObjType type;
+    Coord coord;
     uint8_t hitPoint;
     uint8_t resource;   // resource of a cluster/carried by a worker
     int8_t owner;   // -1: a, 0: neutral, 1:b
@@ -248,12 +249,13 @@ struct GameObj {
 };
 
 struct GameState {
-    std::unordered_map<Coord, GameObj, UHasher<Coord>> objMap;
+    std::unordered_map<int, GameObj> objMap;
     int resource[2]{0, 0};
     int buildingCnt[2]{0, 0};
     int w = 1;
     int h = 1;
     int time = 0;
+    int objCnt = 0;
 
     inline bool operator==(const GameState &state2) const {
         return state2.time == time && state2.w == w && state2.h == h && resource[0] == state2.resource[0] &&
@@ -317,6 +319,7 @@ inline std::ostream &operator<<(std::ostream &os, const GameState &state) {
     Serialize(os, state.w);
     Serialize(os, state.h);
     Serialize(os, state.time);
+    Serialize(os, state.objCnt);
     return os;
 }
 
@@ -329,93 +332,16 @@ inline std::istream &operator>>(std::istream &is, GameState &state) {
     Deserialize(is, state.w);
     Deserialize(is, state.h);
     Deserialize(is, state.time);
+    Deserialize(is, state.objCnt);
     return is;
 }
 
-
-enum ObservationPlane {
-    HP_1,
-    HP_2,
-    HP_3,
-    HP_4,
-    HP_5,
-    HP_6_PLUS,
-    RES_1,
-    RES_2,
-    RES_3,
-    RES_4,
-    RES_5,
-    RES_6_PLUS,
-    OWNER_1,
-    OWNER_NONE,
-    OWNER_2,
-    OBJ_TYPE,
-    CURRENT_ACTION = OBJ_TYPE + GAME_OBJ_TYPE_NUM,
+struct DiscreteAction {
+    ActionType action {NOOP};
+    ActionTarget target {0,0};
+};
+struct TotalDiscreteAction {
+    std::unordered_map<int, DiscreteAction> action[2];
 };
 
-constexpr static int OBSERVATION_PLANE_NUM = CURRENT_ACTION + GAME_ACTION_TYPE_NUM + 1;
-
-enum Reward {
-    NEW_WORKER_CNT,
-    NEW_LIGHT_CNT,
-    NEW_RANGED_CNT,
-    NEW_HEAVY_CNT,
-    NEW_BASE_CNT,
-    NEW_BARRACK_CNT,
-
-    DEAD_WORKER_CNT,
-    DEAD_LIGHT_CNT,
-    DEAD_RANGED_CNT,
-    DEAD_HEAVY_CNT,
-    DEAD_BASE_CNT,
-    DEAD_BARRACK_CNT,
-
-    NEW_WORKER_KILLED,
-    NEW_LIGHT_KILLED,
-    NEW_RANGED_KILLED,
-    NEW_HEAVY_KILLED,
-    NEW_BASE_KILLED,
-    NEW_BARRACK_KILLED,
-
-    NEW_NET_INCOME,
-    NEW_HIT_CNT,
-};
-
-constexpr int GAME_STAT_NUM = NEW_HIT_CNT + 1;
-
-struct Observation {
-    signed char *data = nullptr;
-    int size = 0;
-    int *reward = nullptr;
-};
-
-enum ActionPlane {
-    ACTION,
-    MOVE_PARAM,
-    GATHER_PARAM,
-    RETURN_PARAM,
-    PRODUCE_DIRECTION_PARAM,
-    PRODUCE_TYPE_PARAM,
-    RELATIVE_ATTACK_POSITION
-};
-
-constexpr static int ACTION_PLANE_NUM = RELATIVE_ATTACK_POSITION + 1;
-
-struct Action {
-    signed char *data;
-    int size;
-};
-
-struct TotalObservation {
-    Observation ob1;
-    Observation ob2;
-    int time = 0;
-    bool isEnd = false;
-    int winningSide = 0;
-};
-
-struct TotalAction {
-    Action action1;
-    Action action2;
-};
 #endif //RTS_GAME_TYPES_H

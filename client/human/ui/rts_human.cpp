@@ -59,7 +59,7 @@ void RtsHuman::HandleConnectButton() {
         return;
     }
     threadPool.enqueue(RpcClient::Connect, ip + ":" + port);
-    sleep_for(milliseconds(10));
+    sleep_for(milliseconds(100));
     RpcClient::SendCommand(message::START);
 }
 

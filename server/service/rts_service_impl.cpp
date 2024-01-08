@@ -18,7 +18,7 @@ using message::Message;
 using namespace std::this_thread; // sleep_for, sleep_until
 using namespace std::chrono; // nanoseconds, system_clock, seconds
 using namespace std;
-static constexpr int TICKING_INTERVAL {100};
+static constexpr int TICKING_INTERVAL {200};
 static atomic<int> tickingCycle { INT32_MAX };
 static atomic<bool> reset {false};
 static atomic<bool> tick {false};
@@ -136,7 +136,7 @@ Status RtsServiceImpl::ConnectPlayer(ServerContext* context, ServerReaderWriter<
 void RtsServiceImpl::mainLoop() {
     static auto time = chrono::high_resolution_clock::now();
     while (serverStart) {
-        sleep_for(microseconds (200));
+        sleep_for(microseconds (100));
         unique_lock<mutex> lockGuard(stateLock);
         if (reset) {
             cout << "seed: " << initParam.seed()
@@ -161,7 +161,7 @@ void RtsServiceImpl::mainLoop() {
             totalObs = Step(TotalAction{
                 {reinterpret_cast<signed char*>(action[0].data()), static_cast<int>(action[0].size())},
                 {reinterpret_cast<signed char*>(action[1].data()), static_cast<int>(action[1].size())}});
-//            GetGameState(0).time++;
+            GetGameState(0).time++;
             tick = false;
         }
         if (gameStart) {

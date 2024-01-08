@@ -12,6 +12,7 @@
 #include "game_types.h"
 #include "model.h"
 #include "text_mesh.h"
+#include "line.h"
 class QOpenGLTexture;
 class QOpenGLShaderProgram;
 
@@ -30,10 +31,12 @@ private:
     //着色器程序
     std::shared_ptr<QOpenGLShaderProgram> program;
     std::shared_ptr<QOpenGLShaderProgram> colorProgram;
+    std::shared_ptr<QOpenGLShaderProgram> lineProgram;
     std::shared_ptr<QOpenGLShaderProgram> textProgram;
     std::vector<std::shared_ptr<Model>> pModelVec;
     std::shared_ptr<MapModel> mModel;
     std::shared_ptr<TextMesh> tMesh;
+    std::shared_ptr<Line> line;
     QMatrix4x4 projection, view, model;
     const static std::unordered_map<int, const std::unordered_map<GameObjType, int>> MODEL_MAP;
 };

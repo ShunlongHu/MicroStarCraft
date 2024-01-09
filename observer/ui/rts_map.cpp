@@ -21,7 +21,6 @@ const unordered_map<int, const unordered_map<GameObjType, int>> RtsMap::MODEL_MA
 RtsMap::RtsMap(QWidget *parent) : QOpenGLWidget(parent),
                                                       program(make_shared<QOpenGLShaderProgram>()),
                                                       colorProgram(make_shared<QOpenGLShaderProgram>()),
-                                                      lineProgram(make_shared<QOpenGLShaderProgram>()),
                                                       textProgram(make_shared<QOpenGLShaderProgram>())
 {
     //设置OpenGL的版本信息`
@@ -38,7 +37,6 @@ RtsMap::~RtsMap()
     //删除所有之前添加到program的着色器
     program->removeAllShaders();
     colorProgram->removeAllShaders();
-    lineProgram->removeAllShaders();
     textProgram->removeAllShaders();
 }
 void RtsMap::initializeGL()
@@ -80,24 +78,6 @@ void RtsMap::initializeGL()
     {
         static QMessageBox messageBox;
         messageBox.setText("link error" + colorProgram->log());
-        messageBox.show();
-    }
-    if (!lineProgram->addShaderFromSourceFile(QOpenGLShader::Vertex, "D:\\repo\\rts\\observer\\ui\\color.vs"))
-    {
-        static QMessageBox messageBox;
-        messageBox.setText("compile vs error" + lineProgram->log());
-        messageBox.show();
-    }
-    if (!lineProgram->addShaderFromSourceFile(QOpenGLShader::Fragment, "D:\\repo\\rts\\observer\\ui\\color.fs"))
-    {
-        static QMessageBox messageBox;
-        messageBox.setText("compile fs error" + lineProgram->log());
-        messageBox.show();
-    }
-    if (!lineProgram->link())
-    {
-        static QMessageBox messageBox;
-        messageBox.setText("link error" + lineProgram->log());
         messageBox.show();
     }
     if (!textProgram->addShaderFromSourceFile(QOpenGLShader::Vertex, "D:\\repo\\rts\\observer\\ui\\font.vs"))
@@ -181,15 +161,6 @@ void RtsMap::initializeGL()
     colorProgram->setUniformValue("projection", projection);
     colorProgram->release();
 
-    if (!lineProgram->bind())
-    {
-        qDebug() << "bind error" << lineProgram->log();
-    }
-    lineProgram->setUniformValue("view", view);
-    lineProgram->setUniformValue("model", model);
-    lineProgram->setUniformValue("projection", projection);
-    lineProgram->release();
-
     tMesh = make_shared<TextMesh>();
     if (!textProgram->bind())
     {
@@ -228,14 +199,12 @@ void RtsMap::paintGL()
     float mouseX = static_cast<float>(mousePos.x()) / QWidget::width() * 2.0f - 1;
     mModel->refreshModel(game);
     mModel->draw(colorProgram.get(), mouseX, mouseY, game.w);
-    colorProgram->release();
 
-    lineProgram->bind();
     QMatrix4x4 lMatrix;
     lMatrix.translate(0,0,0);
-    lineProgram->setUniformValue("model", lMatrix);
-    line->draw(lineProgram.get(), {1,0,0,1}, {{-1,-1,0}, {1,1,0},{1,-1,0}, {1,1,0},{-1,-1,0}, {1,-1,0}});
-    lineProgram->release();
+    colorProgram->setUniformValue("model", lMatrix);
+    line->draw(colorProgram.get(), {1,0,0,1}, {{-1,-1,0}, {1,1,0},{1,-1,0}, {1,1,0},{-1,-1,0}, {1,-1,0}});
+    colorProgram->release();
 
     // draw units
     int idx = 0;

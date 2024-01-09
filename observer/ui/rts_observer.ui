@@ -169,7 +169,7 @@
          <enum>Qt::RightToLeft</enum>
         </property>
         <property name="text">
-         <string>端口</string>
+         <string>Port</string>
         </property>
        </widget>
       </item>

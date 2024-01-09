@@ -338,6 +338,7 @@ inline std::istream &operator>>(std::istream &is, GameState &state) {
 
 struct DiscreteAction {
     ActionType action {NOOP};
+    GameObjType produceType {TERRAIN};
     ActionTarget target {0,0};
 };
 struct TotalDiscreteAction {

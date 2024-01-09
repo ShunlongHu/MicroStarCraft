@@ -128,7 +128,7 @@ Status RtsServiceImpl::ConnectPlayer(ServerContext* context, ServerReaderWriter<
         act.clear();
         act.reserve(msg.actions_size());
         for (const auto& a: msg.actions()) {
-            act.emplace(a.id(), DiscreteAction{static_cast<ActionType>(a.action()), {a.targety(), a.targetx()}});
+            act.emplace(a.id(), DiscreteAction{static_cast<ActionType>(a.action()), static_cast<GameObjType>(a.producetype()), {a.targety(), a.targetx()}});
         }
     }
     writer.join();

@@ -53,7 +53,14 @@ RtsObserver::~RtsObserver() {
 void RtsObserver::HandleConnectButton() {
     auto ip = ui->ipLineEdit->text().toStdString();
     auto port = ui->portLineEdit->text().toStdString();
-    Role role = OBSERVER;
+    Role role;
+    if (ui->roleComboBox->currentIndex() == 1) {
+        role = PLAYER_A;
+    } else if (ui->roleComboBox->currentIndex() == 2) {
+        role = PLAYER_B;
+    } else {
+        role = OBSERVER;
+    }
     if (!RpcClient::stop) {
         RpcClient::SendCommand(static_cast<message::Command>(DISCONNECT));
         RpcClient::stop = true;

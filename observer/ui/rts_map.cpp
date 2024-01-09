@@ -7,6 +7,7 @@
 #include <QMessageBox>
 #include <chrono>
 #include <QCursor>
+#include <QMouseEvent>
 #include "rpc_client.h"
 
 using namespace std;
@@ -199,7 +200,7 @@ void RtsMap::paintGL()
     float mouseY = -(static_cast<float>(mousePos.y()) / QWidget::height() * 2.0f - 1);
     float mouseX = static_cast<float>(mousePos.x()) / QWidget::width() * 2.0f - 1;
     mModel->refreshModel(game);
-    mModel->draw(colorProgram.get(), mouseX, mouseY, game.w);
+    mModel->draw(colorProgram.get(), mouseX, mouseY, game.w, mouseClickX, mouseClickY, mouseRightClickX, mouseRightClickY);
 
     QMatrix4x4 lMatrix;
     lMatrix.translate(0,0,0);
@@ -315,5 +316,20 @@ void RtsMap::initMap(const GameState& gameState) {
         pt1 /= pt1.w();
         pt2 /= pt2.w();
         mModel->verticalSpliterMax.emplace_back((pt1.x() - pt2.x())/(pt1.y() - pt2.y()),-pt2.y() * (pt1.x() - pt2.x())/(pt1.y() - pt2.y()) + pt2.x());
+    }
+}
+
+void RtsMap::mousePressEvent(QMouseEvent *eventPress) {
+    float mouseY = -(static_cast<float>(eventPress->y()) / QWidget::height() * 2.0f - 1);
+    float mouseX = static_cast<float>(eventPress->x()) / QWidget::width() * 2.0f - 1;
+    if (mouseY > 1 || mouseX > 1 || mouseY < -1 || mouseX < - 1){
+        return;
+    }
+    if (eventPress->button() == Qt::LeftButton) {
+        mouseClickX = mouseX;
+        mouseClickY = mouseY;
+    } else if (eventPress->button() == Qt::RightButton) {
+        mouseRightClickX = mouseX;
+        mouseRightClickY = mouseY;
     }
 }

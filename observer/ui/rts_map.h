@@ -27,6 +27,7 @@ protected:
     virtual void initializeGL() override;
     virtual void paintGL() override;
     virtual void resizeGL(int width, int height) override;
+    virtual void mousePressEvent(QMouseEvent *eventPress) override;
 private:
     //着色器程序
     std::shared_ptr<QOpenGLShaderProgram> program;
@@ -38,6 +39,11 @@ private:
     std::shared_ptr<Line> line;
     QMatrix4x4 projection, view, model;
     const static std::unordered_map<int, const std::unordered_map<GameObjType, int>> MODEL_MAP;
+
+    float mouseClickX = -FLT_MAX;
+    float mouseClickY = -FLT_MAX;
+    float mouseRightClickX = -FLT_MAX;
+    float mouseRightClickY = -FLT_MAX;
 };
 
 #endif // !LOADMODEL_H

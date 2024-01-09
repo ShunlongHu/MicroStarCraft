@@ -54,13 +54,25 @@ bool MapModel::loadModel(const GameState& state)
     lastState = state;
     return true;
 }
-void MapModel::draw(QOpenGLShaderProgram *program, float mouseX, float mouseY, int w) {
+void MapModel::draw(QOpenGLShaderProgram *program, float mouseX, float mouseY, int w, float mouseClickX, float mouseClickY, float mouseRightClickX, float mouseRightClickY) {
     int tileIdx = -1;
     int tileX = -1;
     int tileY = -1;
+    int tileClickIdx = -1;
+    int tileClickX = -1;
+    int tileClickY = -1;
+    int tileRightClickIdx = -1;
+    int tileRightClickX = -1;
+    int tileRightClickY = -1;
     for (int i = 0; i < tileYMin.size(); ++i) {
         if (tileYMin[i] <= mouseY && tileYMax[i] >= mouseY) {
             tileY = i;
+        }
+        if (tileYMin[i] <= mouseClickY && tileYMax[i] >= mouseClickY) {
+            tileClickY = i;
+        }
+        if (tileYMin[i] <= mouseRightClickY && tileYMax[i] >= mouseRightClickY) {
+            tileRightClickY = i;
         }
     }
     for (int i = 0; i < verticalSpliterMin.size(); ++i) {
@@ -68,20 +80,49 @@ void MapModel::draw(QOpenGLShaderProgram *program, float mouseX, float mouseY, i
             mouseY * verticalSpliterMax[i].x() + verticalSpliterMax[i].y() >= mouseX) {
             tileX = i;
         }
+        if (mouseClickY * verticalSpliterMin[i].x() + verticalSpliterMin[i].y() <= mouseClickX &&
+            mouseClickY * verticalSpliterMax[i].x() + verticalSpliterMax[i].y() >= mouseClickX) {
+            tileClickX = i;
+        }
+        if (mouseRightClickY * verticalSpliterMin[i].x() + verticalSpliterMin[i].y() <= mouseRightClickX &&
+            mouseRightClickY * verticalSpliterMax[i].x() + verticalSpliterMax[i].y() >= mouseRightClickX) {
+            tileRightClickX = i;
+        }
     }
     if (tileX != -1 && tileY != -1) {
         tileIdx = tileX + tileY * w;
     }
+    if (tileClickX != -1 && tileClickY != -1) {
+        tileClickIdx = tileClickX + tileClickY * w;
+    }
+    if (tileRightClickX != -1 && tileRightClickY != -1) {
+        tileRightClickIdx = tileRightClickX + tileRightClickY * w;
+    }
     if (prevSelTileIdx != -1) {
         meshes[prevSelTileIdx]->color = meshes[prevSelTileIdx]->origColor;
     }
+    prevSelTileIdx = tileIdx;
+
+    if (prevClickTileIdx != -1) {
+        meshes[prevClickTileIdx]->color = meshes[prevClickTileIdx]->origColor;
+    }
+    prevClickTileIdx = tileClickIdx;
+
+    if (prevRightClickTileIdx != -1) {
+        meshes[prevRightClickTileIdx]->color = meshes[prevRightClickTileIdx]->origColor;
+    }
+    prevRightClickTileIdx = tileRightClickIdx;
+
     for (int i = 0; i < meshes.size(); ++i) {
-        if (i == tileIdx) {
+        if (i == tileClickIdx) {
+            meshes[i]->color = {1,0,1,1};
+        } else if (i == tileRightClickIdx) {
+            meshes[i]->color = {0.5,0,0.5,1};
+        } else if (i == tileIdx) {
             meshes[i]->color = {1,1,1,1};
         }
         meshes[i]->draw(program);
     }
-    prevSelTileIdx = tileIdx;
 }
 
 void MapModel::refreshModel(const GameState &state) {

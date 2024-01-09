@@ -118,7 +118,7 @@ Status RtsServiceImpl::ConnectPlayer(ServerContext* context, ServerReaderWriter<
             isEnd = true;
             continue;
         }
-        if (msg.command() == message::START) {
+        if (msg.command() == message::RESET) {
             cout << "player " << static_cast<char>('A' + static_cast<char>(msg.role())) << " echo!" << endl;
             continue;
         }

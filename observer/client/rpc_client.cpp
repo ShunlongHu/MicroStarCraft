@@ -27,22 +27,34 @@ using namespace message;
 
 static atomic<int> command {INVALID_COMMAND};
 static GameState state;
+static unordered_map<int, DiscreteAction> discreteAction;
 static mutex stateLock;
+static mutex actionLock;
 atomic<bool> RpcClient::stop { true };
 static vector<int> rx;
 atomic<bool> RpcClient::newState { false };
 
-class RtsClient {
+class RtsObserverClient {
 public:
-    explicit RtsClient(const std::shared_ptr<grpc::Channel>& channel);
+    explicit RtsObserverClient(const std::shared_ptr<grpc::Channel>& channel);
     void Connect();
 private:
     std::unique_ptr<message::Rts::Stub> stub_;
     std::shared_ptr<Channel> channel_;
 };
 
-RtsClient::RtsClient(const std::shared_ptr<Channel>& channel) : stub_(Rts::NewStub(channel)), channel_(channel){}
-void RtsClient::Connect() {
+class RtsPlayerClient {
+public:
+    explicit RtsPlayerClient(const std::shared_ptr<grpc::Channel>& channel, ::Role role);
+    void Connect();
+private:
+    std::unique_ptr<message::Rts::Stub> stub_;
+    std::shared_ptr<Channel> channel_;
+    message::Role role;
+};
+
+RtsObserverClient::RtsObserverClient(const std::shared_ptr<Channel>& channel) : stub_(Rts::NewStub(channel)), channel_(channel){}
+void RtsObserverClient::Connect() {
     ClientContext context;
     std::shared_ptr<ClientReaderWriter<ObservationRequest, Message> > stream(
             stub_->ConnectObserver(&context));
@@ -94,12 +106,76 @@ void RtsClient::Connect() {
     writer.join();
 }
 
+RtsPlayerClient::RtsPlayerClient(const std::shared_ptr<Channel>& channel, ::Role role) : stub_(Rts::NewStub(channel)), channel_(channel){
+    if (role == ::Role::PLAYER_A) {
+        this->role = message::PLAYER_A;
+    } else {
+        this->role = message::PLAYER_B;
+    }
+}
+void RtsPlayerClient::Connect() {
+    ClientContext context;
+    std::shared_ptr<ClientReaderWriter<PlayerRequest, Message> > stream(
+            stub_->ConnectPlayer(&context));
+    if (channel_->GetState(false) != GRPC_CHANNEL_READY) {
+        return;
+    }
+    stop = false;
+    std::thread writer([this, stream]() {
+        while (true) {
+            if (channel_->GetState(false) != GRPC_CHANNEL_READY) {
+                stop = true;
+                return;
+            }
+            // handle request
+            if (command == INVALID_COMMAND) {
+                sleep_for(microseconds (100));
+                continue;
+            }
+            PlayerRequest request;
+            request.set_role(role);
+            {
+                unique_lock<mutex> lockGuard(actionLock);
+                request.set_command(static_cast<message::Command>(command.load()));
+                request.mutable_actions()->Reserve(discreteAction.size());
+                for (const auto& [id, act]: discreteAction) {
+                    auto ptr = request.add_actions();
+                    ptr->set_id(id);
+                    ptr->set_action(act.action);
+                    ptr->set_targetx(act.target.x);
+                    ptr->set_targety(act.target.y);
+                }
+            }
+            stream->Write(request);
+            if (command == SpecialCommand::DISCONNECT) {
+                stream->WritesDone();
+                command = INVALID_COMMAND;
+                return;
+            }
+            command = INVALID_COMMAND;
+            sleep_for(microseconds (100));
+        }
+    });
 
+    Message result;
 
-void RpcClient::Connect(const std::string& target) {
-    auto rtsClient = RtsClient(grpc::CreateChannel(target, grpc::InsecureChannelCredentials()));
-    rtsClient.Connect();
+    while (!RpcClient::stop && stream->Read(&result)) {
+        istringstream iss(result.data(), ios::binary);
+        unique_lock<mutex> lockGuard(stateLock);
+        iss >> state;
+        newState = true;
+    }
+    writer.join();
+}
 
+void RpcClient::Connect(const std::string& target, ::Role role) {
+    if (role == ::Role::OBSERVER) {
+        auto rtsClient = RtsObserverClient(grpc::CreateChannel(target, grpc::InsecureChannelCredentials()));
+        rtsClient.Connect();
+    } else {
+        auto rtsClient = RtsPlayerClient(grpc::CreateChannel(target, grpc::InsecureChannelCredentials()), role);
+        rtsClient.Connect();
+    }
 }
 
 void RpcClient::SendCommand(Command cmd){
@@ -119,3 +195,8 @@ GameState RpcClient::GetObservation() {
     unique_lock<mutex> lockGuard(stateLock);
     return state;
 };
+
+void RpcClient::SetAction(const std::unordered_map<int, DiscreteAction>& action) {
+    unique_lock<mutex> lockGuard(actionLock);
+    discreteAction = action;
+}

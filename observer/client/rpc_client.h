@@ -13,12 +13,20 @@ enum SpecialCommand {
     DISCONNECT = 4,
 };
 
+enum Role {
+    PLAYER_A = 0,
+    PLAYER_B = 1,
+    OBSERVER = 2,
+};
+
 namespace RpcClient {
-    void Connect(const std::string& target);
+    void Connect(const std::string& target, Role role);
 
     void SendCommand(message::Command cmd);
 
     GameState GetObservation();
+
+    void SetAction(const std::unordered_map<int, DiscreteAction>& action);
 
     extern std::atomic<bool> stop;
     extern std::atomic<bool> newState;

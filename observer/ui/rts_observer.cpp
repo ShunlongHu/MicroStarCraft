@@ -53,14 +53,17 @@ RtsObserver::~RtsObserver() {
 void RtsObserver::HandleConnectButton() {
     auto ip = ui->ipLineEdit->text().toStdString();
     auto port = ui->portLineEdit->text().toStdString();
+    Role role = OBSERVER;
     if (!RpcClient::stop) {
         RpcClient::SendCommand(static_cast<message::Command>(DISCONNECT));
         RpcClient::stop = true;
         return;
     }
-    threadPool.enqueue(RpcClient::Connect, ip + ":" + port);
+    threadPool.enqueue(RpcClient::Connect, ip + ":" + port, role);
     sleep_for(milliseconds(100));
-    HandleResetButton();
+    if (RpcClient::GetObservation().objMap.size() == 0) {
+        HandleResetButton();
+    }
 }
 
 void RtsObserver::HandleRenderTimer() {

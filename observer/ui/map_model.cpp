@@ -54,7 +54,7 @@ bool MapModel::loadModel(const GameState& state)
     lastState = state;
     return true;
 }
-void MapModel::draw(QOpenGLShaderProgram *program, float mouseX, float mouseY, int w, float mouseClickX, float mouseClickY, float mouseRightClickX, float mouseRightClickY) {
+MouseAction MapModel::draw(QOpenGLShaderProgram *program, float mouseX, float mouseY, int w, float mouseClickX, float mouseClickY, float mouseRightClickX, float mouseRightClickY) {
     int tileIdx = -1;
     int tileX = -1;
     int tileY = -1;
@@ -123,6 +123,14 @@ void MapModel::draw(QOpenGLShaderProgram *program, float mouseX, float mouseY, i
         }
         meshes[i]->draw(program);
     }
+    MouseAction retVal;
+    if (tileClickIdx != -1){
+        retVal.mouseClick = {tileClickY, tileClickX};
+    }
+    if (tileClickIdx != -1){
+        retVal.mouseRightClick = {tileRightClickY, tileRightClickX};
+    }
+    return retVal;
 }
 
 void MapModel::refreshModel(const GameState &state) {

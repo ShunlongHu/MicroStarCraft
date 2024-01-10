@@ -14,6 +14,12 @@ struct aiMesh;
 struct aiScene;
 class QString;
 class QOpenGLTexture;
+
+struct MouseAction {
+    Coord mouseClick {-1,-1};
+    Coord mouseRightClick {-1,-1};
+};
+
 class MapModel
 {
 public:
@@ -22,7 +28,7 @@ public:
     //加载模型
     bool loadModel(const GameState& state);
     void refreshModel(const GameState& state);
-    void draw(QOpenGLShaderProgram *program, float mouseX, float mouseY, int w, float mouseClickX, float mouseClickY, float mouseRightClickX, float mouseRightClickY);
+    MouseAction draw(QOpenGLShaderProgram *program, float mouseX, float mouseY, int w, float mouseClickX, float mouseClickY, float mouseRightClickX, float mouseRightClickY);
     std::vector<std::shared_ptr<MapMesh>> meshes;
     std::vector<float> tileXMin;
     std::vector<float> tileXMax;

@@ -200,8 +200,22 @@ void RtsMap::paintGL()
     float mouseY = -(static_cast<float>(mousePos.y()) / QWidget::height() * 2.0f - 1);
     float mouseX = static_cast<float>(mousePos.x()) / QWidget::width() * 2.0f - 1;
     mModel->refreshModel(game);
-    mModel->draw(colorProgram.get(), mouseX, mouseY, game.w, mouseClickX, mouseClickY, mouseRightClickX, mouseRightClickY);
-
+    auto mouseAction = mModel->draw(colorProgram.get(), mouseX, mouseY, game.w, mouseClickX, mouseClickY, mouseRightClickX, mouseRightClickY);
+    // Handle Action
+    if (mouseAction.mouseClick.y == -1) {
+        mouseAction.mouseRightClick = {-1,-1};
+        mouseRightClickX = -1;
+        mouseRightClickY = -1;
+    }
+    if (mouseAction.mouseRightClick.y != -1) {
+        mouseAction.mouseClick = {-1, -1};
+        mouseClickX = -1;
+        mouseClickY = -1;
+        mouseAction.mouseRightClick = {-1,-1};
+        mouseRightClickX = -1;
+        mouseRightClickY = -1;
+    }
+    //
     QMatrix4x4 lMatrix;
     lMatrix.translate(0,0,0);
     colorProgram->setUniformValue("model", lMatrix);

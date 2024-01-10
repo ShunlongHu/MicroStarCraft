@@ -57,6 +57,7 @@ private slots:
     void HandleGameActionButton2() const;
     void RefreshButton();
     void RefreshActionButton();
+    void SetButtonColor(QPushButton* button, const QColor& color);
 };
 
 

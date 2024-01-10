@@ -23,6 +23,9 @@ int RtsObserver::expansionCnt {1};
 int RtsObserver::clusterCnt {1};
 int RtsObserver::resourceCnt {1};
 bool RtsObserver::isAxSym {true};
+atomic<int> RtsObserver::gameAction {-1};
+atomic<GameObjType> RtsObserver::selectedObj {TERRAIN};
+Role RtsObserver::role {OBSERVER};
 
 RtsObserver::RtsObserver(QWidget *parent) :
         QWidget(parent), ui(new Ui::RtsObserver) {
@@ -41,6 +44,9 @@ RtsObserver::RtsObserver(QWidget *parent) :
     connect(ui->clusterSlider, &QSlider::valueChanged, this, &RtsObserver::HandleClusterSlide);
     connect(ui->resourceSlider, &QSlider::valueChanged, this, &RtsObserver::HandleResourceSlide);
     connect(ui->axialRadio, &QRadioButton::toggled, this, &RtsObserver::HandleIsAxialRadio);
+    connect(ui->gameActionButton0, &QPushButton::released, this, &RtsObserver::HandleGameActionButton0);
+    connect(ui->gameActionButton1, &QPushButton::released, this, &RtsObserver::HandleGameActionButton1);
+    connect(ui->gameActionButton2, &QPushButton::released, this, &RtsObserver::HandleGameActionButton2);
     renderTimer.setInterval(10);
     renderTimer.start();
 }
@@ -53,7 +59,6 @@ RtsObserver::~RtsObserver() {
 void RtsObserver::HandleConnectButton() {
     auto ip = ui->ipLineEdit->text().toStdString();
     auto port = ui->portLineEdit->text().toStdString();
-    Role role;
     if (ui->roleComboBox->currentIndex() == 1) {
         role = PLAYER_A;
     } else if (ui->roleComboBox->currentIndex() == 2) {
@@ -79,6 +84,7 @@ void RtsObserver::HandleRenderTimer() {
         ui->timeDisplayLabel->setText(QString::fromStdString(to_string(RpcClient::GetObservation().time)));
         this->ui->mapWidget->repaint();
     }
+    RefreshActionButton();
 }
 
 void RtsObserver::HandleStartButton() {
@@ -149,4 +155,120 @@ void RtsObserver::HandleSeedLineEdit() const {
 
 void RtsObserver::HandleIsAxialRadio() const {
     isAxSym = ui->axialRadio->isChecked();
+}
+
+void RtsObserver::HandleGameActionButton0() const {
+    gameAction = 0;
+}
+
+void RtsObserver::HandleGameActionButton1() const {
+    gameAction = 1;
+}
+
+void RtsObserver::HandleGameActionButton2() const {
+    gameAction = 2;
+}
+
+void RtsObserver::RefreshActionButton() {
+    if (selectedObj == BASE) {
+        ui->gameActionButton0->setText("WORKER");
+        ui->gameActionButton0->show();
+        ui->gameActionButton1->hide();
+        ui->gameActionButton2->hide();
+        if (gameAction == 0) {
+            QPalette pal = ui->gameActionButton0->palette();
+            pal.setColor(QPalette::Button, QColor(Qt::green));
+            ui->gameActionButton0->setAutoFillBackground(true);
+            ui->gameActionButton0->setPalette(pal);
+            ui->gameActionButton0->update();
+        } else {
+            QPalette pal = ui->gameActionButton0->palette();
+            pal.setColor(QPalette::Button, QColor(Qt::gray));
+            ui->gameActionButton0->setAutoFillBackground(true);
+            ui->gameActionButton0->setPalette(pal);
+            ui->gameActionButton0->update();
+        }
+    } else if (selectedObj == WORKER) {
+        ui->gameActionButton0->setText("BASE");
+        ui->gameActionButton0->show();
+        ui->gameActionButton1->setText("BARRACK");
+        ui->gameActionButton1->show();
+        ui->gameActionButton2->hide();
+        if (gameAction == 0) {
+            QPalette pal = ui->gameActionButton0->palette();
+            pal.setColor(QPalette::Button, QColor(Qt::green));
+            ui->gameActionButton0->setAutoFillBackground(true);
+            ui->gameActionButton0->setPalette(pal);
+            ui->gameActionButton0->update();
+        } else {
+            QPalette pal = ui->gameActionButton0->palette();
+            pal.setColor(QPalette::Button, QColor(Qt::gray));
+            ui->gameActionButton0->setAutoFillBackground(true);
+            ui->gameActionButton0->setPalette(pal);
+            ui->gameActionButton0->update();
+        }
+        if (gameAction == 1) {
+            QPalette pal = ui->gameActionButton1->palette();
+            pal.setColor(QPalette::Button, QColor(Qt::green));
+            ui->gameActionButton1->setAutoFillBackground(true);
+            ui->gameActionButton1->setPalette(pal);
+            ui->gameActionButton1->update();
+        } else {
+            QPalette pal = ui->gameActionButton1->palette();
+            pal.setColor(QPalette::Button, QColor(Qt::gray));
+            ui->gameActionButton1->setAutoFillBackground(true);
+            ui->gameActionButton1->setPalette(pal);
+            ui->gameActionButton1->update();
+        }
+    } else if (selectedObj == BARRACK) {
+        ui->gameActionButton0->setText("LIGHT");
+        ui->gameActionButton0->show();
+        ui->gameActionButton1->setText("RANGED");
+        ui->gameActionButton1->show();
+        ui->gameActionButton2->setText("HEAVY");
+        ui->gameActionButton2->show();
+        if (gameAction == 0) {
+            QPalette pal = ui->gameActionButton0->palette();
+            pal.setColor(QPalette::Button, QColor(Qt::green));
+            ui->gameActionButton0->setAutoFillBackground(true);
+            ui->gameActionButton0->setPalette(pal);
+            ui->gameActionButton0->update();
+        } else {
+            QPalette pal = ui->gameActionButton0->palette();
+            pal.setColor(QPalette::Button, QColor(Qt::gray));
+            ui->gameActionButton0->setAutoFillBackground(true);
+            ui->gameActionButton0->setPalette(pal);
+            ui->gameActionButton0->update();
+        }
+        if (gameAction == 1) {
+            QPalette pal = ui->gameActionButton1->palette();
+            pal.setColor(QPalette::Button, QColor(Qt::green));
+            ui->gameActionButton1->setAutoFillBackground(true);
+            ui->gameActionButton1->setPalette(pal);
+            ui->gameActionButton1->update();
+        } else {
+            QPalette pal = ui->gameActionButton1->palette();
+            pal.setColor(QPalette::Button, QColor(Qt::gray));
+            ui->gameActionButton1->setAutoFillBackground(true);
+            ui->gameActionButton1->setPalette(pal);
+            ui->gameActionButton1->update();
+        }
+        if (gameAction == 2) {
+            QPalette pal = ui->gameActionButton2->palette();
+            pal.setColor(QPalette::Button, QColor(Qt::green));
+            ui->gameActionButton2->setAutoFillBackground(true);
+            ui->gameActionButton2->setPalette(pal);
+            ui->gameActionButton2->update();
+        } else {
+            QPalette pal = ui->gameActionButton2->palette();
+            pal.setColor(QPalette::Button, QColor(Qt::gray));
+            ui->gameActionButton2->setAutoFillBackground(true);
+            ui->gameActionButton2->setPalette(pal);
+            ui->gameActionButton2->update();
+        }
+    } else {
+        ui->gameActionButton0->hide();
+        ui->gameActionButton1->hide();
+        ui->gameActionButton2->hide();
+    }
 }

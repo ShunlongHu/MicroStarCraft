@@ -35,6 +35,9 @@ public:
     static int clusterCnt;
     static int resourceCnt;
     static bool isAxSym; // is axial sym or rotational sym
+    static std::atomic<int> gameAction;
+    static std::atomic<GameObjType> selectedObj;
+    static Role role;
 
 private slots:
     void HandleConnectButton();
@@ -49,7 +52,11 @@ private slots:
     void HandleClusterSlide() const;
     void HandleResourceSlide() const;
     void HandleIsAxialRadio() const;
+    void HandleGameActionButton0() const;
+    void HandleGameActionButton1() const;
+    void HandleGameActionButton2() const;
     void RefreshButton();
+    void RefreshActionButton();
 };
 
 

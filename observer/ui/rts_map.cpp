@@ -9,6 +9,7 @@
 #include <QCursor>
 #include <QMouseEvent>
 #include "rpc_client.h"
+#include "human_ai.h"
 
 using namespace std;
 using namespace chrono;
@@ -129,7 +130,7 @@ void RtsMap::initializeGL()
     //给着色器变量赋值,projextion,view默认构造是生成单位矩阵
     view.translate(QVector3D(0, 0, -5.0f));
     view.rotate(-45, 1, 0, 0);
-    view.scale(0.93);
+    view.scale(1.09);
     projection.perspective(30.0f, (GLfloat)width() / (GLfloat)height(), 0.1f, 100.0f);
     /*
     将此程序绑定到active的OPenGLContext，并使其成为当前着色器程序
@@ -207,6 +208,7 @@ void RtsMap::paintGL()
         mouseRightClickX = -1;
         mouseRightClickY = -1;
     }
+    HumanAi::Act(game, mouseAction.mouseClick, mouseAction.mouseRightClick);
     if (mouseAction.mouseRightClick.y != -1) {
         mouseAction.mouseClick = {-1, -1};
         mouseClickX = -1;

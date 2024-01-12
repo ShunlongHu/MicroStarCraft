@@ -252,6 +252,12 @@ void GameExecuteProduce(GameState& game, const std::unordered_map<int, DiscreteA
         if (coordOccupationCount.at(obj.coord) > 1) {
             continue;
         }
+        auto cost = OBJ_COST_MAP.at(act.produceType);
+        auto playerIdx= side == -1 ? 0 : 1;
+        if (game.resource[playerIdx] < cost) {
+            continue;
+        }
+        game.resource[playerIdx] -= cost;
         obj.currentAction = act.action;
         obj.actionTarget = act.target;
         obj.actionProgress = OBJ_TIME_MAP.at(act.produceType);
@@ -327,6 +333,16 @@ void DumpAction(GameState& game, const TotalDiscreteAction& action) {
         cout << endl;
     }
 }
+
+void GameRefreshResource(GameState& game) {
+    for (auto& [_, obj]: game.objMap) {
+        if (obj.type != BASE) {
+            continue;
+        }
+        obj.resource = game.resource[obj.owner == -1 ? 0 : 1];
+    }
+}
+
 void GameStepSingle(GameState& game, TotalDiscreteAction& action) {
     DumpAction(game, action);
     unordered_map<Coord, int, UHasher<Coord>> coordIdxMap;
@@ -350,6 +366,8 @@ void GameStepSingle(GameState& game, TotalDiscreteAction& action) {
     GameExecuteProduce(game, action.action[0], -1, coordOccupationCount);
     GameExecuteProduce(game, action.action[0], 1, coordOccupationCount);
     GameSettleProduce(game);
+
+    GameRefreshResource(game);
     game.time++;
     action.action[0].clear();
     action.action[1].clear();

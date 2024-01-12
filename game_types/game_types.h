@@ -217,6 +217,7 @@ struct GameObj {
     uint8_t actionProgress;
     uint8_t actionTotalProgress;
     uint8_t attackCD;   // is not used
+    GameObjType produceType;
 
     // static attributes
     uint8_t attackRange;

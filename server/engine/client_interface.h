@@ -109,7 +109,7 @@ Reset(int seed, bool isRotSym, bool isAxSym, double terrainProb, int expansionCn
       int mineralPerCluster);
 extern "C" __declspec(dllexport) TotalObservation Step(TotalAction action);
 extern "C" __declspec(dllexport) void Render(int gameIdx);
-void Step(const TotalDiscreteAction& action);
+void Step(TotalDiscreteAction& action);
 
 GameState &GetGameState(int gameIdx);
 

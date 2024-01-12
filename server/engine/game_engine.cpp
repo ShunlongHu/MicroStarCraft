@@ -105,7 +105,7 @@ void GameReset(GameState *ptrGameState, int seed, bool isRotSym, bool isAxSym, d
             obj.owner = 0;
         }
         obj.currentAction = NOOP;
-        obj.actionTarget = {0,0};
+        obj.actionTarget = obj.coord;
         obj.actionProgress = 0;
         obj.actionTotalProgress = 0;
         obj.attackCD = 0;
@@ -139,6 +139,216 @@ void GameStep(GameState* ptrGameState, atomic<int>* ptrCounter) {
     counter++;
 }
 
-void GameStepSingle(GameState& game, TotalDiscreteAction action) {
+void GameStepAttack(GameState& game, const std::unordered_map<int, DiscreteAction>& action, int side, int enemySide, unordered_map<int, int>& unitDamageMap, const unordered_map<Coord, int, UHasher<Coord>>& coordIdxMap) {
+    for (const auto& [idx, act]: action) {
+        if (game.objMap.count(idx) == 0) {
+            continue;
+        }
+        auto& obj = game.objMap.at(idx);
+        if (obj.owner != side) {
+            continue;
+        }
+        if (act.action != ATTACK) {
+            continue;
+        }
+        if (!obj.actionMask.canAttack) {
+            continue;
+        }
+        auto iter = coordIdxMap.find(act.target);
+        if (iter == coordIdxMap.end()) {
+            continue;
+        }
+        auto targetIdx = iter->second;
+        auto& target = game.objMap.at(targetIdx);
+        if (!target.actionMask.canBeAttacked) {
+            continue;
+        }
+        if (target.owner != enemySide) {
+            continue;
+        }
+        if (obj.attackCD != 0) {
+            continue;
+        }
+        if (obj.actionProgress != 0) {
+            continue;
+        }
+        if (obj.attackRange > sqrt(
+                (act.target.y - obj.coord.y) * (act.target.y - obj.coord.y) +
+                (act.target.x - obj.coord.x) * (act.target.x - obj.coord.x))) {
+            continue;
+        }
+        obj.currentAction = act.action;
+        obj.actionTarget = act.target;
+        obj.attackCD = obj.attackInterval;
+        obj.currentAction = NOOP;
+        unitDamageMap[targetIdx] += obj.attackPoint;
+    }
+}
+
+void GameExecuteAttack(GameState& game, const unordered_map<int, int>& unitDamageMap) {
+    for (const auto& [idx, damage]: unitDamageMap) {
+        auto iter = game.objMap.find(idx);
+        if (iter == game.objMap.end()) {
+            continue;
+        }
+        auto& obj = iter->second;
+        obj.hitPoint -= damage;
+        if (obj.hitPoint <= 0) {
+            if (obj.type == BASE || obj.type == BARRACK) {
+                auto player = obj.owner == -1 ? 0:1;
+                game.buildingCnt[player]--;
+            }
+            game.objMap.erase(idx);
+        }
+    }
+}
+
+void GameStepProduce(GameState& game, const std::unordered_map<int, DiscreteAction>& action, int side, unordered_map<Coord, int, UHasher<Coord>>& coordOccupationCount) {
+    for (const auto& [idx, act]: action) {
+        if (game.objMap.count(idx) == 0) {
+            continue;
+        }
+        auto& obj = game.objMap.at(idx);
+        if (obj.owner != side) {
+            continue;
+        }
+        if (act.action != PRODUCE) {
+            continue;
+        }
+        if (std::count(OBJ_PRODUCE_MAP.at(obj.type).begin(), OBJ_PRODUCE_MAP.at(obj.type).end(),act.produceType) == 0) {
+            continue;
+        }
+        if (obj.attackCD != 0) {
+            continue;
+        }
+        if (obj.actionProgress != 0) {
+            continue;
+        }
+        coordOccupationCount[act.target]++;
+    }
+}
+
+void GameExecuteProduce(GameState& game, const std::unordered_map<int, DiscreteAction>& action, int side, unordered_map<Coord, int, UHasher<Coord>>& coordOccupationCount) {
+    for (const auto& [idx, act]: action) {
+        if (game.objMap.count(idx) == 0) {
+            continue;
+        }
+        auto& obj = game.objMap.at(idx);
+        if (obj.owner != side) {
+            continue;
+        }
+        if (act.action != PRODUCE) {
+            continue;
+        }
+        if (std::count(OBJ_PRODUCE_MAP.at(obj.type).begin(), OBJ_PRODUCE_MAP.at(obj.type).end(),act.produceType) == 0) {
+            continue;
+        }
+        if (obj.attackCD != 0) {
+            continue;
+        }
+        if (obj.actionProgress != 0) {
+            continue;
+        }
+        if (coordOccupationCount.at(obj.coord) > 1) {
+            continue;
+        }
+        obj.currentAction = act.action;
+        obj.actionTarget = act.target;
+        obj.actionProgress = OBJ_TIME_MAP.at(act.produceType);
+        obj.actionTotalProgress = obj.actionProgress;
+        obj.produceType = act.produceType;
+    }
+}
+
+void GameSettleProduce(GameState& game) {
+    unordered_set<GameObj, UHasher<Coord>> newObjSet;
+    for (auto& [_, obj]: game.objMap) {
+        if (obj.currentAction != PRODUCE) {
+            continue;
+        }
+        if (--obj.actionProgress == 0) {
+            obj.actionTotalProgress = 0;
+            obj.currentAction = NOOP;
+
+            auto newObj = GameObj();
+            newObj.coord = obj.actionTarget;
+            newObj.actionTarget = newObj.coord;
+            newObj.type = obj.produceType;
+            newObj.owner = obj.owner;
+            newObj.currentAction = NOOP;
+            newObj.actionTarget = newObj.coord;
+            newObj.actionProgress = 0;
+            newObj.actionTotalProgress = 0;
+            newObj.attackCD = 0;
+            newObj.attackRange = OBJ_ATTACK_RANGE_MAP.count(newObj.type) ? OBJ_ATTACK_RANGE_MAP.at(newObj.type) : 0;
+            newObj.attackInterval = OBJ_ATTACK_INTERVAL_MAP.count(newObj.type) ? OBJ_ATTACK_INTERVAL_MAP.at(newObj.type) : 0;
+            newObj.attackPoint = OBJ_ATTACK_MAP.count(newObj.type) ? OBJ_ATTACK_MAP.at(newObj.type) : 0;
+            newObj.moveInterval = OBJ_MOVE_INTERVAL_MAP.count(newObj.type) > 0 ? OBJ_MOVE_INTERVAL_MAP.at(newObj.type) : 0;
+            newObj.actionMask = OBJ_ACTION_MASK_MAP.at(newObj.type);
+            game.objMap.emplace(game.objCnt++, newObj);
+            if (newObj.type == BASE || newObj.type == BARRACK) {
+                auto player = newObj.owner == -1 ? 0:1;
+                game.buildingCnt[player]++;
+            }
+
+            obj.actionTarget = obj.coord;
+            obj.produceType = TERRAIN;
+        }
+    }
+}
+void DumpAction(GameState& game, const TotalDiscreteAction& action) {
+    cout << "time=" << game.time << endl;
+    for (int i = 0; i < 2; ++i) {
+        const auto& act = action.action[i];
+        cout << "Player" << (char)('A' + i) << " :";
+        for (const auto& [idx, a]: act) {
+            cout << "unit (" << game.objMap.at(idx).coord.y << "," << game.objMap.at(idx).coord.x <<"): ";
+            switch (a.action) {
+                case ATTACK:
+                    cout << "ATTACK: ";
+                    break;
+                case MOVE:
+                    cout << "MOVE: ";
+                    break;
+                case PRODUCE:
+                    cout << "PRODUCE: " << a.produceType << " ";
+                    break;
+                case GATHER:
+                    cout << "GATHER: ";
+                    break;
+                case RETURN:
+                    cout << "RETURN: ";
+                    break;
+            }
+            cout << "(" << a.target.y << "," << a.target.x <<")" << endl;
+        }
+        cout << endl;
+    }
+}
+void GameStepSingle(GameState& game, TotalDiscreteAction& action) {
+    DumpAction(game, action);
+    unordered_map<Coord, int, UHasher<Coord>> coordIdxMap;
+    for (const auto& [idx, obj]: game.objMap) {
+        coordIdxMap.emplace(obj.coord, idx);
+    }
+    unordered_map<int, int> unitDamageMap;
+    GameStepAttack(game, action.action[0], -1, 1, unitDamageMap, coordIdxMap);
+    GameStepAttack(game, action.action[1], 1, -1, unitDamageMap, coordIdxMap);
+    GameExecuteAttack(game, unitDamageMap);
+    unordered_map<Coord, int, UHasher<Coord>> coordOccupationCount;
+    for (const auto& [_, obj]: game.objMap) {
+        coordOccupationCount[obj.coord]++;
+        if (obj.currentAction != MOVE && obj.currentAction != ATTACK) {
+            continue;
+        }
+        coordOccupationCount[obj.actionTarget]++;
+    }
+    GameStepProduce(game, action.action[0], -1, coordOccupationCount);
+    GameStepProduce(game, action.action[0], 1, coordOccupationCount);
+    GameExecuteProduce(game, action.action[0], 1, coordOccupationCount);
+    GameExecuteProduce(game, action.action[0], 1, coordOccupationCount);
+    GameSettleProduce(game);
     game.time++;
+    action.action[0].clear();
+    action.action[1].clear();
 }

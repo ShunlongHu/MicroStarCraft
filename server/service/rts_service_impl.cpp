@@ -122,7 +122,7 @@ Status RtsServiceImpl::ConnectPlayer(ServerContext* context, ServerReaderWriter<
             cout << "player " << static_cast<char>('A' + static_cast<char>(msg.role())) << " echo!" << endl;
             continue;
         }
-        cout << "player " << static_cast<char>('A' + static_cast<char>(msg.role())) << " act!" << endl;
+//        cout << "player " << static_cast<char>('A' + static_cast<char>(msg.role())) << " act!" << endl;
         unique_lock<mutex> lockGuard(stateLock);
         auto& act = totalAction.action[msg.role()];
         act.clear();

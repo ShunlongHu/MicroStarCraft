@@ -4,8 +4,12 @@
 
 #include "human_ai.h"
 #include "rts_observer.h"
+#include "rpc_client.h"
 using namespace std;
 static int lastIdx = -1;
+static unordered_map<int, DiscreteAction> actionMap;
+const static unordered_map<GameObjType, vector<GameObjType>> objProdObjMap;
+
 void HumanAi::Act(const GameState& game, Coord mouseClick, Coord mouseRightClick)
 {
     if (RtsObserver::role == OBSERVER) {
@@ -31,5 +35,22 @@ void HumanAi::Act(const GameState& game, Coord mouseClick, Coord mouseRightClick
         RtsObserver::gameAction = -1;
     }
     lastIdx = curIdx;
+    auto action = RtsObserver::gameAction == -1;
+    if (curIdx != -1 && mouseRightClick.y != -1) {
+        if (coordIdxMap.count(mouseRightClick)) {
+            actionMap.emplace(curIdx, DiscreteAction{ATTACK, TERRAIN, ActionTarget{mouseRightClick.y, mouseRightClick.x}});
+        } else if (action) {
+            actionMap.emplace(curIdx, DiscreteAction{MOVE, TERRAIN, ActionTarget{mouseRightClick.y, mouseRightClick.x}});
+        } else {
+            auto& obj = game.objMap.at(curIdx);
+            actionMap.emplace(curIdx, DiscreteAction{PRODUCE, OBJ_PRODUCE_MAP.at(obj.type)[RtsObserver::gameAction], ActionTarget{mouseRightClick.y, mouseRightClick.x}});
+        }
+    }
+
+    RpcClient::SetAction(actionMap);
+    if (!actionMap.empty()) {
+        RpcClient::SendCommand(message::STEP);
+    }
+    actionMap = {};
     RtsObserver::selectedObj = selType;
 }

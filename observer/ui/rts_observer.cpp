@@ -187,9 +187,9 @@ void RtsObserver::RefreshActionButton() {
     } else if (selectedObj == BARRACK) {
         ui->gameActionButton0->setText("LIGHT");
         ui->gameActionButton0->show();
-        ui->gameActionButton1->setText("RANGED");
+        ui->gameActionButton1->setText("HEAVY");
         ui->gameActionButton1->show();
-        ui->gameActionButton2->setText("HEAVY");
+        ui->gameActionButton2->setText("RANGED");
         ui->gameActionButton2->show();
         SetButtonColor(ui->gameActionButton0, gameAction == 0 ? Qt::green : Qt::gray);
         SetButtonColor(ui->gameActionButton1, gameAction == 1 ? Qt::green : Qt::gray);

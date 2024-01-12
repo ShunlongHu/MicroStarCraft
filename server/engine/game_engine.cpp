@@ -217,6 +217,7 @@ void GameStepProduce(GameState& game, std::unordered_map<int, DiscreteAction>& a
         }
         auto& obj = game.objMap.at(idx);
         if (obj.owner != side) {
+            act.action = PRODUCE;
             continue;
         }
         if (std::count(OBJ_PRODUCE_MAP.at(obj.type).begin(), OBJ_PRODUCE_MAP.at(obj.type).end(),act.produceType) == 0) {
@@ -351,6 +352,7 @@ void GameStepMove(GameState& game, std::unordered_map<int, DiscreteAction>& acti
         }
         auto& obj = game.objMap.at(idx);
         if (obj.owner != side) {
+            act.action = MOVE;
             continue;
         }
         if (act.target.y < 0 || act.target.x < 0 || act.target.x >= game.w || act.target.y >= game.w) {
@@ -363,6 +365,9 @@ void GameStepMove(GameState& game, std::unordered_map<int, DiscreteAction>& acti
             continue;
         }
         if (obj.actionProgress != 0) {
+            continue;
+        }
+        if (OBJ_MOVE_INTERVAL_MAP.count(obj.type) == 0) {
             continue;
         }
         act.action = MOVE;

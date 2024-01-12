@@ -347,7 +347,7 @@ void GameStepSingle(GameState& game, TotalDiscreteAction& action) {
     }
     GameStepProduce(game, action.action[0], -1, coordOccupationCount);
     GameStepProduce(game, action.action[0], 1, coordOccupationCount);
-    GameExecuteProduce(game, action.action[0], 1, coordOccupationCount);
+    GameExecuteProduce(game, action.action[0], -1, coordOccupationCount);
     GameExecuteProduce(game, action.action[0], 1, coordOccupationCount);
     GameSettleProduce(game);
     game.time++;

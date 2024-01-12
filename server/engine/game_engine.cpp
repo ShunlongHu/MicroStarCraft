@@ -289,6 +289,7 @@ void GameSettleProduce(GameState& game) {
             newObj.attackPoint = OBJ_ATTACK_MAP.count(newObj.type) ? OBJ_ATTACK_MAP.at(newObj.type) : 0;
             newObj.moveInterval = OBJ_MOVE_INTERVAL_MAP.count(newObj.type) > 0 ? OBJ_MOVE_INTERVAL_MAP.at(newObj.type) : 0;
             newObj.actionMask = OBJ_ACTION_MASK_MAP.at(newObj.type);
+            newObj.hitPoint = OBJ_HP_MAP.at(newObj.type);
             game.objMap.emplace(game.objCnt++, newObj);
             if (newObj.type == BASE || newObj.type == BARRACK) {
                 auto player = newObj.owner == -1 ? 0:1;

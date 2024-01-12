@@ -319,6 +319,8 @@ void DumpAction(GameState& game, const TotalDiscreteAction& action) {
                 case RETURN:
                     cout << "RETURN: ";
                     break;
+                default:
+                    break;
             }
             cout << "(" << a.target.y << "," << a.target.x <<")" << endl;
         }

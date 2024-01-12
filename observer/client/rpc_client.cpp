@@ -142,6 +142,7 @@ void RtsPlayerClient::Connect() {
                     auto ptr = request.add_actions();
                     ptr->set_id(id);
                     ptr->set_action(act.action);
+                    ptr->set_producetype(act.produceType);
                     ptr->set_targetx(act.target.x);
                     ptr->set_targety(act.target.y);
                 }

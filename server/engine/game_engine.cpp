@@ -172,6 +172,9 @@ void GameStepAttack(GameState& game, const std::unordered_map<int, DiscreteActio
         if (obj.actionProgress != 0) {
             continue;
         }
+        if (act.target.y < 0 || act.target.x < 0 || act.target.x >= game.w || act.target.y >= game.w) {
+            continue;
+        }
         if (obj.attackRange > sqrt(
                 (act.target.y - obj.coord.y) * (act.target.y - obj.coord.y) +
                 (act.target.x - obj.coord.x) * (act.target.x - obj.coord.x))) {
@@ -203,16 +206,17 @@ void GameExecuteAttack(GameState& game, const unordered_map<int, int>& unitDamag
     }
 }
 
-void GameStepProduce(GameState& game, const std::unordered_map<int, DiscreteAction>& action, int side, unordered_map<Coord, int, UHasher<Coord>>& coordOccupationCount) {
-    for (const auto& [idx, act]: action) {
+void GameStepProduce(GameState& game, std::unordered_map<int, DiscreteAction>& action, int side, unordered_map<Coord, int, UHasher<Coord>>& coordOccupationCount) {
+    for (auto& [idx, act]: action) {
+        if (act.action != PRODUCE) {
+            continue;
+        }
+        act.action = NOOP;
         if (game.objMap.count(idx) == 0) {
             continue;
         }
         auto& obj = game.objMap.at(idx);
         if (obj.owner != side) {
-            continue;
-        }
-        if (act.action != PRODUCE) {
             continue;
         }
         if (std::count(OBJ_PRODUCE_MAP.at(obj.type).begin(), OBJ_PRODUCE_MAP.at(obj.type).end(),act.produceType) == 0) {
@@ -224,32 +228,7 @@ void GameStepProduce(GameState& game, const std::unordered_map<int, DiscreteActi
         if (obj.actionProgress != 0) {
             continue;
         }
-        coordOccupationCount[act.target]++;
-    }
-}
-
-void GameExecuteProduce(GameState& game, const std::unordered_map<int, DiscreteAction>& action, int side, unordered_map<Coord, int, UHasher<Coord>>& coordOccupationCount) {
-    for (const auto& [idx, act]: action) {
-        if (game.objMap.count(idx) == 0) {
-            continue;
-        }
-        auto& obj = game.objMap.at(idx);
-        if (obj.owner != side) {
-            continue;
-        }
-        if (act.action != PRODUCE) {
-            continue;
-        }
-        if (std::count(OBJ_PRODUCE_MAP.at(obj.type).begin(), OBJ_PRODUCE_MAP.at(obj.type).end(),act.produceType) == 0) {
-            continue;
-        }
-        if (obj.attackCD != 0) {
-            continue;
-        }
-        if (obj.actionProgress != 0) {
-            continue;
-        }
-        if (coordOccupationCount.at(obj.coord) > 1) {
+        if (act.target.y < 0 || act.target.x < 0 || act.target.x >= game.w || act.target.y >= game.w) {
             continue;
         }
         auto cost = OBJ_COST_MAP.at(act.produceType);
@@ -257,6 +236,24 @@ void GameExecuteProduce(GameState& game, const std::unordered_map<int, DiscreteA
         if (game.resource[playerIdx] < cost) {
             continue;
         }
+        act.action = PRODUCE;
+        coordOccupationCount[act.target]++;
+    }
+}
+
+void GameExecuteProduce(GameState& game, std::unordered_map<int, DiscreteAction>& action, int side, unordered_map<Coord, int, UHasher<Coord>>& coordOccupationCount) {
+    for (auto& [idx, act]: action) {
+        if (act.action != PRODUCE) {
+            continue;
+        }
+        act.action = NOOP;
+        auto& obj = game.objMap.at(idx);
+        auto cost = OBJ_COST_MAP.at(act.produceType);
+        auto playerIdx= side == -1 ? 0 : 1;
+        if (game.resource[playerIdx] < cost) {
+            continue;
+        }
+        act.action = PRODUCE;
         game.resource[playerIdx] -= cost;
         obj.currentAction = act.action;
         obj.actionTarget = act.target;
@@ -343,6 +340,69 @@ void GameRefreshResource(GameState& game) {
     }
 }
 
+void GameStepMove(GameState& game, std::unordered_map<int, DiscreteAction>& action, int side, unordered_map<Coord, int, UHasher<Coord>>& coordOccupationCount) {
+    for (auto& [idx, act]: action) {
+        if (act.action != MOVE) {
+            continue;
+        }
+        act.action = NOOP;
+        if (game.objMap.count(idx) == 0) {
+            continue;
+        }
+        auto& obj = game.objMap.at(idx);
+        if (obj.owner != side) {
+            continue;
+        }
+        if (act.target.y < 0 || act.target.x < 0 || act.target.x >= game.w || act.target.y >= game.w) {
+            continue;
+        }
+        if (abs(act.target.x - obj.coord.x) + abs(act.target.y - obj.coord.y) > 1) {
+            continue;
+        }
+        if (obj.attackCD != 0) {
+            continue;
+        }
+        if (obj.actionProgress != 0) {
+            continue;
+        }
+        act.action = MOVE;
+        coordOccupationCount[act.target]++;
+    }
+}
+
+void GameExecuteMove(GameState& game, std::unordered_map<int, DiscreteAction>& action, int side, unordered_map<Coord, int, UHasher<Coord>>& coordOccupationCount) {
+    for (auto& [idx, act]: action) {
+        auto& obj = game.objMap.at(idx);
+        if (act.action != MOVE) {
+            continue;
+        }
+        act.action = NOOP;
+        if (coordOccupationCount.at(obj.coord) > 1) {
+            continue;
+        }
+        act.action = MOVE;
+        obj.currentAction = act.action;
+        obj.actionTarget = act.target;
+        obj.actionProgress = OBJ_MOVE_INTERVAL_MAP.at(obj.type);
+        obj.actionTotalProgress = obj.actionProgress;
+    }
+}
+
+void GameSettleMove(GameState& game) {
+    unordered_set<GameObj, UHasher<Coord>> newObjSet;
+    for (auto& [_, obj]: game.objMap) {
+        if (obj.currentAction != MOVE) {
+            continue;
+        }
+        if (--obj.actionProgress == 0) {
+            obj.actionTotalProgress = 0;
+            obj.currentAction = NOOP;
+            obj.coord = obj.actionTarget;
+            obj.actionTarget = obj.coord;
+        }
+    }
+}
+
 void GameStepSingle(GameState& game, TotalDiscreteAction& action) {
     DumpAction(game, action);
     unordered_map<Coord, int, UHasher<Coord>> coordIdxMap;
@@ -356,16 +416,18 @@ void GameStepSingle(GameState& game, TotalDiscreteAction& action) {
     unordered_map<Coord, int, UHasher<Coord>> coordOccupationCount;
     for (const auto& [_, obj]: game.objMap) {
         coordOccupationCount[obj.coord]++;
-        if (obj.currentAction != MOVE && obj.currentAction != ATTACK) {
-            continue;
-        }
-        coordOccupationCount[obj.actionTarget]++;
     }
     GameStepProduce(game, action.action[0], -1, coordOccupationCount);
     GameStepProduce(game, action.action[0], 1, coordOccupationCount);
     GameExecuteProduce(game, action.action[0], -1, coordOccupationCount);
     GameExecuteProduce(game, action.action[0], 1, coordOccupationCount);
     GameSettleProduce(game);
+
+    GameStepMove(game, action.action[0], -1, coordOccupationCount);
+    GameStepMove(game, action.action[0], 1, coordOccupationCount);
+    GameExecuteMove(game, action.action[0], -1, coordOccupationCount);
+    GameExecuteMove(game, action.action[0], 1, coordOccupationCount);
+    GameSettleMove(game);
 
     GameRefreshResource(game);
     game.time++;

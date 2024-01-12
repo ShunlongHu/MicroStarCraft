@@ -412,8 +412,9 @@ void GameSettleMove(GameState& game) {
 void GameStepSingle(GameState& game, TotalDiscreteAction& action) {
     DumpAction(game, action);
     unordered_map<Coord, int, UHasher<Coord>> coordIdxMap;
-    for (const auto& [idx, obj]: game.objMap) {
+    for (auto& [idx, obj]: game.objMap) {
         coordIdxMap.emplace(obj.coord, idx);
+        obj.attackCD = max(0, obj.attackCD-1);
     }
     unordered_map<int, int> unitDamageMap;
     GameStepAttack(game, action.action[0], -1, 1, unitDamageMap, coordIdxMap);

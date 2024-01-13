@@ -232,6 +232,9 @@ void GameStepProduce(GameState& game, std::unordered_map<int, DiscreteAction>& a
         if (act.target.y < 0 || act.target.x < 0 || act.target.x >= game.w || act.target.y >= game.w) {
             continue;
         }
+        if (abs(act.target.x - obj.coord.x) + abs(act.target.y - obj.coord.y) > 1) {
+            continue;
+        }
         auto cost = OBJ_COST_MAP.at(act.produceType);
         auto playerIdx= side == -1 ? 0 : 1;
         if (game.resource[playerIdx] < cost) {
@@ -404,6 +407,7 @@ void GameSettleMove(GameState& game) {
         }
         if (--obj.actionProgress == 0) {
             obj.currentAction = NOOP;
+            obj.coord = obj.actionTarget;
         }
     }
 }
@@ -551,15 +555,15 @@ void GameStepSingle(GameState& game, TotalDiscreteAction& action) {
         }
     }
     GameStepProduce(game, action.action[0], -1, coordOccupationCount);
-    GameStepProduce(game, action.action[0], 1, coordOccupationCount);
+    GameStepProduce(game, action.action[1], 1, coordOccupationCount);
     GameExecuteProduce(game, action.action[0], -1, coordOccupationCount);
-    GameExecuteProduce(game, action.action[0], 1, coordOccupationCount);
+    GameExecuteProduce(game, action.action[1], 1, coordOccupationCount);
     GameSettleProduce(game);
 
     GameStepMove(game, action.action[0], -1, coordOccupationCount);
-    GameStepMove(game, action.action[0], 1, coordOccupationCount);
+    GameStepMove(game, action.action[1], 1, coordOccupationCount);
     GameExecuteMove(game, action.action[0], -1, coordOccupationCount);
-    GameExecuteMove(game, action.action[0], 1, coordOccupationCount);
+    GameExecuteMove(game, action.action[1], 1, coordOccupationCount);
     GameSettleMove(game);
 
     unordered_map<Coord, int, UHasher<Coord>> coordGatherCount;
@@ -569,13 +573,13 @@ void GameStepSingle(GameState& game, TotalDiscreteAction& action) {
         }
     }
     GameStepGather(game, action.action[0], -1, coordGatherCount, coordIdxMap);
-    GameStepGather(game, action.action[0], 1, coordGatherCount, coordIdxMap);
+    GameStepGather(game, action.action[1], 1, coordGatherCount, coordIdxMap);
     GameExecuteGather(game, action.action[0], -1, coordGatherCount);
-    GameExecuteGather(game, action.action[0], 1, coordGatherCount);
+    GameExecuteGather(game, action.action[1], 1, coordGatherCount);
     GameSettleGather(game, coordIdxMap);
 
     GameStepReturn(game, action.action[0], -1, coordIdxMap);
-    GameStepReturn(game, action.action[0], 1, coordIdxMap);
+    GameStepReturn(game, action.action[1], 1, coordIdxMap);
 
     GameRefresh(game);
     game.time++;

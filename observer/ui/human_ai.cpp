@@ -38,7 +38,12 @@ void HumanAi::Act(const GameState& game, Coord mouseClick, Coord mouseRightClick
     auto action = RtsObserver::gameAction == -1;
     if (curIdx != -1 && mouseRightClick.y != -1) {
         if (coordIdxMap.count(mouseRightClick)) {
-            actionMap.emplace(curIdx, DiscreteAction{ATTACK, TERRAIN, ActionTarget{mouseRightClick.y, mouseRightClick.x}});
+            auto idx = coordIdxMap.at(mouseRightClick);
+            GameObjType type = TERRAIN;
+            if (game.objMap.count(idx)) {
+                type = game.objMap.at(idx).type;
+            }
+            actionMap.emplace(curIdx, DiscreteAction{type == MINERAL ? GATHER : type == BASE ? RETURN : ATTACK, TERRAIN, ActionTarget{mouseRightClick.y, mouseRightClick.x}});
         } else if (action) {
             actionMap.emplace(curIdx, DiscreteAction{MOVE, TERRAIN, ActionTarget{mouseRightClick.y, mouseRightClick.x}});
         } else {

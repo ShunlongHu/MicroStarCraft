@@ -438,13 +438,13 @@ void GameStepGather(GameState& game, std::unordered_map<int, DiscreteAction>& ac
         if (obj.resource != 0) {
             continue;
         }
-        if (coordIdxMap.count(obj.actionTarget) == 0) {
+        if (coordIdxMap.count(act.target) == 0) {
             continue;
         }
         if (abs(act.target.x - obj.coord.x) + abs(act.target.y - obj.coord.y) > 1) {
             continue;
         }
-        auto& target = game.objMap.at(coordIdxMap.at(obj.actionTarget));
+        auto& target = game.objMap.at(coordIdxMap.at(act.target));
         if (!target.actionMask.canBeGathered) {
             continue;
         }
@@ -517,13 +517,13 @@ void GameStepReturn(GameState& game, std::unordered_map<int, DiscreteAction>& ac
         if (obj.resource == 0) {
             continue;
         }
-        if (coordIdxMap.count(obj.actionTarget) == 0) {
+        if (coordIdxMap.count(act.target) == 0) {
             continue;
         }
         if (abs(act.target.x - obj.coord.x) + abs(act.target.y - obj.coord.y) > 1) {
             continue;
         }
-        auto& target = game.objMap.at(coordIdxMap.at(obj.actionTarget));
+        auto& target = game.objMap.at(coordIdxMap.at(act.target));
         if (!target.actionMask.canBeStored) {
             continue;
         }

@@ -112,7 +112,6 @@ void GameReset(GameState *ptrGameState, int seed, bool isRotSym, bool isAxSym, d
         obj.attackRange = 0;
         obj.attackInterval = 0;
         obj.attackPoint = 0;
-        obj.moveInterval = 0;
         obj.actionMask = OBJ_ACTION_MASK_MAP.at(obj.type);
     }
     auto cpy = game.objMap;
@@ -175,7 +174,7 @@ void GameStepAttack(GameState& game, const std::unordered_map<int, DiscreteActio
         if (act.target.y < 0 || act.target.x < 0 || act.target.x >= game.w || act.target.y >= game.w) {
             continue;
         }
-        if (obj.attackRange > sqrt(
+        if (obj.attackRange < sqrt(
                 (act.target.y - obj.coord.y) * (act.target.y - obj.coord.y) +
                 (act.target.x - obj.coord.x) * (act.target.x - obj.coord.x))) {
             continue;
@@ -276,7 +275,7 @@ void GameSettleProduce(GameState& game) {
         if (obj.currentAction != PRODUCE) {
             continue;
         }
-        if (--obj.actionProgress == 0) {
+        if (obj.actionProgress-- == 0) {
             obj.currentAction = NOOP;
 
             auto newObj = GameObj();
@@ -289,7 +288,6 @@ void GameSettleProduce(GameState& game) {
             newObj.attackRange = OBJ_ATTACK_RANGE_MAP.count(newObj.type) ? OBJ_ATTACK_RANGE_MAP.at(newObj.type) : 0;
             newObj.attackInterval = OBJ_ATTACK_INTERVAL_MAP.count(newObj.type) ? OBJ_ATTACK_INTERVAL_MAP.at(newObj.type) : 0;
             newObj.attackPoint = OBJ_ATTACK_MAP.count(newObj.type) ? OBJ_ATTACK_MAP.at(newObj.type) : 0;
-            newObj.moveInterval = OBJ_MOVE_INTERVAL_MAP.count(newObj.type) > 0 ? OBJ_MOVE_INTERVAL_MAP.at(newObj.type) : 0;
             newObj.actionMask = OBJ_ACTION_MASK_MAP.at(newObj.type);
             newObj.hitPoint = OBJ_HP_MAP.at(newObj.type);
             game.objMap.emplace(game.objCnt++, newObj);
@@ -306,7 +304,12 @@ void DumpAction(GameState& game, const TotalDiscreteAction& action) {
         const auto& act = action.action[i];
         cout << "Player" << (char)('A' + i) << " :";
         for (const auto& [idx, a]: act) {
-            cout << "unit (" << game.objMap.at(idx).coord.y << "," << game.objMap.at(idx).coord.x <<"): ";
+            Coord coord {-1, -1};
+            if (game.objMap.count(idx)) {
+                const auto& c = game.objMap.at(idx);
+                coord = {c.coord.y, c.coord.x};
+            }
+            cout << "unit (" << coord.y << "," << coord.x <<"): ";
             switch (a.action) {
                 case ATTACK:
                     cout << "ATTACK: ";
@@ -405,7 +408,7 @@ void GameSettleMove(GameState& game) {
         if (obj.currentAction != MOVE) {
             continue;
         }
-        if (--obj.actionProgress == 0) {
+        if (obj.actionProgress-- == 0) {
             obj.currentAction = NOOP;
             obj.coord = obj.actionTarget;
         }
@@ -460,7 +463,7 @@ void GameExecuteGather(GameState& game, std::unordered_map<int, DiscreteAction>&
             continue;
         }
         act.action = NOOP;
-        if (coordGatherCount.at(obj.coord) > 1) {
+        if (coordGatherCount.at(act.target) > 1) {
             continue;
         }
         act.action = GATHER;
@@ -478,9 +481,10 @@ void GameSettleGather(GameState& game, const unordered_map<Coord, int, UHasher<C
             continue;
         }
         auto& target = game.objMap.at(coordIdxMap.at(obj.actionTarget));
-        if (--obj.actionProgress == 0) {
+        if (obj.actionProgress-- == 0) {
             obj.currentAction = NOOP;
             obj.resource = min<int>(RES_PER_GATHER, target.resource);
+            target.resource -= RES_PER_GATHER;
             if (target.resource <= 0) {
                 eraseSet.emplace(coordIdxMap.at(obj.actionTarget));
             }

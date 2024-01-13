@@ -117,7 +117,7 @@ const static std::unordered_map<GameObjType, int> OBJ_ATTACK_RANGE_MAP {
 
 // GAME_ECONOMY
 constexpr static int RES_PER_GATHER = 1;
-constexpr static int GATHER_TIME = 0;
+constexpr static int GATHER_TIME = 1;
 
 template<class T>
 struct UHasher {
@@ -209,21 +209,20 @@ const static std::vector<ActionTarget> DIRECTION_TARGET_MAP{{-1, 0},
 struct GameObj {
     GameObjType type;
     Coord coord;
-    uint8_t hitPoint;
-    uint8_t resource;   // resource of a cluster/carried by a worker
+    int16_t hitPoint;
+    int16_t resource;   // resource of a cluster/carried by a worker
     int8_t owner;   // -1: a, 0: neutral, 1:b
     ActionType currentAction;
     ActionTarget actionTarget;
-    uint8_t actionProgress;
-    uint8_t actionTotalProgress;
-    uint8_t attackCD;   // is not used
+    int16_t actionProgress;
+    int16_t actionTotalProgress;
+    int16_t attackCD;   // is not used
     GameObjType produceType;
 
     // static attributes
-    uint8_t attackRange;
-    uint8_t attackInterval;
-    uint8_t attackPoint;
-    uint8_t moveInterval;
+    int16_t attackRange;
+    int16_t attackInterval;
+    int16_t attackPoint;
 
     // action mask
     ActionMask actionMask;

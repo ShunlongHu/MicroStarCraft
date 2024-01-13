@@ -43,7 +43,8 @@ void HumanAi::Act(const GameState& game, Coord mouseClick, Coord mouseRightClick
             if (game.objMap.count(idx)) {
                 type = game.objMap.at(idx).type;
             }
-            actionMap.emplace(curIdx, DiscreteAction{type == MINERAL ? GATHER : type == BASE ? RETURN : ATTACK, TERRAIN, ActionTarget{mouseRightClick.y, mouseRightClick.x}});
+            auto player = RtsObserver::role == PLAYER_A ? -1 : 1;
+            actionMap.emplace(curIdx, DiscreteAction{type == MINERAL ? GATHER : type == BASE && game.objMap.at(idx).owner == player ? RETURN : ATTACK, TERRAIN, ActionTarget{mouseRightClick.y, mouseRightClick.x}});
         } else if (action) {
             actionMap.emplace(curIdx, DiscreteAction{MOVE, TERRAIN, ActionTarget{mouseRightClick.y, mouseRightClick.x}});
         } else {

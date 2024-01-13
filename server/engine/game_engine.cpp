@@ -368,7 +368,7 @@ void GameStepMove(GameState& game, std::unordered_map<int, DiscreteAction>& acti
         if (obj.actionProgress != 0) {
             continue;
         }
-        if (OBJ_MOVE_INTERVAL_MAP.count(obj.type) == 0) {
+        if (!obj.actionMask.canMove) {
             continue;
         }
         act.action = MOVE;

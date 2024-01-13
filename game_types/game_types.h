@@ -44,10 +44,10 @@ const static std::unordered_map<GameObjType, int> OBJ_ATTACK_MAP{ // sc2 / 40
 };
 
 const static std::unordered_map<GameObjType, int> OBJ_ATTACK_INTERVAL_MAP{ // sc2 * 2
-        {WORKER, 1},
-        {LIGHT,  0},
-        {HEAVY,  1},
-        {RANGED, 0}
+        {WORKER, 2},
+        {LIGHT,  1},
+        {HEAVY,  2},
+        {RANGED, 1}
 };
 
 const static std::unordered_map<GameObjType, int> OBJ_COST_MAP{ // sc2 / 50

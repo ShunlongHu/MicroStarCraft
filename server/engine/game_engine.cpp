@@ -337,7 +337,7 @@ void DumpAction(GameState& game, const TotalDiscreteAction& action) {
 
 void GameRefresh(GameState& game) {
     for (auto& [_, obj]: game.objMap) {
-        if (obj.currentAction == NOOP) {
+        if (obj.currentAction == NOOP && obj.attackCD == 0) {
             obj.actionTarget = obj.coord;
             obj.actionProgress = 0;
             obj.actionTotalProgress = 0;

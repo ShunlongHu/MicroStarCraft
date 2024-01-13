@@ -226,18 +226,18 @@ void RtsMap::paintGL()
     vector<QVector3D> moveLines;
     vector<QVector3D> produceLines;
     for (const auto& [_, obj]: game.objMap) {
-        if (obj.currentAction == NOOP) {
+        if (obj.actionTarget.x == obj.coord.x && obj.actionTarget.y == obj.coord.y) {
             continue;
         }
-        auto& vertices = obj.currentAction == ATTACK ? attackLines : obj.currentAction == MOVE ? moveLines : obj.currentAction == PRODUCE ? produceLines : resourceLines;
+        auto& vertices = obj.currentAction == GATHER || obj.currentAction == RETURN ? resourceLines : obj.currentAction == MOVE ? moveLines : obj.currentAction == PRODUCE ? produceLines : attackLines;
         auto xLoc = 2.0f * static_cast<float>(obj.coord.x) / game.w + 1.0f / game.w - 1.0f;
         auto yLoc = 2.0f * static_cast<float>(obj.coord.y) / game.h + 1.0f / game.h - 1.0f;
-        vertices.emplace_back(QVector3D{xLoc, yLoc, 1});
+        vertices.emplace_back(QVector3D{xLoc, yLoc, 0});
         xLoc = 2.0f * static_cast<float>(obj.actionTarget.x) / game.w + 1.0f / game.w - 1.0f;
         yLoc = 2.0f * static_cast<float>(obj.actionTarget.y) / game.h + 1.0f / game.h - 1.0f;
-        vertices.emplace_back(QVector3D{xLoc, yLoc, 1});
+        vertices.emplace_back(QVector3D{xLoc, yLoc, 0});
     }
-    line->draw(colorProgram.get(), {1,0,0,0}, attackLines);
+    line->draw(colorProgram.get(), {1,0,0,1}, attackLines);
     line->draw(colorProgram.get(), {0,0,1,1}, produceLines);
     line->draw(colorProgram.get(), {0,1,0,1}, moveLines);
     line->draw(colorProgram.get(), {0,1,1,1}, resourceLines);
@@ -296,6 +296,15 @@ void RtsMap::paintGL()
                               -1.0f - fontSize,
                               fontSize / tMesh->fontSize,
                               {0,0,1});
+
+        }
+        if (obj.attackCD != 0) {
+            tMesh->RenderText(*textProgram,
+                              to_string(obj.attackCD),
+                              -fontSize/2,
+                              -1.0f - fontSize,
+                              fontSize / tMesh->fontSize,
+                              {1,0,0});
 
         }
     }

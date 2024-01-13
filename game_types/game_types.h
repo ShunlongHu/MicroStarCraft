@@ -117,7 +117,7 @@ const static std::unordered_map<GameObjType, int> OBJ_ATTACK_RANGE_MAP {
 
 // GAME_ECONOMY
 constexpr static int RES_PER_GATHER = 1;
-constexpr static int GATHER_POST = 0;
+constexpr static int GATHER_TIME = 0;
 
 template<class T>
 struct UHasher {

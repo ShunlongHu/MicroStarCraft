@@ -254,6 +254,9 @@ void GameExecuteProduce(GameState& game, std::unordered_map<int, DiscreteAction>
         if (game.resource[playerIdx] < cost) {
             continue;
         }
+        if (coordOccupationCount.at(obj.coord) > 1) {
+            continue;
+        }
         act.action = PRODUCE;
         game.resource[playerIdx] -= cost;
         obj.currentAction = act.action;
@@ -271,7 +274,6 @@ void GameSettleProduce(GameState& game) {
             continue;
         }
         if (--obj.actionProgress == 0) {
-            obj.actionTotalProgress = 0;
             obj.currentAction = NOOP;
 
             auto newObj = GameObj();
@@ -280,9 +282,6 @@ void GameSettleProduce(GameState& game) {
             newObj.type = obj.produceType;
             newObj.owner = obj.owner;
             newObj.currentAction = NOOP;
-            newObj.actionTarget = newObj.coord;
-            newObj.actionProgress = 0;
-            newObj.actionTotalProgress = 0;
             newObj.attackCD = 0;
             newObj.attackRange = OBJ_ATTACK_RANGE_MAP.count(newObj.type) ? OBJ_ATTACK_RANGE_MAP.at(newObj.type) : 0;
             newObj.attackInterval = OBJ_ATTACK_INTERVAL_MAP.count(newObj.type) ? OBJ_ATTACK_INTERVAL_MAP.at(newObj.type) : 0;
@@ -295,9 +294,6 @@ void GameSettleProduce(GameState& game) {
                 auto player = newObj.owner == -1 ? 0:1;
                 game.buildingCnt[player]++;
             }
-
-            obj.actionTarget = obj.coord;
-            obj.produceType = TERRAIN;
         }
     }
 }
@@ -333,12 +329,18 @@ void DumpAction(GameState& game, const TotalDiscreteAction& action) {
     }
 }
 
-void GameRefreshResource(GameState& game) {
+void GameRefresh(GameState& game) {
     for (auto& [_, obj]: game.objMap) {
-        if (obj.type != BASE) {
-            continue;
+        if (obj.currentAction == NOOP) {
+            obj.actionTarget = obj.coord;
+            obj.actionProgress = 0;
+            obj.actionTotalProgress = 0;
+            obj.produceType = TERRAIN;
         }
-        obj.resource = game.resource[obj.owner == -1 ? 0 : 1];
+        if (obj.type == BASE) {
+            obj.resource = game.resource[obj.owner == -1 ? 0 : 1];
+        }
+        obj.attackCD = max(0, obj.attackCD - 1);
     }
 }
 
@@ -401,20 +403,141 @@ void GameSettleMove(GameState& game) {
             continue;
         }
         if (--obj.actionProgress == 0) {
-            obj.actionTotalProgress = 0;
             obj.currentAction = NOOP;
-            obj.coord = obj.actionTarget;
-            obj.actionTarget = obj.coord;
         }
     }
 }
+
+void GameStepGather(GameState& game, std::unordered_map<int, DiscreteAction>& action, int side, unordered_map<Coord, int, UHasher<Coord>>& coordGatherCount, const unordered_map<Coord, int, UHasher<Coord>>& coordIdxMap) {
+    for (auto& [idx, act]: action) {
+        if (act.action != GATHER) {
+            continue;
+        }
+        act.action = NOOP;
+        if (game.objMap.count(idx) == 0) {
+            continue;
+        }
+        auto& obj = game.objMap.at(idx);
+        if (obj.owner != side) {
+            act.action = GATHER;
+            continue;
+        }
+        if (obj.attackCD != 0) {
+            continue;
+        }
+        if (obj.actionProgress != 0) {
+            continue;
+        }
+        if (!obj.actionMask.canGather) {
+            continue;
+        }
+        if (obj.resource != 0) {
+            continue;
+        }
+        if (coordIdxMap.count(obj.actionTarget) == 0) {
+            continue;
+        }
+        if (abs(act.target.x - obj.coord.x) + abs(act.target.y - obj.coord.y) > 1) {
+            continue;
+        }
+        auto& target = game.objMap.at(coordIdxMap.at(obj.actionTarget));
+        if (!target.actionMask.canBeGathered) {
+            continue;
+        }
+        act.action = GATHER;
+        coordGatherCount[act.target]++;
+    }
+}
+
+void GameExecuteGather(GameState& game, std::unordered_map<int, DiscreteAction>& action, int side, unordered_map<Coord, int, UHasher<Coord>>& coordGatherCount) {
+    for (auto& [idx, act]: action) {
+        auto& obj = game.objMap.at(idx);
+        if (act.action != GATHER) {
+            continue;
+        }
+        act.action = NOOP;
+        if (coordGatherCount.at(obj.coord) > 1) {
+            continue;
+        }
+        act.action = GATHER;
+        obj.currentAction = GATHER;
+        obj.actionTotalProgress = GATHER_TIME;
+        obj.actionProgress = GATHER_TIME;
+        obj.actionTarget = act.target;
+    }
+}
+
+void GameSettleGather(GameState& game, const unordered_map<Coord, int, UHasher<Coord>>& coordIdxMap) {
+    unordered_set<int> eraseSet;
+    for (auto& [_, obj]: game.objMap) {
+        if (obj.currentAction != GATHER) {
+            continue;
+        }
+        auto& target = game.objMap.at(coordIdxMap.at(obj.actionTarget));
+        if (--obj.actionProgress == 0) {
+            obj.currentAction = NOOP;
+            obj.resource = min<int>(RES_PER_GATHER, target.resource);
+            if (target.resource <= 0) {
+                eraseSet.emplace(coordIdxMap.at(obj.actionTarget));
+            }
+        }
+    }
+    for (const auto& idx: eraseSet) {
+        game.objMap.erase(idx);
+    }
+}
+
+void GameStepReturn(GameState& game, std::unordered_map<int, DiscreteAction>& action, int side, const unordered_map<Coord, int, UHasher<Coord>>& coordIdxMap) {
+    for (auto& [idx, act]: action) {
+        if (act.action != RETURN) {
+            continue;
+        }
+        act.action = NOOP;
+        if (game.objMap.count(idx) == 0) {
+            continue;
+        }
+        auto& obj = game.objMap.at(idx);
+        if (obj.owner != side) {
+            act.action = RETURN;
+            continue;
+        }
+        if (obj.attackCD != 0) {
+            continue;
+        }
+        if (obj.actionProgress != 0) {
+            continue;
+        }
+        if (!obj.actionMask.canGather) {
+            continue;
+        }
+        if (obj.resource == 0) {
+            continue;
+        }
+        if (coordIdxMap.count(obj.actionTarget) == 0) {
+            continue;
+        }
+        if (abs(act.target.x - obj.coord.x) + abs(act.target.y - obj.coord.y) > 1) {
+            continue;
+        }
+        auto& target = game.objMap.at(coordIdxMap.at(obj.actionTarget));
+        if (!target.actionMask.canBeStored) {
+            continue;
+        }
+        if (side != target.owner) {
+            continue;
+        }
+        game.resource[target.owner == -1 ? 0 : 1] += obj.resource;
+        obj.resource = 0;
+        act.action = NOOP;
+    }
+}
+
 
 void GameStepSingle(GameState& game, TotalDiscreteAction& action) {
     DumpAction(game, action);
     unordered_map<Coord, int, UHasher<Coord>> coordIdxMap;
     for (auto& [idx, obj]: game.objMap) {
         coordIdxMap.emplace(obj.coord, idx);
-        obj.attackCD = max(0, obj.attackCD-1);
     }
     unordered_map<int, int> unitDamageMap;
     GameStepAttack(game, action.action[0], -1, 1, unitDamageMap, coordIdxMap);
@@ -440,15 +563,21 @@ void GameStepSingle(GameState& game, TotalDiscreteAction& action) {
     GameSettleMove(game);
 
     unordered_map<Coord, int, UHasher<Coord>> coordGatherCount;
-
-
-    GameStepGather(game, action.action[0], -1, coordGatherCount);
-    GameStepGather(game, action.action[0], 1, coordGatherCount);
+    for (const auto& [_, obj]: game.objMap) {
+        if (obj.currentAction == GATHER) {
+            coordGatherCount[obj.actionTarget]++;
+        }
+    }
+    GameStepGather(game, action.action[0], -1, coordGatherCount, coordIdxMap);
+    GameStepGather(game, action.action[0], 1, coordGatherCount, coordIdxMap);
     GameExecuteGather(game, action.action[0], -1, coordGatherCount);
     GameExecuteGather(game, action.action[0], 1, coordGatherCount);
-    GameSettleGather(game);
+    GameSettleGather(game, coordIdxMap);
 
-    GameRefreshResource(game);
+    GameStepReturn(game, action.action[0], -1, coordIdxMap);
+    GameStepReturn(game, action.action[0], 1, coordIdxMap);
+
+    GameRefresh(game);
     game.time++;
     action.action[0].clear();
     action.action[1].clear();

@@ -268,7 +268,7 @@ void RtsMap::paintGL()
                               -fontSize/2,
                               -1.0f + fontSize,
                               fontSize / tMesh->fontSize,
-                              {1.0f * (maxHp - obj.hitPoint) / maxHp,1.0f * obj.hitPoint / maxHp,0});
+                              {2.0f * (maxHp - obj.hitPoint) / maxHp,2.0f * obj.hitPoint / maxHp,0});
         }
         if (obj.actionTotalProgress != 0) {
             tMesh->RenderText(*textProgram,

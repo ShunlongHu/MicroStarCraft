@@ -221,7 +221,26 @@ void RtsMap::paintGL()
     QMatrix4x4 lMatrix;
     lMatrix.translate(0,0,0);
     colorProgram->setUniformValue("model", lMatrix);
-    line->draw(colorProgram.get(), {1,0,0,1}, {{-1,-1,0}, {1,1,0},{1,-1,0}, {1,1,0},{-1,-1,0}, {1,-1,0}});
+    vector<QVector3D> attackLines;
+    vector<QVector3D> resourceLines;
+    vector<QVector3D> moveLines;
+    vector<QVector3D> produceLines;
+    for (const auto& [_, obj]: game.objMap) {
+        if (obj.currentAction == NOOP) {
+            continue;
+        }
+        auto& vertices = obj.currentAction == ATTACK ? attackLines : obj.currentAction == MOVE ? moveLines : obj.currentAction == PRODUCE ? produceLines : resourceLines;
+        auto xLoc = 2.0f * static_cast<float>(obj.coord.x) / game.w + 1.0f / game.w - 1.0f;
+        auto yLoc = 2.0f * static_cast<float>(obj.coord.y) / game.h + 1.0f / game.h - 1.0f;
+        vertices.emplace_back(QVector3D{xLoc, yLoc, 1});
+        xLoc = 2.0f * static_cast<float>(obj.actionTarget.x) / game.w + 1.0f / game.w - 1.0f;
+        yLoc = 2.0f * static_cast<float>(obj.actionTarget.y) / game.h + 1.0f / game.h - 1.0f;
+        vertices.emplace_back(QVector3D{xLoc, yLoc, 1});
+    }
+    line->draw(colorProgram.get(), {1,0,0,0}, attackLines);
+    line->draw(colorProgram.get(), {0,0,1,1}, produceLines);
+    line->draw(colorProgram.get(), {0,1,0,1}, moveLines);
+    line->draw(colorProgram.get(), {0,1,1,1}, resourceLines);
     colorProgram->release();
 
     // draw units

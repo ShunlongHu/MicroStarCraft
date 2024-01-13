@@ -423,6 +423,9 @@ void GameStepSingle(GameState& game, TotalDiscreteAction& action) {
     unordered_map<Coord, int, UHasher<Coord>> coordOccupationCount;
     for (const auto& [_, obj]: game.objMap) {
         coordOccupationCount[obj.coord]++;
+        if (obj.currentAction == MOVE || obj.currentAction == PRODUCE) {
+            coordOccupationCount[obj.actionTarget]++;
+        }
     }
     GameStepProduce(game, action.action[0], -1, coordOccupationCount);
     GameStepProduce(game, action.action[0], 1, coordOccupationCount);
@@ -435,6 +438,15 @@ void GameStepSingle(GameState& game, TotalDiscreteAction& action) {
     GameExecuteMove(game, action.action[0], -1, coordOccupationCount);
     GameExecuteMove(game, action.action[0], 1, coordOccupationCount);
     GameSettleMove(game);
+
+    unordered_map<Coord, int, UHasher<Coord>> coordGatherCount;
+
+
+    GameStepGather(game, action.action[0], -1, coordGatherCount);
+    GameStepGather(game, action.action[0], 1, coordGatherCount);
+    GameExecuteGather(game, action.action[0], -1, coordGatherCount);
+    GameExecuteGather(game, action.action[0], 1, coordGatherCount);
+    GameSettleGather(game);
 
     GameRefreshResource(game);
     game.time++;

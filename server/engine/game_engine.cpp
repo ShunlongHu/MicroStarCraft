@@ -126,6 +126,7 @@ void GameReset(GameState *ptrGameState, int seed, bool isRotSym, bool isAxSym, d
             newObj.owner = 1;
         }
         newObj.coord = newLoc;
+        newObj.actionTarget = newObj.coord;
         game.objMap.emplace(game.objCnt++, newObj);
     }
     taskCounter++;

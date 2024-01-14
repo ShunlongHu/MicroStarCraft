@@ -8,7 +8,6 @@
 using namespace std;
 static int lastIdx = -1;
 static unordered_map<int, DiscreteAction> actionMap;
-const static unordered_map<GameObjType, vector<GameObjType>> objProdObjMap;
 
 void HumanAi::Act(const GameState& game, Coord mouseClick, Coord mouseRightClick)
 {

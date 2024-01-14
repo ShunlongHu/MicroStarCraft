@@ -349,6 +349,29 @@ void GameRefresh(GameState& game) {
         }
         obj.attackCD = max(0, obj.attackCD - 1);
     }
+    // continue game
+    if (game.buildingCnt[0] != 0 && game.buildingCnt[1] != 0) {
+        game.time++;
+        return;
+    }
+    // end of game
+    unordered_set<int> deleteSet;
+    for (const auto& [idx, obj]: game.objMap) {
+        auto side = obj.owner == -1 ? 0 : 1;
+        if (game.buildingCnt[side] <= 0) {
+            deleteSet.emplace(idx);
+        }
+    }
+    for (const auto& idx: deleteSet) {
+        game.objMap.erase(idx);
+    }
+    if (game.buildingCnt[0] == 0 && game.buildingCnt[1] == 1) {
+        cout << "Game End: Draw" << endl;
+    } else if (game.buildingCnt[1] == 0) {
+        cout << "Game End: Player A Win" << endl;
+    } else if (game.buildingCnt[0] == 0) {
+        cout << "Game End: Player B Win" << endl;
+    }
 }
 
 void GameStepMove(GameState& game, std::unordered_map<int, DiscreteAction>& action, int side, unordered_map<Coord, int, UHasher<Coord>>& coordOccupationCount) {
@@ -587,7 +610,6 @@ void GameStepSingle(GameState& game, TotalDiscreteAction& action) {
     GameStepReturn(game, action.action[1], 1, coordIdxMap);
 
     GameRefresh(game);
-    game.time++;
     action.action[0].clear();
     action.action[1].clear();
 }

@@ -328,6 +328,20 @@ void RtsMap::paintGL()
     mMatrix.rotate(45.0f, 1, 0, 0);
     textProgram->setUniformValue("model", mMatrix);
     tMesh->RenderText(*textProgram, "frame time: " + to_string(duration) + "ms", -1, 0, fontSize / tMesh->fontSize,{1,1,0});
+    if (game.buildingCnt[0] == 0 || game.buildingCnt[1] == 0) {
+        mMatrix.setToIdentity();
+        mMatrix.scale(0.3f);
+        mMatrix.rotate(45.0f, 1, 0, 0);
+        textProgram->setUniformValue("model", mMatrix);
+        if (game.buildingCnt[0] == 0 && game.buildingCnt[1] == 0) {
+            tMesh->RenderText(*textProgram, "GAME ENDS WITH DRAW", -1 / 0.3, 0, fontSize / tMesh->fontSize,{1, 0, 0});
+        } else if (game.buildingCnt[1] == 0) {
+            tMesh->RenderText(*textProgram, "PLAYER A (ZERG) WIN", -1 / 0.3, 0, fontSize / tMesh->fontSize,{1, 0, 0});
+        } else if (game.buildingCnt[0] == 0) {
+            tMesh->RenderText(*textProgram, "PLAYER B (PROTOSS) WIN", -1 / 0.3, 0, fontSize / tMesh->fontSize,{1, 0, 0});
+        }
+    }
+
     textProgram->release();
     update();
 }

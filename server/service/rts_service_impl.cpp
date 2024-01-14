@@ -171,5 +171,9 @@ void RtsServiceImpl::mainLoop() {
                 Step(totalAction);
             }
         }
+        if (GetGameState(0).buildingCnt[0] == 0 || GetGameState(0).buildingCnt[1] == 0) {
+            tick = false;
+            gameStart = false;
+        }
     }
 }

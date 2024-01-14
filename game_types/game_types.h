@@ -259,7 +259,8 @@ struct GameState {
 
     inline bool operator==(const GameState &state2) const {
         return state2.time == time && state2.w == w && state2.h == h && resource[0] == state2.resource[0] &&
-               resource[1] == state2.resource[1] && objMap == state2.objMap;
+               resource[1] == state2.resource[1] && objMap == state2.objMap &&
+               buildingCnt[0] == state2.buildingCnt[0] && buildingCnt[1] == state2.buildingCnt[1];
     }
 
     inline GameState &operator=(const GameState &state2) noexcept {
@@ -269,6 +270,8 @@ struct GameState {
         resource[1] = state2.resource[1];
         time = state2.time;
         objMap = state2.objMap;
+        buildingCnt[0] = state2.buildingCnt[0];
+        buildingCnt[1] = state2.buildingCnt[1];
         return *this;
     }
 };

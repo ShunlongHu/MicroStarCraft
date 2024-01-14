@@ -20,6 +20,8 @@ const unordered_map<int, const unordered_map<GameObjType, int>> RtsMap::MODEL_MA
         {1, {{WORKER, 6}, {LIGHT, 7}, {RANGED, 8}, {HEAVY, 9}, {BASE, 10}, {BARRACK, 11}}},
 };
 
+unordered_map<int, float> RtsMap::idxAngleMap;
+
 RtsMap::RtsMap(QWidget *parent) : QOpenGLWidget(parent),
                                                       program(make_shared<QOpenGLShaderProgram>()),
                                                       colorProgram(make_shared<QOpenGLShaderProgram>()),
@@ -250,7 +252,7 @@ void RtsMap::paintGL()
         qDebug() << "bind error" << program->log();
     }
     QMatrix4x4 mMatrix;
-    for (const auto& [_, obj]: game.objMap) {
+    for (const auto& [i, obj]: game.objMap) {
         if (obj.type == TERRAIN) {
             continue;
         }
@@ -259,6 +261,13 @@ void RtsMap::paintGL()
         auto yLoc = 2.0f * static_cast<float>(obj.coord.y) / game.h + 1.0f / game.h - 1.0f;
         mMatrix.translate(xLoc, yLoc);
         mMatrix.scale(1.0f / game.w);
+        auto dy = obj.actionTarget.y - obj.coord.y;
+        auto dx = obj.actionTarget.x - obj.coord.x;
+        if (dy != 0 | dx != 0) {
+            auto angle = atan2(dy, dx) / 3.1415927 * 180 + 90;
+            idxAngleMap[i] = angle;
+        }
+        mMatrix.rotate(idxAngleMap[i], 0, 0, 1);
         auto& m = pModelVec[MODEL_MAP.at(obj.owner).at(obj.type)];
         program->setUniformValue("model", mMatrix * m->model);
         m->draw(program.get());

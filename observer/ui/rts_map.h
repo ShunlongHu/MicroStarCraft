@@ -39,6 +39,7 @@ private:
     std::shared_ptr<Line> line;
     QMatrix4x4 projection, view, model;
     const static std::unordered_map<int, const std::unordered_map<GameObjType, int>> MODEL_MAP;
+    static std::unordered_map<int, float> idxAngleMap;
 
     float mouseClickX = -FLT_MAX;
     float mouseClickY = -FLT_MAX;

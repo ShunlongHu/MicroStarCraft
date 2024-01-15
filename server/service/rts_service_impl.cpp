@@ -142,7 +142,7 @@ Status RtsServiceImpl::ConnectPlayer(ServerContext* context, ServerReaderWriter<
 
 void RtsServiceImpl::mainLoop() {
     ofstream ofs;
-    istringstream iss;
+    ifstream ifs;
     if (replayFile.empty()) {
         tm newTime {};
         time_t nowTime = std::time(nullptr);
@@ -151,7 +151,7 @@ void RtsServiceImpl::mainLoop() {
         oss << std::put_time(&newTime, "%Y%m%d_%H%M%S");
         ofs.open(oss.str()+".replay", ios::binary);
     } else {
-        InitReplayStream(iss);
+        InitReplayStream(ifs);
     }
     static auto time = chrono::high_resolution_clock::now();
     while (serverStart) {
@@ -159,8 +159,8 @@ void RtsServiceImpl::mainLoop() {
         unique_lock<mutex> lockGuard(stateLock);
         if (reset) {
             if (!replayFile.empty()) {
-                InitReplayStream(iss);
-                StepReplay(iss);
+                InitReplayStream(ifs);
+                StepReplay(ifs);
             } else {
                 cout << "seed: " << initParam.seed()
                      << " isRotSym: " << initParam.isrotsym()
@@ -183,17 +183,17 @@ void RtsServiceImpl::mainLoop() {
             reset = false;
         }
         if (tick) {
-            ServerStep(ofs, iss);
+            ServerStep(ofs, ifs);
             tick = false;
         }
         if (gameStart) {
             auto now = chrono::high_resolution_clock::now();
             if (duration_cast<milliseconds>(now - time).count() >= tickingCycle) {
                 time = now;
-                ServerStep(ofs, iss);
+                ServerStep(ofs, ifs);
             }
         }
-        if (GetGameState(0).buildingCnt[0] == 0 || GetGameState(0).buildingCnt[1] == 0 || !iss) {
+        if (GetGameState(0).buildingCnt[0] == 0 || GetGameState(0).buildingCnt[1] == 0 || !ifs) {
             tick = false;
             tickingCycle = INT32_MAX;
             ofs.flush();
@@ -201,29 +201,30 @@ void RtsServiceImpl::mainLoop() {
     }
 }
 
-void RtsServiceImpl::StepReplay(istringstream &iss) {
-    if (iss.good() && iss.tellg() < iss.str().size()) {
+void RtsServiceImpl::StepReplay(ifstream &ifs) {
+    if (!!ifs && ifs.peek() != EOF) {
         try {
-            iss >> GetGameState(0);
+            ifs >> GetGameState(0);
         } catch(exception& e){
             cerr << "Failed to read from replay" << endl;
         }
     }
 }
 
-void RtsServiceImpl::ServerStep(ofstream &ofs, istringstream &iss) {
+void RtsServiceImpl::ServerStep(ofstream &ofs, ifstream &ifs) {
     if (!replayFile.empty()) {
-        StepReplay(iss);
+        StepReplay(ifs);
     } else {
         Step(totalAction);
         ofs << GetGameState(0);
     }
 }
 
-void RtsServiceImpl::InitReplayStream(istringstream &iss) {
-    ifstream ifs(replayFile, ios::binary);
-    string str(istreambuf_iterator<char>(ifs), {});
-    iss = istringstream(str);
+void RtsServiceImpl::InitReplayStream(ifstream &ifs) {
+    ifs.close();
+    ifs.open(replayFile, ios::binary);
     cout << "Reading replay: " << replayFile << endl;
-    cout << "Replay size: " << str.size() << endl;
+    ifs.seekg(0, ios::end);
+    cout << "Replay size: " << ifs.tellg() << endl;
+    ifs.seekg(ios::beg);
 }

@@ -19,11 +19,11 @@ private:
     grpc::Status ConnectPlayer(grpc::ServerContext *context,
                                grpc::ServerReaderWriter<message::Message, message::PlayerRequest> *stream) final;
 
-    static void InitReplayStream(std::istringstream &iss);
+    static void InitReplayStream(std::ifstream &iss);
 
-    static void ServerStep(std::ofstream &ofs, std::istringstream &iss);
+    static void ServerStep(std::ofstream &ofs, std::ifstream &iss);
 
-    static void StepReplay(std::istringstream &iss);
+    static void StepReplay(std::ifstream &iss);
 };
 
 

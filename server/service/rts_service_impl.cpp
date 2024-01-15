@@ -4,8 +4,11 @@
 
 #include "rts_service_impl.h"
 #include <chrono>
+#include <ctime>
+#include <iomanip>
 #include <sstream>
 #include <mutex>
+#include <fstream>
 #include "client_interface.h"
 
 using grpc::Status;
@@ -137,6 +140,12 @@ Status RtsServiceImpl::ConnectPlayer(ServerContext* context, ServerReaderWriter<
 }
 
 void RtsServiceImpl::mainLoop() {
+    tm newTime {};
+    time_t nowTime = std::time(nullptr);
+    localtime_s(&newTime,&nowTime);
+    ostringstream oss;
+    oss << std::put_time(&newTime, "%Y%m%d_%H%M%S");
+    ofstream ofs(oss.str()+".replay");
     static auto time = chrono::high_resolution_clock::now();
     while (serverStart) {
         sleep_for(microseconds (100));
@@ -162,6 +171,7 @@ void RtsServiceImpl::mainLoop() {
         }
         if (tick) {
             Step(totalAction);
+            ofs << GetGameState(0);
             tick = false;
         }
         if (gameStart) {
@@ -169,6 +179,7 @@ void RtsServiceImpl::mainLoop() {
             if (duration_cast<milliseconds>(now - time).count() >= tickingCycle) {
                 time = now;
                 Step(totalAction);
+                ofs << GetGameState(0);
             }
         }
         if (GetGameState(0).buildingCnt[0] == 0 || GetGameState(0).buildingCnt[1] == 0) {

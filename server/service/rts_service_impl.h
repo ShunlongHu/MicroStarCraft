@@ -10,6 +10,7 @@
 class RtsServiceImpl final : public message::Rts::Service {
 public:
     static void mainLoop();
+    static std::string replayFile;
 
 private:
     grpc::Status ConnectObserver(grpc::ServerContext *context,
@@ -17,6 +18,12 @@ private:
 
     grpc::Status ConnectPlayer(grpc::ServerContext *context,
                                grpc::ServerReaderWriter<message::Message, message::PlayerRequest> *stream) final;
+
+    static void InitReplayStream(std::istringstream &iss);
+
+    static void ServerStep(std::ofstream &ofs, std::istringstream &iss);
+
+    static void StepReplay(std::istringstream &iss);
 };
 
 

@@ -35,6 +35,7 @@
 #include "client_interface.h"
 
 ABSL_FLAG(uint16_t, port, 50051, "Server port for the service");
+ABSL_FLAG(std::string, replay, "", "Server port for the service");
 
 using grpc::Server;
 using grpc::ServerBuilder;
@@ -66,6 +67,7 @@ void RunServer(uint16_t port) {
 
 int main(int argc, char** argv) {
     absl::ParseCommandLine(argc, argv);
+    RtsServiceImpl::replayFile = absl::GetFlag(FLAGS_replay);
     Init({W, H, 1});
     RunServer(absl::GetFlag(FLAGS_port));
     return 0;

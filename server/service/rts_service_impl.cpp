@@ -33,6 +33,7 @@ static std::atomic<bool> isBConnected {false};
 static ObservationRequest initParam;
 
 static TotalDiscreteAction totalAction;
+string RtsServiceImpl::replayFile;
 
 Status RtsServiceImpl::ConnectObserver(ServerContext* context, ServerReaderWriter<Message, ObservationRequest>* stream) {
     cout << "Observer Connected!" << endl;
@@ -140,51 +141,89 @@ Status RtsServiceImpl::ConnectPlayer(ServerContext* context, ServerReaderWriter<
 }
 
 void RtsServiceImpl::mainLoop() {
-    tm newTime {};
-    time_t nowTime = std::time(nullptr);
-    localtime_s(&newTime,&nowTime);
-    ostringstream oss;
-    oss << std::put_time(&newTime, "%Y%m%d_%H%M%S");
-    ofstream ofs(oss.str()+".replay");
+    ofstream ofs;
+    istringstream iss;
+    if (replayFile.empty()) {
+        tm newTime {};
+        time_t nowTime = std::time(nullptr);
+        localtime_s(&newTime,&nowTime);
+        ostringstream oss;
+        oss << std::put_time(&newTime, "%Y%m%d_%H%M%S");
+        ofs.open(oss.str()+".replay", ios::binary);
+    } else {
+        InitReplayStream(iss);
+    }
     static auto time = chrono::high_resolution_clock::now();
     while (serverStart) {
         sleep_for(microseconds (100));
         unique_lock<mutex> lockGuard(stateLock);
         if (reset) {
-            cout << "seed: " << initParam.seed()
-                    << " isRotSym: " << initParam.isrotsym()
-                    << " isAxSym: " << !initParam.isrotsym()
-                    << " terrainProb: " << initParam.terrainprob()
-                    << " expansionCnt: " << initParam.expansioncnt()
-                    << " clusterPerExpansion: " << initParam.clusterperexpansion()
-                    << " mineralPerCluster: " << initParam.mineralpercluster() << endl;
+            if (!replayFile.empty()) {
+                InitReplayStream(iss);
+                StepReplay(iss);
+            } else {
+                cout << "seed: " << initParam.seed()
+                     << " isRotSym: " << initParam.isrotsym()
+                     << " isAxSym: " << !initParam.isrotsym()
+                     << " terrainProb: " << initParam.terrainprob()
+                     << " expansionCnt: " << initParam.expansioncnt()
+                     << " clusterPerExpansion: " << initParam.clusterperexpansion()
+                     << " mineralPerCluster: " << initParam.mineralpercluster() << endl;
 
-            (void) Reset(initParam.seed(),
-                  initParam.isrotsym(),
-                  !initParam.isrotsym(),
-                  initParam.terrainprob(),
-                  initParam.expansioncnt(),
-                  initParam.clusterperexpansion(),
-                  initParam.mineralpercluster());
-            GetGameState(0).time = 0;
+                (void) Reset(initParam.seed(),
+                             initParam.isrotsym(),
+                             !initParam.isrotsym(),
+                             initParam.terrainprob(),
+                             initParam.expansioncnt(),
+                             initParam.clusterperexpansion(),
+                             initParam.mineralpercluster());
+                GetGameState(0).time = 0;
+                ofs << GetGameState(0);
+            }
             reset = false;
         }
         if (tick) {
-            Step(totalAction);
-            ofs << GetGameState(0);
+            ServerStep(ofs, iss);
             tick = false;
         }
         if (gameStart) {
             auto now = chrono::high_resolution_clock::now();
             if (duration_cast<milliseconds>(now - time).count() >= tickingCycle) {
                 time = now;
-                Step(totalAction);
-                ofs << GetGameState(0);
+                ServerStep(ofs, iss);
             }
         }
-        if (GetGameState(0).buildingCnt[0] == 0 || GetGameState(0).buildingCnt[1] == 0) {
+        if (GetGameState(0).buildingCnt[0] == 0 || GetGameState(0).buildingCnt[1] == 0 || !iss) {
             tick = false;
-            gameStart = false;
+            tickingCycle = INT32_MAX;
+            ofs.flush();
         }
     }
+}
+
+void RtsServiceImpl::StepReplay(istringstream &iss) {
+    if (iss.good() && iss.tellg() < iss.str().size()) {
+        try {
+            iss >> GetGameState(0);
+        } catch(exception& e){
+            cerr << "Failed to read from replay" << endl;
+        }
+    }
+}
+
+void RtsServiceImpl::ServerStep(ofstream &ofs, istringstream &iss) {
+    if (!replayFile.empty()) {
+        StepReplay(iss);
+    } else {
+        Step(totalAction);
+        ofs << GetGameState(0);
+    }
+}
+
+void RtsServiceImpl::InitReplayStream(istringstream &iss) {
+    ifstream ifs(replayFile, ios::binary);
+    string str(istreambuf_iterator<char>(ifs), {});
+    iss = istringstream(str);
+    cout << "Reading replay: " << replayFile << endl;
+    cout << "Replay size: " << str.size() << endl;
 }

@@ -251,6 +251,9 @@ void GameExecuteProduce(GameState& game, std::unordered_map<int, DiscreteAction>
             continue;
         }
         act.action = NOOP;
+        if (game.objMap.count(idx) == 0) {
+            continue;
+        }
         auto& obj = game.objMap.at(idx);
         auto cost = OBJ_COST_MAP.at(act.produceType);
         auto playerIdx= side == -1 ? 0 : 1;
@@ -410,11 +413,14 @@ void GameStepMove(GameState& game, std::unordered_map<int, DiscreteAction>& acti
 
 void GameExecuteMove(GameState& game, std::unordered_map<int, DiscreteAction>& action, int side, unordered_map<Coord, int, UHasher<Coord>>& coordOccupationCount) {
     for (auto& [idx, act]: action) {
-        auto& obj = game.objMap.at(idx);
         if (act.action != MOVE) {
             continue;
         }
         act.action = NOOP;
+        if (game.objMap.count(idx) == 0) {
+            continue;
+        }
+        auto& obj = game.objMap.at(idx);
         if (coordOccupationCount.at(obj.coord) > 1) {
             continue;
         }
@@ -482,11 +488,14 @@ void GameStepGather(GameState& game, std::unordered_map<int, DiscreteAction>& ac
 
 void GameExecuteGather(GameState& game, std::unordered_map<int, DiscreteAction>& action, int side, unordered_map<Coord, int, UHasher<Coord>>& coordGatherCount) {
     for (auto& [idx, act]: action) {
-        auto& obj = game.objMap.at(idx);
         if (act.action != GATHER) {
             continue;
         }
         act.action = NOOP;
+        if (game.objMap.count(idx) == 0) {
+            continue;
+        }
+        auto& obj = game.objMap.at(idx);
         if (coordGatherCount.at(act.target) > 1) {
             continue;
         }

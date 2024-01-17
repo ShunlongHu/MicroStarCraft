@@ -186,7 +186,7 @@ void ProcAction(const GameState& game, const unordered_map<Coord, int, UHasher<C
     // auto attack
     unordered_map<int, DiscreteAction> autoAttackAction;
     for (const auto& [idx, obj]: game.objMap) {
-        if (txActionMap.count(idx)) {
+        if (txActionMap.count(idx) || obj.currentAction != NOOP) {
             continue;
         }
         if ((obj.owner == -1 && RtsObserver::role == PLAYER_B) ||
@@ -198,17 +198,18 @@ void ProcAction(const GameState& game, const unordered_map<Coord, int, UHasher<C
             continue;
         }
         unordered_set<int> targetObjSet;
-        for (const auto& [_, target]: game.objMap) {
+        for (const auto& [ti, target]: game.objMap) {
             if (target.owner == obj.owner) {
                 continue;
             }
-            if (target.actionMask.canBeAttacked) {
+            if (!target.actionMask.canBeAttacked) {
                 continue;
             }
             if (sqrt((target.coord.y - obj.coord.y) * (target.coord.y - obj.coord.y) +
                      (target.coord.x - obj.coord.x) * (target.coord.x - obj.coord.x)) > obj.attackRange) {
                 continue;
             }
+            targetObjSet.emplace(ti);
         }
         if (targetObjSet.empty()) {
             continue;

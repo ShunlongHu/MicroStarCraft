@@ -277,7 +277,7 @@ void ProcMove(const GameState& game, int idx, const ActionTarget & target) {
             if (next.x < 0 || next.y < 0 || next.x >= game.w || next.y >= game.h) {
                 continue;
             }
-            if (occupationMap[next.x + next.y * game.w] && next.x != target.x && next.y != target.y) {
+            if (occupationMap[next.x + next.y * game.w] && !(next.x == target.x && next.y == target.y)) {
                 continue;
             }
             if (visited.count(next)) {

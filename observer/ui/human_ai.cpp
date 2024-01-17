@@ -11,6 +11,7 @@ static int lastIdx = -1;
 static unordered_map<int, DiscreteAction> actionMap;
 static unordered_map<int, DiscreteAction> txActionMap;
 static vector<bool> occupationMap;
+static GameState lastGame;
 
 void ProcAction(const GameState& game, const unordered_map<Coord, int, UHasher<Coord>>& coordIdxMap);
 void ProcMove(const GameState& game, int idx, const ActionTarget & target);
@@ -19,6 +20,10 @@ void HumanAi::Act(const GameState& game, Coord mouseClick, Coord mouseRightClick
 {
     if (RtsObserver::role == OBSERVER) {
         return;
+    }
+    if (!(lastGame == game)) {
+        txActionMap = {};
+        lastGame = game;
     }
     unordered_map<Coord, int, UHasher<Coord>> coordIdxMap;
     for (const auto& [idx, obj]: game.objMap) {
@@ -63,7 +68,6 @@ void HumanAi::Act(const GameState& game, Coord mouseClick, Coord mouseRightClick
     if (!txActionMap.empty()) {
         RpcClient::SendCommand(message::STEP);
     }
-    txActionMap = {};
     RtsObserver::selectedObj = selType;
 }
 
@@ -87,6 +91,7 @@ void ProcAction(const GameState& game, const unordered_map<Coord, int, UHasher<C
 
 
     unordered_set<int> doneActionSet;
+    unordered_set<Coord, UHasher<Coord>> toGatherSet;
     for (const auto& [idx, act]: actionMap) {
         if (game.objMap.count(idx) == 0) {
             doneActionSet.emplace(idx);
@@ -102,7 +107,7 @@ void ProcAction(const GameState& game, const unordered_map<Coord, int, UHasher<C
         auto opponent = RtsObserver::role == PLAYER_A ? 1 : -1;
         switch (act.action) {
             case PRODUCE:
-                txActionMap.emplace(idx, act);
+                txActionMap[idx] = act;
                 doneActionSet.emplace(idx);
                 break;
             case ATTACK:
@@ -114,7 +119,7 @@ void ProcAction(const GameState& game, const unordered_map<Coord, int, UHasher<C
                         (act.target.y - obj.coord.y) * (act.target.y - obj.coord.y) +
                         (act.target.x - obj.coord.x) * (act.target.x - obj.coord.x))) {
                     // within range: attack
-                    txActionMap.emplace(idx, act);
+                    txActionMap[idx] = act;
                     break;
                 }
                 ProcMove(game, idx, act.target);
@@ -128,7 +133,7 @@ void ProcAction(const GameState& game, const unordered_map<Coord, int, UHasher<C
                 break;
             case RETURN:
                 if (abs(obj.coord.x - act.target.x) + abs(obj.coord.y - act.target.y) <= 1) {
-                    txActionMap.emplace(idx, act);
+                    txActionMap[idx] = act;
                     doneActionSet.emplace(idx);
                     break;
                 }
@@ -143,7 +148,11 @@ void ProcAction(const GameState& game, const unordered_map<Coord, int, UHasher<C
                     }
                     // Go Gather
                     if (abs(obj.coord.x - act.target.x) + abs(obj.coord.y - act.target.y) <= 1) {
-                        txActionMap.emplace(idx, act);
+                        if (toGatherSet.count(act.target)) {
+                            break;
+                        }
+                        txActionMap[idx] = act;
+                        toGatherSet.emplace(act.target);
                         break;
                     }
                     // go to mineral
@@ -167,7 +176,7 @@ void ProcAction(const GameState& game, const unordered_map<Coord, int, UHasher<C
 
                 if (abs(obj.coord.x - baseCoord.x) + abs(obj.coord.y - baseCoord.y) <= 1) {
                     // reach base
-                    txActionMap.emplace(idx, DiscreteAction{RETURN, TERRAIN, baseCoord});
+                    txActionMap[idx] = DiscreteAction{RETURN, TERRAIN, baseCoord};
                     break;
                 }
                 // goto base
@@ -228,7 +237,7 @@ void ProcAction(const GameState& game, const unordered_map<Coord, int, UHasher<C
             }
         }
         if (closestIdx != -1) {
-            txActionMap.emplace(idx, DiscreteAction{ATTACK, TERRAIN, closestCoord});
+            txActionMap[idx] = DiscreteAction{ATTACK, TERRAIN, closestCoord};
         }
     }
 }
@@ -295,5 +304,6 @@ void ProcMove(const GameState& game, int idx, const ActionTarget & target) {
         }
         last = cur;
     }
-    txActionMap.emplace(idx, DiscreteAction{MOVE, TERRAIN, last});
+    txActionMap[idx] =  DiscreteAction{MOVE, TERRAIN, last};
+    occupationMap[last.x + last.y * game.w] = true;
 }

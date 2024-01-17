@@ -171,7 +171,7 @@ void ProcAction(const GameState& game, const unordered_map<Coord, int, UHasher<C
                     break;
                 }
                 // goto base
-                ProcMove(game, idx, act.target);
+                ProcMove(game, idx, baseCoord);
                 break;
             default:
                 doneActionSet.emplace(idx);
@@ -210,7 +210,7 @@ void ProcAction(const GameState& game, const unordered_map<Coord, int, UHasher<C
                 continue;
             }
         }
-        if (targetObjSet.size() == 0) {
+        if (targetObjSet.empty()) {
             continue;
         }
         int closestIdx = -1;
@@ -276,7 +276,7 @@ void ProcMove(const GameState& game, int idx, const ActionTarget & target) {
             if (next.x < 0 || next.y < 0 || next.x >= game.w || next.y >= game.h) {
                 continue;
             }
-            if (occupationMap[next.x + next.y * game.w]) {
+            if (occupationMap[next.x + next.y * game.w] && next.x != target.x && next.y != target.y) {
                 continue;
             }
             if (visited.count(next)) {

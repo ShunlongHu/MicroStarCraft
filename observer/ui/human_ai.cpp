@@ -99,7 +99,7 @@ void ProcAction(const GameState& game, const unordered_map<Coord, int, UHasher<C
         int nearestBase = -1;
         double nearestDistance = game.w + game.h;
         Coord baseCoord;
-        auto opponent = RtsObserver::role == PLAYER_A ? -1 : 1;
+        auto opponent = RtsObserver::role == PLAYER_A ? 1 : -1;
         switch (act.action) {
             case PRODUCE:
                 txActionMap.emplace(idx, act);
@@ -110,7 +110,7 @@ void ProcAction(const GameState& game, const unordered_map<Coord, int, UHasher<C
                     doneActionSet.emplace(idx);
                     break;
                 }
-                if (obj.attackRange < sqrt(
+                if (obj.attackRange >= sqrt(
                         (act.target.y - obj.coord.y) * (act.target.y - obj.coord.y) +
                         (act.target.x - obj.coord.x) * (act.target.x - obj.coord.x))) {
                     // within range: attack

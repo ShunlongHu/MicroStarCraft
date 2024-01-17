@@ -244,6 +244,7 @@ void ProcAction(const GameState& game, const unordered_map<Coord, int, UHasher<C
 
 struct Loc {
     Coord coord;
+    int parentIdx;
     int d;
     int h;
 
@@ -258,10 +259,11 @@ struct Loc {
         this->coord = state2.coord;
         this->d = state2.d;
         this->h = state2.h;
+        this->parentIdx = state2.parentIdx;
         return *this;
     }
-    Loc() : d(0), h(0) {}
-    Loc(const Coord& coord, int d, int h) : coord(coord), d(d), h(h) {}
+    Loc() : d(0), h(0), parentIdx(-1) {}
+    Loc(const Coord& coord, int parent, int d, int h) : coord(coord), parentIdx(parent), d(d), h(h) {}
 };
 
 inline int heuristic(const Coord& a, const Coord& b) {
@@ -271,16 +273,17 @@ inline int heuristic(const Coord& a, const Coord& b) {
 void ProcMove(const GameState& game, int idx, const ActionTarget & target) {
     const auto& coord = game.objMap.at(idx).coord;
     unordered_set<Coord, UHasher<Coord>> visited;
+    vector<Loc> path;
     priority_queue<Loc, vector<Loc>, std::greater<>> pq;
-    vector<Coord> path;
-    pq.emplace(Loc{coord, 0, heuristic(coord, target)});
+    pq.emplace(coord, -1, 0, heuristic(coord, target));
     while (!pq.empty()) {
         auto front = pq.top();
         if (front.coord.x == target.x && front.coord.y == target.y) {
             break;
         }
         pq.pop();
-        path.emplace_back(front.coord);
+        path.emplace_back(front);
+        visited.emplace(front.coord);
         for (const auto& dir: DIRECTION_TARGET_MAP) {
             auto next = Coord{dir.y + front.coord.y, dir.x + front.coord.x};
             if (next.x < 0 || next.y < 0 || next.x >= game.w || next.y >= game.h) {
@@ -292,18 +295,20 @@ void ProcMove(const GameState& game, int idx, const ActionTarget & target) {
             if (visited.count(next)) {
                 continue;
             }
-            visited.emplace(next);
-            pq.emplace(next, 1 + front.d, heuristic(next, target));
+            pq.emplace(next, static_cast<int>(path.size()) - 1, 1 + front.d, heuristic(next, target));
         }
     }
-    auto last = target;
-    for (int i = static_cast<int>(path.size()) - 1; i > 0; --i) { // skip the first item which is always the start
-        auto& cur = path[i];
-        if (abs(last.y - cur.y) + abs(last.x - cur.x) != 1) {
-            continue;
-        }
-        last = cur;
+    if (pq.empty()){
+        return;
     }
-    txActionMap[idx] =  DiscreteAction{MOVE, TERRAIN, last};
-    occupationMap[last.x + last.y * game.w] = true;
+    auto final = pq.top();
+    if (!(final.coord == target)) {
+        return;
+    }
+    auto last = final;
+    while (last.parentIdx != 0 && last.parentIdx != -1 ) {
+        last = path[last.parentIdx];
+    }
+    txActionMap[idx] =  DiscreteAction{MOVE, TERRAIN, last.coord};
+    occupationMap[last.coord.x + last.coord.y * game.w] = true;
 }

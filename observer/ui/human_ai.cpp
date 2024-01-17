@@ -49,12 +49,12 @@ void HumanAi::Act(const GameState& game, Coord mouseClick, Coord mouseRightClick
                 type = game.objMap.at(idx).type;
             }
             auto player = RtsObserver::role == PLAYER_A ? -1 : 1;
-            actionMap.emplace(curIdx, DiscreteAction{type == MINERAL ? GATHER : type == BASE && game.objMap.at(idx).owner == player ? RETURN : ATTACK, TERRAIN, ActionTarget{mouseRightClick.y, mouseRightClick.x}});
+            actionMap[curIdx] = DiscreteAction{type == MINERAL ? GATHER : type == BASE && game.objMap.at(idx).owner == player ? RETURN : ATTACK, TERRAIN, ActionTarget{mouseRightClick.y, mouseRightClick.x}};
         } else if (action) {
-            actionMap.emplace(curIdx, DiscreteAction{MOVE, TERRAIN, ActionTarget{mouseRightClick.y, mouseRightClick.x}});
+            actionMap[curIdx] = DiscreteAction{MOVE, TERRAIN, ActionTarget{mouseRightClick.y, mouseRightClick.x}};
         } else {
             auto& obj = game.objMap.at(curIdx);
-            actionMap.emplace(curIdx, DiscreteAction{PRODUCE, OBJ_PRODUCE_MAP.at(obj.type)[RtsObserver::gameAction], ActionTarget{mouseRightClick.y, mouseRightClick.x}});
+            actionMap[curIdx] = DiscreteAction{PRODUCE, OBJ_PRODUCE_MAP.at(obj.type)[RtsObserver::gameAction], ActionTarget{mouseRightClick.y, mouseRightClick.x}};
         }
     }
     ProcAction(game, coordIdxMap);
@@ -93,6 +93,9 @@ void ProcAction(const GameState& game, const unordered_map<Coord, int, UHasher<C
             continue;
         }
         const auto& obj = game.objMap.at(idx);
+        if (obj.currentAction != NOOP) {
+            continue;
+        }
         int nearestBase = -1;
         double nearestDistance = game.w + game.h;
         Coord baseCoord;
@@ -284,7 +287,7 @@ void ProcMove(const GameState& game, int idx, const ActionTarget & target) {
         }
     }
     auto last = target;
-    for (int i = path.size(); i > 0; --i) { // skip the first item which is always the start
+    for (int i = static_cast<int>(path.size()) - 1; i > 0; --i) { // skip the first item which is always the start
         auto& cur = path[i];
         if (abs(last.y - cur.y) + abs(last.x - cur.x) != 1) {
             continue;

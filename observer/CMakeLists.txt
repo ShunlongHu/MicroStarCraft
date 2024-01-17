@@ -28,7 +28,7 @@ aux_source_directory(ui rts_observer)
 aux_source_directory(client rts_observer)
 
 add_executable(${PROJECT_NAME} WIN32 ${rts_observer})
-target_link_libraries(${PROJECT_NAME} Qt5::Core Qt5::Gui Qt5::Widgets Qt5::UiPlugin Qt5::OpenGL Qt5::OpenGLExtensions OpenGL::GL glm::glm assimp::assimp glad::glad message_proto Freetype::Freetype)
+target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Core Qt5::Gui Qt5::Widgets Qt5::UiPlugin Qt5::OpenGL Qt5::OpenGLExtensions OpenGL::GL glm::glm assimp::assimp glad::glad message_proto Freetype::Freetype)
 
 
 if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)

@@ -60,7 +60,7 @@ void HumanAi::Act(const GameState& game, Coord mouseClick, Coord mouseRightClick
     ProcAction(game, coordIdxMap);
 
     RpcClient::SetAction(txActionMap);
-    if (!actionMap.empty()) {
+    if (!txActionMap.empty()) {
         RpcClient::SendCommand(message::STEP);
     }
     txActionMap = {};

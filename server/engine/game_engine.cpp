@@ -421,7 +421,7 @@ void GameExecuteMove(GameState& game, std::unordered_map<int, DiscreteAction>& a
             continue;
         }
         auto& obj = game.objMap.at(idx);
-        if (coordOccupationCount.at(obj.coord) > 1) {
+        if (coordOccupationCount.at(act.target) > 1) {
             continue;
         }
         act.action = MOVE;

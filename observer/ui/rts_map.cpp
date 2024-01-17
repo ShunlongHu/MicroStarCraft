@@ -50,7 +50,7 @@ void RtsMap::initializeGL()
     initializeOpenGLFunctions();
 
     //设置全局变量
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     //这里不指定父类，我们自己来管理这个类
     //program = new QOpenGLShaderProgram;
     //将文件内容编译为指定类型的着色器，并将其添加到着色器程序program

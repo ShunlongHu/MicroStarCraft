@@ -54,6 +54,9 @@ int main(int argc, char** argv) {
     }
 
     Message result;
+    PlayerRequest startRequest;
+    startRequest.set_role(role);
+    stream->Write(startRequest);
     while (stream->Read(&result)) {
         istringstream iss(result.data(), ios::binary);
         iss >> state;

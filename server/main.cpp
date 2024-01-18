@@ -35,7 +35,7 @@
 #include "client_interface.h"
 
 ABSL_FLAG(uint16_t, port, 50051, "Server port for the service");
-ABSL_FLAG(std::string, replay, "", "Server port for the service");
+ABSL_FLAG(std::string, replay, "", "Replay file path");
 
 using grpc::Server;
 using grpc::ServerBuilder;

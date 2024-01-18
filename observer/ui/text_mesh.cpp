@@ -81,7 +81,7 @@ void TextMesh::Init() {
         box.show();
         return;
     }
-    std::string fontName = "D:\\repo\\rts\\observer\\ui\\resource\\fonts\\Antonio-Bold.ttf";
+    std::string fontName = "resource\\fonts\\Antonio-Bold.ttf";
     FT_Face face;
     if (FT_New_Face(ft, fontName.c_str(), 0, &face)) {
         box.setText(box.text() + '\n' + "ERROR::FREETYPE: Failed to load font");

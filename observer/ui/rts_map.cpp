@@ -54,11 +54,11 @@ void RtsMap::initializeGL()
     //这里不指定父类，我们自己来管理这个类
     //program = new QOpenGLShaderProgram;
     //将文件内容编译为指定类型的着色器，并将其添加到着色器程序program
-    if (!program->addShaderFromSourceFile(QOpenGLShader::Vertex, "D:\\repo\\rts\\observer\\ui\\model.vs"))
+    if (!program->addShaderFromSourceFile(QOpenGLShader::Vertex, "shaders\\model.vs"))
     {
         qDebug() << "compile error" << program->log();
     }
-    if (!program->addShaderFromSourceFile(QOpenGLShader::Fragment, "D:\\repo\\rts\\observer\\ui\\model.fs"))
+    if (!program->addShaderFromSourceFile(QOpenGLShader::Fragment, "shaders\\model.fs"))
     {
         qDebug() << "compile error" << program->log();
     }
@@ -66,13 +66,13 @@ void RtsMap::initializeGL()
     {
         qDebug() << "link error" << program->log();
     }
-    if (!colorProgram->addShaderFromSourceFile(QOpenGLShader::Vertex, "D:\\repo\\rts\\observer\\ui\\color.vs"))
+    if (!colorProgram->addShaderFromSourceFile(QOpenGLShader::Vertex, "shaders\\color.vs"))
     {
         static QMessageBox messageBox;
         messageBox.setText("compile vs error" + colorProgram->log());
         messageBox.show();
     }
-    if (!colorProgram->addShaderFromSourceFile(QOpenGLShader::Fragment, "D:\\repo\\rts\\observer\\ui\\color.fs"))
+    if (!colorProgram->addShaderFromSourceFile(QOpenGLShader::Fragment, "shaders\\color.fs"))
     {
         static QMessageBox messageBox;
         messageBox.setText("compile fs error" + colorProgram->log());
@@ -84,13 +84,13 @@ void RtsMap::initializeGL()
         messageBox.setText("link error" + colorProgram->log());
         messageBox.show();
     }
-    if (!textProgram->addShaderFromSourceFile(QOpenGLShader::Vertex, "D:\\repo\\rts\\observer\\ui\\font.vs"))
+    if (!textProgram->addShaderFromSourceFile(QOpenGLShader::Vertex, "shaders\\font.vs"))
     {
         static QMessageBox messageBox;
         messageBox.setText("compile vs error" + textProgram->log());
         messageBox.show();
     }
-    if (!textProgram->addShaderFromSourceFile(QOpenGLShader::Fragment, "D:\\repo\\rts\\observer\\ui\\font.fs"))
+    if (!textProgram->addShaderFromSourceFile(QOpenGLShader::Fragment, "shaders\\font.fs"))
     {
         static QMessageBox messageBox;
         messageBox.setText("compile fs error" + textProgram->log());
@@ -103,22 +103,22 @@ void RtsMap::initializeGL()
         messageBox.show();
     }
     //模型网上自己找个，注意格式要符合assimp库支持的。
-//    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\cyborg\\cyborg.obj"));
-//    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\objects\\nanosuit\\nanosuit.obj"));
-//    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\cg character\\nova\\dump_obj\\nova.obj"));
-    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Zerg\\drone\\drone.obj"));
-    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Zerg\\zergline\\zergline.obj"));
-    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Zerg\\hydralisk\\hydralisk.obj"));
-    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Zerg\\ultralisk\\ultralisk.obj"));
-    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\buildings\\zerg\\zerg_hive.obj"));
-    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\buildings\\zerg\\zerg_spawn.obj"));
-    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Protoss\\probe\\probe.obj"));
-    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Protoss\\zealot\\Zealot.obj"));
-    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Protoss\\stalker\\stalker.obj"));
-    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\race model\\Protoss\\immortal\\immortal.obj"));
-    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\buildings\\protoss\\nexus.obj"));
-    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\buildings\\protoss\\gateway.obj"));
-    pModelVec.emplace_back(make_shared<Model>("D:\\repo\\rts\\observer\\ui\\resource\\buildings\\protoss\\crystal.obj"));
+//    pModelVec.emplace_back(make_shared<Model>("resource\\cyborg\\cyborg.obj"));
+//    pModelVec.emplace_back(make_shared<Model>("resource\\objects\\nanosuit\\nanosuit.obj"));
+//    pModelVec.emplace_back(make_shared<Model>("resource\\cg character\\nova\\dump_obj\\nova.obj"));
+    pModelVec.emplace_back(make_shared<Model>("resource\\race model\\Zerg\\drone\\drone.obj"));
+    pModelVec.emplace_back(make_shared<Model>("resource\\race model\\Zerg\\zergline\\zergline.obj"));
+    pModelVec.emplace_back(make_shared<Model>("resource\\race model\\Zerg\\hydralisk\\hydralisk.obj"));
+    pModelVec.emplace_back(make_shared<Model>("resource\\race model\\Zerg\\ultralisk\\ultralisk.obj"));
+    pModelVec.emplace_back(make_shared<Model>("resource\\buildings\\zerg\\zerg_hive.obj"));
+    pModelVec.emplace_back(make_shared<Model>("resource\\buildings\\zerg\\zerg_spawn.obj"));
+    pModelVec.emplace_back(make_shared<Model>("resource\\race model\\Protoss\\probe\\probe.obj"));
+    pModelVec.emplace_back(make_shared<Model>("resource\\race model\\Protoss\\zealot\\Zealot.obj"));
+    pModelVec.emplace_back(make_shared<Model>("resource\\race model\\Protoss\\stalker\\stalker.obj"));
+    pModelVec.emplace_back(make_shared<Model>("resource\\race model\\Protoss\\immortal\\immortal.obj"));
+    pModelVec.emplace_back(make_shared<Model>("resource\\buildings\\protoss\\nexus.obj"));
+    pModelVec.emplace_back(make_shared<Model>("resource\\buildings\\protoss\\gateway.obj"));
+    pModelVec.emplace_back(make_shared<Model>("resource\\buildings\\protoss\\crystal.obj"));
     initMap(RpcClient::GetObservation());
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);

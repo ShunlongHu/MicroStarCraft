@@ -334,7 +334,7 @@ void RtsMap::paintGL()
         mMatrix.rotate(45.0f, 1, 0, 0);
         textProgram->setUniformValue("model", mMatrix);
         if (game.buildingCnt[0] == 0 && game.buildingCnt[1] == 0) {
-            tMesh->RenderText(*textProgram, "GAME ENDS WITH DRAW", -1 / 0.3, 0, fontSize / tMesh->fontSize,{1, 0, 0});
+            tMesh->RenderText(*textProgram, "GAME ENDS IN DRAW", -1 / 0.3, 0, fontSize / tMesh->fontSize,{1, 0, 0});
         } else if (game.buildingCnt[1] == 0) {
             tMesh->RenderText(*textProgram, "PLAYER A (ZERG) WIN", -1 / 0.3, 0, fontSize / tMesh->fontSize,{1, 0, 0});
         } else if (game.buildingCnt[0] == 0) {

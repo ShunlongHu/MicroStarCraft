@@ -360,6 +360,9 @@ void GameRefresh(GameState& game) {
     // end of game
     unordered_set<int> deleteSet;
     for (const auto& [idx, obj]: game.objMap) {
+        if (obj.owner == 0) {
+            continue;
+        }
         auto side = obj.owner == -1 ? 0 : 1;
         if (game.buildingCnt[side] <= 0) {
             deleteSet.emplace(idx);

@@ -4,6 +4,7 @@
 
 #include "human_ai.h"
 #include <queue>
+#include <limits>
 #include "rts_observer.h"
 #include "rpc_client.h"
 using namespace std;
@@ -225,11 +226,13 @@ void ProcAction(const GameState& game, const unordered_map<Coord, int, UHasher<C
         }
         int closestIdx = -1;
         Coord closestCoord;
-        double closestDistance = game.w + game.h;
+        double closestDistance = numeric_limits<double>::max();
+        double NON_HOSTILE_DISTANCE_MULTIPLIER = game.w * game.h;
         for (const auto& tgtIdx: targetObjSet) {
             const auto& tgt = game.objMap.at(tgtIdx);
             double distance = sqrt((tgt.coord.y - obj.coord.y) * (tgt.coord.y - obj.coord.y) +
-                                   (tgt.coord.x - obj.coord.x) * (tgt.coord.x - obj.coord.x));
+                              (tgt.coord.x - obj.coord.x) * (tgt.coord.x - obj.coord.x)) *
+                              (tgt.actionMask.canAttack ? 1 : NON_HOSTILE_DISTANCE_MULTIPLIER);
             if (distance < closestDistance) {
                 closestIdx = tgtIdx;
                 closestDistance = distance;

@@ -286,6 +286,9 @@ void ProcMove(const GameState& game, int idx, const ActionTarget & target) {
         }
         pq.pop();
         path.emplace_back(front);
+        if (visited.count(front.coord)) {
+            continue;
+        }
         visited.emplace(front.coord);
         for (const auto& dir: DIRECTION_TARGET_MAP) {
             auto next = Coord{dir.y + front.coord.y, dir.x + front.coord.x};

@@ -1,0 +1,114 @@
+# 3ds Max Wavefront OBJ Exporter v0.99 - (c)2007 guruware
+# File Created: 14.01.2024 11:59:04
+
+newmtl Geoset_1Mat
+	Ns 43.2193
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.2000 0.2000 0.2000
+	Kd 0.8000 0.8000 0.8000
+	Ks 0.2000 0.2000 0.2000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka D:\repo\rts\observer\ui\resource\buildings\zerg\Ultralisk_Diffuse.jpg
+	map_Kd D:\repo\rts\observer\ui\resource\buildings\zerg\Ultralisk_Diffuse.jpg
+
+newmtl Geoset_2Mat
+	Ns 43.2193
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.2000 0.2000 0.2000
+	Kd 0.8000 0.8000 0.8000
+	Ks 0.2000 0.2000 0.2000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka D:\repo\rts\observer\ui\resource\buildings\zerg\BloodyBuildingGuts.jpg
+	map_Kd D:\repo\rts\observer\ui\resource\buildings\zerg\BloodyBuildingGuts.jpg
+
+newmtl Geoset_3Mat
+	Ns 43.2193
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.2000 0.2000 0.2000
+	Kd 0.8000 0.8000 0.8000
+	Ks 0.2000 0.2000 0.2000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka D:\repo\rts\observer\ui\resource\buildings\zerg\BloodyBuildingBones.jpg
+	map_Kd D:\repo\rts\observer\ui\resource\buildings\zerg\BloodyBuildingBones.jpg
+
+newmtl Geoset_4Mat
+	Ns 43.2193
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.2000 0.2000 0.2000
+	Kd 0.8000 0.8000 0.8000
+	Ks 0.2000 0.2000 0.2000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka D:\repo\rts\observer\ui\resource\buildings\zerg\BloodyBuildingGuts.jpg
+	map_Kd D:\repo\rts\observer\ui\resource\buildings\zerg\BloodyBuildingGuts.jpg
+
+newmtl Geoset_5Mat
+	Ns 43.2193
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.2000 0.2000 0.2000
+	Kd 0.8000 0.8000 0.8000
+	Ks 0.2000 0.2000 0.2000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka D:\repo\rts\observer\ui\resource\buildings\zerg\BloodyBuildingGuts.jpg
+	map_Kd D:\repo\rts\observer\ui\resource\buildings\zerg\BloodyBuildingGuts.jpg
+
+newmtl Geoset_6Mat
+	Ns 43.2193
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.2000 0.2000 0.2000
+	Kd 0.8000 0.8000 0.8000
+	Ks 0.2000 0.2000 0.2000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka D:\repo\rts\observer\ui\resource\buildings\zerg\BloodyBuildingGuts.jpg
+	map_Kd D:\repo\rts\observer\ui\resource\buildings\zerg\BloodyBuildingGuts.jpg
+
+newmtl Geoset_0Mat
+	Ns 43.2193
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.2000 0.2000 0.2000
+	Kd 0.8000 0.8000 0.8000
+	Ks 0.2000 0.2000 0.2000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka D:\repo\rts\observer\ui\resource\buildings\zerg\UltraliskCavern_Diffuse.jpg
+	map_Kd D:\repo\rts\observer\ui\resource\buildings\zerg\UltraliskCavern_Diffuse.jpg
+
+newmtl Geoset_7Mat
+	Ns 43.2193
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.2000 0.2000 0.2000
+	Kd 0.8000 0.8000 0.8000
+	Ks 0.2000 0.2000 0.2000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka D:\repo\rts\observer\ui\resource\buildings\zerg\ZergSplatBuildingDeath_Defuse.jpg
+	map_Kd D:\repo\rts\observer\ui\resource\buildings\zerg\ZergSplatBuildingDeath_Defuse.jpg

@@ -23,10 +23,12 @@ def run(ip, port, side):
         time.sleep(0.1)
 
         while True:
+            time.sleep(0.00001)
             for response in call:
                 if response == grpc.aio.EOF:
                     break
-                print(f"Received: {response}")
+                state = ByteStreamToGameState(response.data)
+                print(f"Received: {state}")
             call = stub.ConnectPlayer(iter([PlayerRequest(command=STEP, role=role)]))
 
 

@@ -170,6 +170,7 @@ def ByteStreamToGameState(byteStream: bytes) -> GameState:
         idx += 2
         obj.owner = int.from_bytes(byteStream[idx: idx + 1], "little", signed=True)
         idx += 1
+        idx += 3
         obj.currentAction = int.from_bytes(byteStream[idx: idx + 4], "little", signed=True)
         idx += 4
         obj.actionTarget.y = int.from_bytes(byteStream[idx: idx + 4], "little", signed=True)
@@ -181,6 +182,7 @@ def ByteStreamToGameState(byteStream: bytes) -> GameState:
         obj.actionTotalProgress = int.from_bytes(byteStream[idx: idx + 2], "little", signed=True)
         idx += 2
         obj.attackCD = int.from_bytes(byteStream[idx: idx + 2], "little", signed=True)
+        idx += 2
         idx += 2
         obj.produceType = int.from_bytes(byteStream[idx: idx + 4], "little", signed=True)
         idx += 4

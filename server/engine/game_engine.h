@@ -11,8 +11,8 @@
 void GameReset(GameState *ptrGameState, int seed, bool isRotSym, bool isAxSym, double terrainProb, int expansionCnt,
                int clusterPerExpansion, int mineralPerCluster, std::atomic<int> *ptrCounter);
 
-void GameStep(GameState *ptrGameState, std::atomic<int> *ptrCounter);
+void GameStep(GameState *ptrGameState, signed char** actionDataArr, int* sizeArr, int idx, std::atomic<int> *ptrCounter);
 
-void GameStepSingle(GameState& game, TotalDiscreteAction& action);
+void GameStepSingle(GameState& game, TotalDiscreteAction& action, bool enableLog=true);
 
 #endif //RTS_GAME_ENGINE_H

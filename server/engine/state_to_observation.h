@@ -9,7 +9,7 @@
 #include "game_types.h"
 #include "client_interface.h"
 
-void StateToObservation(const GameState* ptrGameState, std::vector<signed char>* observationVec, std::vector<int>* rewardVec, int idx, std::atomic<int>* ptrCounter);
+void StateToObservation(const GameState* ptrGameState, const GameState* ptrLastGameState, std::vector<signed char>* observationVec, std::vector<int>* rewardVec, int idx, std::atomic<int>* ptrCounter);
 
 
 #endif //RTS_STATE_TO_OBSERVATION_H

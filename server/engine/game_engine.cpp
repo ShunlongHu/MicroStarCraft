@@ -132,13 +132,6 @@ void GameReset(GameState *ptrGameState, int seed, bool isRotSym, bool isAxSym, d
     taskCounter++;
 }
 
-void GameStep(GameState* ptrGameState, atomic<int>* ptrCounter) {
-    auto& game = *ptrGameState;
-    auto& counter = *ptrCounter;
-
-    counter++;
-}
-
 void GameStepAttack(GameState& game, const std::unordered_map<int, DiscreteAction>& action, int side, int enemySide, unordered_map<int, int>& unitDamageMap, const unordered_map<Coord, int, UHasher<Coord>>& coordIdxMap) {
     for (const auto& [idx, act]: action) {
         if (game.objMap.count(idx) == 0) {
@@ -338,7 +331,7 @@ void DumpAction(GameState& game, const TotalDiscreteAction& action) {
     }
 }
 
-void GameRefresh(GameState& game) {
+void GameRefresh(GameState& game, bool enableLog) {
     for (auto& [_, obj]: game.objMap) {
         if (obj.currentAction == NOOP && obj.attackCD == 0) {
             obj.actionTarget = obj.coord;
@@ -369,6 +362,9 @@ void GameRefresh(GameState& game) {
     }
     for (const auto& idx: deleteSet) {
         game.objMap.erase(idx);
+    }
+    if (!enableLog) {
+        return;
     }
     if (game.buildingCnt[0] == 0 && game.buildingCnt[1] == 1) {
         cout << "Game End: Draw" << endl;
@@ -573,8 +569,10 @@ void GameStepReturn(GameState& game, std::unordered_map<int, DiscreteAction>& ac
 }
 
 
-void GameStepSingle(GameState& game, TotalDiscreteAction& action) {
-    DumpAction(game, action);
+void GameStepSingle(GameState& game, TotalDiscreteAction& action, bool enableLog) {
+    if (enableLog) {
+        DumpAction(game, action);
+    }
     unordered_map<Coord, int, UHasher<Coord>> coordIdxMap;
     for (auto& [idx, obj]: game.objMap) {
         coordIdxMap.emplace(obj.coord, idx);
@@ -617,7 +615,72 @@ void GameStepSingle(GameState& game, TotalDiscreteAction& action) {
     GameStepReturn(game, action.action[0], -1, coordIdxMap);
     GameStepReturn(game, action.action[1], 1, coordIdxMap);
 
-    GameRefresh(game);
+    GameRefresh(game, enableLog);
     action.action[0].clear();
     action.action[1].clear();
+}
+
+#include "client_interface.h"
+void GameStep(GameState *ptrGameState, signed char** actionDataArr, int* sizeArr, int idx, std::atomic<int> *ptrCounter) {
+    auto& game = *ptrGameState;
+    auto& counter = *ptrCounter;
+    TotalDiscreteAction totalDiscreteAction;
+    auto startIdx = ACTION_PLANE_NUM * game.w * game.h * idx;
+    auto actionSize = ACTION_PLANE_NUM * game.w * game.h;
+    if (startIdx + actionSize > sizeArr[0] || startIdx + actionSize > sizeArr[1]) {
+        cerr << "Expect action size " << actionSize << " bytes is greater than " << sizeArr[0] << "/" << sizeArr[1] << "bytes" << endl;
+        counter++;
+        return;
+    }
+
+    unordered_map<Coord, int, UHasher<Coord>> coordIdxMap;
+    for (const auto& [i, obj]: game.objMap) {
+        coordIdxMap[obj.coord] = i;
+    }
+    for (int p = 0; p < 2; ++p) {
+        for (int h = 0; h < game.h; ++h) {
+            for (int w = 0; w < game.w; ++w) {
+                if (coordIdxMap.count({h, w}) == 0) {
+                    continue;
+                }
+                auto objIdx = coordIdxMap.at({h,w});
+                totalDiscreteAction.action[p][objIdx] = {};
+                auto& act = totalDiscreteAction.action[p].at(objIdx);
+                act.action = static_cast<ActionType>(actionDataArr[p][ACTION * game.w * game.h + h * game.w + w]);
+                Coord dir;
+                switch (act.action) {
+                    case MOVE:
+                        dir = DIRECTION_TARGET_MAP[actionDataArr[p][MOVE_PARAM * game.w * game.h + h * game.w + w]];
+                        act.produceType = TERRAIN;
+                        act.target = {h + dir.y, w + dir.x};
+                        break;
+                    case GATHER:
+                        dir = DIRECTION_TARGET_MAP[actionDataArr[p][GATHER_PARAM * game.w * game.h + h * game.w + w]];
+                        act.produceType = TERRAIN;
+                        act.target = {h + dir.y, w + dir.x};
+                        break;
+                    case RETURN:
+                        dir = DIRECTION_TARGET_MAP[actionDataArr[p][RETURN_PARAM * game.w * game.h + h * game.w + w]];
+                        act.produceType = TERRAIN;
+                        act.target = {h + dir.y, w + dir.x};
+                        break;
+                    case PRODUCE:
+                        dir = DIRECTION_TARGET_MAP[actionDataArr[p][PRODUCE_DIRECTION_PARAM * game.w * game.h + h * game.w + w]];
+                        act.produceType = static_cast<GameObjType>(actionDataArr[p][
+                                PRODUCE_TYPE_PARAM * game.w * game.h + h * game.w + w]);
+                        act.target = {h + dir.y, w + dir.x};
+                        break;
+                    case ATTACK:
+                        dir = ATTACK_RANGE_COORD_MAP.at(game.objMap.at(objIdx).attackRange).at(actionDataArr[p][RELATIVE_ATTACK_POSITION * game.w * game.h + h * game.w + w]);
+                        act.produceType = TERRAIN;
+                        act.target = {h + dir.y, w + dir.x};
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    }
+    GameStepSingle(*ptrGameState, totalDiscreteAction, false);
+    counter++;
 }

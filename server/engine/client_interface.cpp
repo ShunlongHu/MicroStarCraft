@@ -47,8 +47,11 @@ extern "C" __declspec(dllexport) void Init(InitParam initParam) {
 
 extern "C" __declspec(dllexport) TotalObservation Step(TotalAction totalAction) {
     taskCounter = 0;
+    auto lastGameStateVec = gameStateVec;
     for (int i = 0; i < gameStateVec.size(); ++i) {
-        pool->enqueue(GameStep, &gameStateVec[i], &taskCounter);
+        int sizeArr[2] {totalAction.action1.size, totalAction.action2.size};
+        signed char* dataArr[2] = {totalAction.action1.data, totalAction.action2.data};
+        pool->enqueue(GameStep, &gameStateVec[i], dataArr, sizeArr, i, &taskCounter);
     }
     while (taskCounter != gameStateVec.size()) {
         sleep_for(microseconds(100));
@@ -56,7 +59,7 @@ extern "C" __declspec(dllexport) TotalObservation Step(TotalAction totalAction) 
 
     taskCounter = 0;
     for (int i = 0; i < gameStateVec.size(); ++i) {
-        pool->enqueue(StateToObservation, &gameStateVec[i], observationVec, rewardVec, i, &taskCounter);
+        pool->enqueue(StateToObservation, &gameStateVec[i], &lastGameStateVec[i], observationVec, rewardVec, i, &taskCounter);
     }
     while (taskCounter != gameStateVec.size()) {
         sleep_for(microseconds(100));

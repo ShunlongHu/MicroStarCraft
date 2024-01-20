@@ -4,7 +4,7 @@
 
 #include "state_to_observation.h"
 using namespace std;
-void StateToObservation(const GameState* ptrGameState, std::vector<signed char>* observationVec, std::vector<int>* rewardVec, int idx, std::atomic<int>* ptrCounter) {
+void StateToObservation(const GameState* ptrGameState, const GameState* ptrLastGameState, std::vector<signed char>* observationVec, std::vector<int>* rewardVec, int idx, std::atomic<int>* ptrCounter) {
     const auto& game = *ptrGameState;
     auto& counter = *ptrCounter;
     auto observationStartPos = idx * OBSERVATION_PLANE_NUM * game.w * game.h;

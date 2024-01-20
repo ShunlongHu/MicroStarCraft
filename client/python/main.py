@@ -2,7 +2,6 @@ from strategy import *
 import run_code_gen
 import logging
 import time
-import random
 import grpc
 import message_pb2
 import message_pb2_grpc
@@ -24,10 +23,12 @@ def generate_action() -> Iterable[PlayerRequest]:
             action = Act(state)
             retVal = PlayerRequest(command=STEP, role=role)
             for k, v in action.items():
-                curAction = Action(id=k, action=v.action, produceType=v.produceType, targetX=v.target.x, targetY=v.target.y)
+                curAction = Action(id=k, action=v.action, produceType=v.produceType, targetX=v.target.x,
+                                   targetY=v.target.y)
                 retVal.actions.append(curAction)
             yield retVal
         time.sleep(0.0001)
+
 
 def run(ip, port, side):
     global state
@@ -52,6 +53,14 @@ def run(ip, port, side):
                 state = ByteStreamToGameState(response.data)
 
 
+import argparse
+
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        prog='MicroStarCraft Python Client')
+    parser.add_argument('--address', type=str, required=True)
+    parser.add_argument('--port', type=str, required=True)
+    parser.add_argument('--side', choices=['PLAYER_A', 'PLAYER_B'], required=True)
+    args = parser.parse_args()
     logging.basicConfig()
-    run("127.0.0.1", "8000", "PLAYER_B")
+    run(args.address, args.port, args.side)

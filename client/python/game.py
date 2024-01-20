@@ -235,13 +235,3 @@ class DiscreteAction:
 class TotalDiscreteAction:
     def __init__(self):
         self.action = [{}, {}]
-
-
-def ActionToByteStream(actionDict: dict[int, DiscreteAction]) -> bytes:
-    byteStream = b''
-    byteStream += int.to_bytes(len(actionDict), 4, "little", signed=True)
-    for k, v in actionDict.items():
-        byteStream += int.to_bytes(k, 4, "little", signed=True)
-        byteStream += int.to_bytes(v.produceType, 4, "little", signed=True)
-        byteStream += int.to_bytes(v.target.y, 4, "little", signed=True)
-        byteStream += int.to_bytes(v.target.x, 4, "little", signed=True)

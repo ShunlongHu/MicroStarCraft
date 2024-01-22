@@ -55,3 +55,11 @@ class Reward:
 
 # action, move dir, gather dir, return dir, prod dir, prod type, attack dir
 ACTION_SIZE = [6, 4, 4, 4, 4, 6, 49]
+
+GAME_W = 32
+GAME_H = 32
+OBSERVATION_PLANE_NUM = 30
+
+obj = cdll.LoadLibrary("D:/repo/rts/cmake-build-release/server/engine/rts_engine_shared.dll")
+obj.Reset.argtypes = [c_int, c_bool, c_bool, c_double, c_int, c_int, c_int]
+obj.Reset.restype = TotalObservation

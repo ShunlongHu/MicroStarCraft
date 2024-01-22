@@ -85,6 +85,13 @@ Reset(int seed, bool isRotSym, bool isAxSym, double terrainProb, int expansionCn
     while (taskCounter != gameStateVec.size()) {
         sleep_for(microseconds(100));
     }
+    taskCounter = 0;
+    for (int i = 0; i < gameStateVec.size(); ++i) {
+        pool->enqueue(StateToObservation, &gameStateVec[i], &gameStateVec[i], observationVec, rewardVec, i, &taskCounter);
+    }
+    while (taskCounter != gameStateVec.size()) {
+        sleep_for(microseconds(100));
+    }
     return totalObservation;
 }
 

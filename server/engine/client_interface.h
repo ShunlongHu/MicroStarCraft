@@ -31,7 +31,7 @@ enum ObservationPlane {
     CURRENT_ACTION = OBJ_TYPE + GAME_OBJ_TYPE_NUM,
 };
 
-constexpr static int OBSERVATION_PLANE_NUM = CURRENT_ACTION + GAME_ACTION_TYPE_NUM + 1;
+constexpr static int OBSERVATION_PLANE_NUM = CURRENT_ACTION + GAME_ACTION_TYPE_NUM;
 
 enum Reward {
     GAME_TIME,

@@ -3,6 +3,7 @@
 //
 
 #include "state_to_observation.h"
+#include <sstream>
 using namespace std;
 void StateToObservation(const GameState* ptrGameState, const GameState* ptrLastGameState, std::vector<signed char>* observationVec, std::vector<int>* rewardVec, int idx, std::atomic<int>* ptrCounter) {
     const auto& game = *ptrGameState;
@@ -20,17 +21,17 @@ void StateToObservation(const GameState* ptrGameState, const GameState* ptrLastG
         auto coord = obj.coord.x + obj.coord.y * game.w;
         if (OBJ_HP_MAP.count(obj.type)) {
             auto layer = HP_1 + obj.hitPoint -1;
-            layer = max<int>(layer, HP_6_PLUS);
+            layer = min<int>(layer, HP_6_PLUS);
             ob[0][layer * game.w * game.h + coord] = true;
         }
         if (obj.type == BASE || obj.type == WORKER || obj.type == MINERAL) {
             auto layer = RES_1 + obj.resource -1;
-            layer = max<int>(layer, RES_6_PLUS);
+            layer = min<int>(layer, RES_6_PLUS);
             ob[0][layer * game.w * game.h + coord] = true;
         }
         ob[0][(OWNER_NONE + obj.owner) * game.w * game.h + coord] = true;
         ob[0][(OBJ_TYPE + obj.type) * game.w * game.h + coord] = true;
-        ob[0][(CURRENT_ACTION + obj.currentAction) * game.w * game.h + coord] = true;
+        ob[0][(CURRENT_ACTION + obj.currentAction) * game.w * game.h + coord] = OBJ_TIME_MAP.count(obj.type) != 0;
     }
     for (int i = 0; i < OBSERVATION_PLANE_NUM * game.w * game.h; ++i) {
         ob[1][i] = ob[0][i];

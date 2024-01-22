@@ -79,7 +79,7 @@ Reset(int seed, bool isRotSym, bool isAxSym, double terrainProb, int expansionCn
       int mineralPerCluster) {
     taskCounter = 0;
     for (int i = 0; i < gameStateVec.size(); ++i) {
-        pool->enqueue(GameReset, &gameStateVec[i], seed, isRotSym, isAxSym, terrainProb / 100, expansionCnt, clusterPerExpansion,
+        pool->enqueue(GameReset, &gameStateVec[i], seed + i, isRotSym, isAxSym, terrainProb / 100, expansionCnt, clusterPerExpansion,
                       mineralPerCluster, &taskCounter);
     }
     while (taskCounter != gameStateVec.size()) {

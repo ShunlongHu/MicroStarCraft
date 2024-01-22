@@ -1,5 +1,6 @@
 from game_types import *
 import numpy as np
+import matplotlib.pyplot as plt
 import torch
 
 WORKER_NUM = 2
@@ -26,5 +27,5 @@ if __name__ == "__main__":
     initParam = InitParam(c_int(GAME_W), c_int(GAME_H), c_int(WORKER_NUM))
     print(initParam)
     obj.Init(initParam)
-    ob = Reset(0, False, True, 1, 1, 1,100)
-    print(ob)
+    ob = Reset(0, False, True, 1, 5, 5,100)
+    plt.imshow(ob[0][0, 13])

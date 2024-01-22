@@ -18,8 +18,8 @@ def Reset(seed:int,
         ob1[i] = totalObs.ob1.data[i]
     for i in range(totalObs.ob2.size):
         ob2[i] = totalObs.ob2.data[i]
-    ob1 = ob1.resize(WORKER_NUM, OBSERVATION_PLANE_NUM, GAME_H, GAME_W)
-    ob2 = ob2.resize(WORKER_NUM, OBSERVATION_PLANE_NUM, GAME_H, GAME_W)
+    ob1 = ob1.reshape(WORKER_NUM, OBSERVATION_PLANE_NUM, GAME_H, GAME_W)
+    ob2 = ob2.reshape(WORKER_NUM, OBSERVATION_PLANE_NUM, GAME_H, GAME_W)
     return ob1, ob2
 
 

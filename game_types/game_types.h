@@ -201,6 +201,8 @@ const static std::unordered_map<int, std::vector<Coord>> ATTACK_RANGE_COORD_MAP{
 
 };
 
+const static int MAX_ATTACK_RANGE {3};
+
 const static std::vector<ActionTarget> DIRECTION_TARGET_MAP{{-1, 0},
                                                             {0,  1},
                                                             {1,  0},

@@ -34,6 +34,10 @@ enum ObservationPlane {
 constexpr static int OBSERVATION_PLANE_NUM = CURRENT_ACTION + GAME_ACTION_TYPE_NUM + 1;
 
 enum Reward {
+    GAME_TIME,
+    IS_END,
+    VICTORY_SIDE,
+
     NEW_WORKER_CNT,
     NEW_LIGHT_CNT,
     NEW_RANGED_CNT,
@@ -65,6 +69,7 @@ struct Observation {
     signed char *data = nullptr;
     int size = 0;
     int *reward = nullptr;
+    int rewardSize = 0;
 };
 
 enum ActionPlane {
@@ -87,9 +92,6 @@ struct Action {
 struct TotalObservation {
     Observation ob1;
     Observation ob2;
-    int time = 0;
-    bool isEnd = false;
-    int winningSide = 0;
 };
 
 struct TotalAction {

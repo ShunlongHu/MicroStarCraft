@@ -35,5 +35,14 @@ void StateToObservation(const GameState* ptrGameState, const GameState* ptrLastG
     for (int i = 0; i < OBSERVATION_PLANE_NUM * game.w * game.h; ++i) {
         ob[1][i] = ob[0][i];
     }
+
+    re[0][GAME_TIME] = game.time;
+    re[1][GAME_TIME] = game.time;
+    if (game.buildingCnt[0] == 0 || game.buildingCnt[1] == 0) {
+        re[0][IS_END] = true;
+        re[1][IS_END] = true;
+        re[0][VICTORY_SIDE] = game.buildingCnt[0] > 0 ? -1 : (game.buildingCnt[1] > 0 ? 1 : 0);
+        re[1][VICTORY_SIDE] = game.buildingCnt[0] > 0 ? -1 : (game.buildingCnt[1] > 0 ? 1 : 0);
+    }
     counter++;
 }

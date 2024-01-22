@@ -648,6 +648,7 @@ void GameStep(GameState *ptrGameState, signed char** actionDataArr, int* sizeArr
                 auto& act = totalDiscreteAction.action[p].at(objIdx);
                 act.action = static_cast<ActionType>(actionDataArr[p][ACTION * game.w * game.h + h * game.w + w]);
                 Coord dir;
+                int attackDir;
                 switch (act.action) {
                     case MOVE:
                         dir = DIRECTION_TARGET_MAP[actionDataArr[p][MOVE_PARAM * game.w * game.h + h * game.w + w]];
@@ -671,7 +672,8 @@ void GameStep(GameState *ptrGameState, signed char** actionDataArr, int* sizeArr
                         act.target = {h + dir.y, w + dir.x};
                         break;
                     case ATTACK:
-                        dir = ATTACK_RANGE_COORD_MAP.at(game.objMap.at(objIdx).attackRange).at(actionDataArr[p][RELATIVE_ATTACK_POSITION * game.w * game.h + h * game.w + w]);
+                        attackDir  = static_cast<int>(actionDataArr[p][RELATIVE_ATTACK_POSITION * game.w * game.h + h * game.w + w]);
+                        dir = {attackDir / (MAX_ATTACK_RANGE * 2 + 1) - MAX_ATTACK_RANGE, attackDir % (MAX_ATTACK_RANGE * 2 + 1) - MAX_ATTACK_RANGE};
                         act.produceType = TERRAIN;
                         act.target = {h + dir.y, w + dir.x};
                         break;

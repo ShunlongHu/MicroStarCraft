@@ -9,6 +9,7 @@ class Observation(Structure):
     _fields_ = [("data", POINTER(c_byte)),
                 ("size", c_int),
                 ("reward", POINTER(c_int)),
+                ("rewardSize", c_int),
                 ]
 
 
@@ -17,7 +18,7 @@ class Action(Structure):
 
 
 class TotalObservation(Structure):
-    _fields_ = [("ob1", Observation), ("ob2", Observation), ("time", c_int), ("isEnd", c_bool), ("winningSide", c_int)]
+    _fields_ = [("ob1", Observation), ("ob2", Observation)]
 
 
 class TotalAction(Structure):
@@ -25,26 +26,32 @@ class TotalAction(Structure):
 
 
 class Reward:
-    NEW_WORKER_CNT = 0
-    NEW_LIGHT_CNT = 1
-    NEW_RANGED_CNT = 2
-    NEW_HEAVY_CNT = 3
-    NEW_BASE_CNT = 4
-    NEW_BARRACK_CNT = 5
+    GAME_TIME = 0
+    IS_END = 1
+    VICTORY_SIDE = 2
+    NEW_WORKER_CNT = 3
+    NEW_LIGHT_CNT = 4
+    NEW_RANGED_CNT = 5
+    NEW_HEAVY_CNT = 6
+    NEW_BASE_CNT = 7
+    NEW_BARRACK_CNT = 8
 
-    DEAD_WORKER_CNT = 6
-    DEAD_LIGHT_CNT = 7
-    DEAD_RANGED_CNT = 8
-    DEAD_HEAVY_CNT = 9
-    DEAD_BASE_CNT = 10
-    DEAD_BARRACK_CNT = 11
+    DEAD_WORKER_CNT = 9
+    DEAD_LIGHT_CNT = 10
+    DEAD_RANGED_CNT = 11
+    DEAD_HEAVY_CNT = 12
+    DEAD_BASE_CNT = 13
+    DEAD_BARRACK_CNT = 14
 
-    NEW_WORKER_KILLED = 12
-    NEW_LIGHT_KILLED = 13
-    NEW_RANGED_KILLED = 14
-    NEW_HEAVY_KILLED = 15
-    NEW_BASE_KILLED = 16
-    NEW_BARRACK_KILLED = 17
+    NEW_WORKER_KILLED = 15
+    NEW_LIGHT_KILLED = 16
+    NEW_RANGED_KILLED = 17
+    NEW_HEAVY_KILLED = 18
+    NEW_BASE_KILLED = 19
+    NEW_BARRACK_KILLED = 20
+    NEW_NET_INCOME = 21
+    NEW_HIT_CNT = 22
 
-    NEW_NET_INCOME = 18
-    NEW_HIT_CNT = 19
+
+# action, move dir, gather dir, return dir, prod dir, prod type, attack dir
+ACTION_SIZE = [6, 4, 4, 4, 4, 6, 49]

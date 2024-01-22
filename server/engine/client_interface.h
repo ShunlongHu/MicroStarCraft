@@ -27,6 +27,8 @@ enum ObservationPlane {
     OWNER_1,
     OWNER_NONE,
     OWNER_2,
+    OBSTACLE,
+    GATHERING,
     OBJ_TYPE,
     CURRENT_ACTION = OBJ_TYPE + GAME_OBJ_TYPE_NUM,
 };

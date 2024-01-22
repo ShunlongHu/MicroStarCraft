@@ -29,6 +29,14 @@ void StateToObservation(const GameState* ptrGameState, const GameState* ptrLastG
             layer = min<int>(layer, RES_6_PLUS);
             ob[0][layer * game.w * game.h + coord] = true;
         }
+        ob[0][OBSTACLE * game.w * game.h + coord] = true;
+        if (obj.currentAction == MOVE || obj.currentAction == PRODUCE) {
+            auto target = obj.actionTarget.x + obj.actionTarget.y * game.w;
+            ob[0][OBSTACLE * game.w * game.h * game.w * game.h + target] = true;
+        } else if (obj.currentAction == GATHER) {
+            auto target = obj.actionTarget.x + obj.actionTarget.y * game.w;
+            ob[0][GATHERING * game.w * game.h + target] = true;
+        }
         ob[0][(OWNER_NONE + obj.owner) * game.w * game.h + coord] = true;
         ob[0][(OBJ_TYPE + obj.type) * game.w * game.h + coord] = true;
         ob[0][(CURRENT_ACTION + obj.currentAction) * game.w * game.h + coord] = OBJ_TIME_MAP.count(obj.type) != 0;

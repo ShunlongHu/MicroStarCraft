@@ -52,14 +52,84 @@ class Reward:
     NEW_NET_INCOME = 21
     NEW_HIT_CNT = 22
 
+REWARD_SIZE = Reward.NEW_HIT_CNT + 1
+
+class ActionPlane:
+    ACTION = 0
+    MOVE_PARAM = 1
+    GATHER_PARAM = 2
+    RETURN_PARAM = 3
+    PRODUCE_DIRECTION_PARAM = 4
+    PRODUCE_TYPE_PARAM = 5
+    RELATIVE_ATTACK_POSITION = 6
+
+
+class ActionType:
+    NOOP = 0
+    MOVE = 1
+    GATHER = 2
+    RETURN = 3
+    PRODUCE = 4
+    ATTACK = 5
+
 
 # action, move dir, gather dir, return dir, prod dir, prod type, attack dir
 ACTION_SIZE = [6, 4, 4, 4, 4, 6, 49]
 
 GAME_W = 32
 GAME_H = 32
+
+
+class ObPlane:
+    HP_1 = 0
+    HP_2 = 1
+    HP_3 = 2
+    HP_4 = 3
+    HP_5 = 4
+    HP_6_PLUS = 5
+    RES_1 = 6
+    RES_2 = 7
+    RES_3 = 8
+    RES_4 = 9
+    RES_5 = 10
+    RES_6_PLUS = 11
+    OWNER_1 = 12
+    OWNER_NONE = 13
+    OWNER_2 = 14
+    OBSTACLE = 15
+    GATHERING = 16
+    IS_TERRAIN = 17
+    IS_MINERAL = 18
+    IS_BASE = 19
+    IS_BARRACK = 20
+    IS_WORKER = 21
+    IS_LIGHT = 22
+    IS_HEAVY = 23
+    IS_RANGED = 24
+    IS_NOOP = 25
+    IS_MOVE = 26
+    IS_GATHER = 27
+    IS_RETURN = 28
+    IS_PRODUCE = 29
+    IS_ATTACK = 30
+
+
+class ObjType:
+    TERRAIN = 0
+    MINERAL = 1
+    BASE = 2
+    BARRACK = 3
+    WORKER = 4
+    LIGHT = 5
+    HEAVY = 6
+    RANGED = 7
+
+
 OBSERVATION_PLANE_NUM = 31
 
 obj = cdll.LoadLibrary("D:/repo/rts/cmake-build-release/server/engine/rts_engine_shared.dll")
+obj.Init.argtypes = [InitParam]
 obj.Reset.argtypes = [c_int, c_bool, c_bool, c_double, c_int, c_int, c_int]
 obj.Reset.restype = TotalObservation
+obj.Step.argtypes = [TotalAction]
+obj.Step.restype = TotalObservation

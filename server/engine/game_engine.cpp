@@ -646,33 +646,33 @@ void GameStep(GameState *ptrGameState, signed char** actionDataArr, int* sizeArr
                 auto objIdx = coordIdxMap.at({h,w});
                 totalDiscreteAction.action[p][objIdx] = {};
                 auto& act = totalDiscreteAction.action[p].at(objIdx);
-                act.action = static_cast<ActionType>(actionDataArr[p][ACTION * game.w * game.h + h * game.w + w]);
+                act.action = static_cast<ActionType>(actionDataArr[p][startIdx + ACTION * game.w * game.h + h * game.w + w]);
                 Coord dir;
                 int attackDir;
                 switch (act.action) {
                     case MOVE:
-                        dir = DIRECTION_TARGET_MAP[actionDataArr[p][MOVE_PARAM * game.w * game.h + h * game.w + w]];
+                        dir = DIRECTION_TARGET_MAP[actionDataArr[p][startIdx + MOVE_PARAM * game.w * game.h + h * game.w + w]];
                         act.produceType = TERRAIN;
                         act.target = {h + dir.y, w + dir.x};
                         break;
                     case GATHER:
-                        dir = DIRECTION_TARGET_MAP[actionDataArr[p][GATHER_PARAM * game.w * game.h + h * game.w + w]];
+                        dir = DIRECTION_TARGET_MAP[actionDataArr[p][startIdx + GATHER_PARAM * game.w * game.h + h * game.w + w]];
                         act.produceType = TERRAIN;
                         act.target = {h + dir.y, w + dir.x};
                         break;
                     case RETURN:
-                        dir = DIRECTION_TARGET_MAP[actionDataArr[p][RETURN_PARAM * game.w * game.h + h * game.w + w]];
+                        dir = DIRECTION_TARGET_MAP[actionDataArr[p][startIdx + RETURN_PARAM * game.w * game.h + h * game.w + w]];
                         act.produceType = TERRAIN;
                         act.target = {h + dir.y, w + dir.x};
                         break;
                     case PRODUCE:
-                        dir = DIRECTION_TARGET_MAP[actionDataArr[p][PRODUCE_DIRECTION_PARAM * game.w * game.h + h * game.w + w]];
+                        dir = DIRECTION_TARGET_MAP[actionDataArr[p][startIdx + PRODUCE_DIRECTION_PARAM * game.w * game.h + h * game.w + w]];
                         act.produceType = static_cast<GameObjType>(actionDataArr[p][
                                 PRODUCE_TYPE_PARAM * game.w * game.h + h * game.w + w]);
                         act.target = {h + dir.y, w + dir.x};
                         break;
                     case ATTACK:
-                        attackDir  = static_cast<int>(actionDataArr[p][RELATIVE_ATTACK_POSITION * game.w * game.h + h * game.w + w]);
+                        attackDir = static_cast<int>(actionDataArr[p][startIdx + RELATIVE_ATTACK_POSITION * game.w * game.h + h * game.w + w]);
                         dir = {attackDir / (MAX_ATTACK_RANGE * 2 + 1) - MAX_ATTACK_RANGE, attackDir % (MAX_ATTACK_RANGE * 2 + 1) - MAX_ATTACK_RANGE};
                         act.produceType = TERRAIN;
                         act.target = {h + dir.y, w + dir.x};

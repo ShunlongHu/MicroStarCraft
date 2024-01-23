@@ -1,5 +1,4 @@
 import time
-import psutil
 from game_types import *
 import numpy as np
 import matplotlib
@@ -62,7 +61,6 @@ class VecEnv:
             re2[i] += totalObs.ob2.reward[i * REWARD_SIZE + Reward.NEW_HEAVY_CNT] * 8
             re2[i] += totalObs.ob2.reward[i * REWARD_SIZE + Reward.NEW_HIT_CNT]
             re2[i] += (totalObs.ob2.reward[i * REWARD_SIZE + Reward.VICTORY_SIDE] == -1) * 1000
-        print(psutil.virtual_memory()[3] / 1000 / 1000 / 1000)
         return (ob1, ob2),  (re1, re2), isEnd, ""
 
 

@@ -1,5 +1,5 @@
 import time
-
+import psutil
 from game_types import *
 import numpy as np
 import matplotlib
@@ -8,7 +8,7 @@ from matplotlib import pyplot as plt
 print("Switched to:",matplotlib.get_backend())
 import torch
 
-WORKER_NUM = 4
+WORKER_NUM = 64
 
 
 class VecEnv:
@@ -62,6 +62,7 @@ class VecEnv:
             re2[i] += totalObs.ob2.reward[i * REWARD_SIZE + Reward.NEW_HEAVY_CNT] * 8
             re2[i] += totalObs.ob2.reward[i * REWARD_SIZE + Reward.NEW_HIT_CNT]
             re2[i] += (totalObs.ob2.reward[i * REWARD_SIZE + Reward.VICTORY_SIDE] == -1) * 1000
+        print(psutil.virtual_memory()[3] / 1000 / 1000 / 1000)
         return (ob1, ob2),  (re1, re2), isEnd, ""
 
 
@@ -70,16 +71,16 @@ if __name__ == "__main__":
     obj.Init(initParam)
     env = VecEnv()
     ob = env.reset(0, False, True, 1, 5, 5, 100)
-    action1 = torch.zeros((WORKER_NUM, len(ACTION_SIZE), GAME_H, GAME_W)).type(torch.uint8)
-    for w in range(WORKER_NUM):
-        for y in range(GAME_H):
-            for x in range(GAME_W):
-                if ob[0][w, ObPlane.IS_BASE, y, x] != 0:
-                    action1[w, ActionPlane.ACTION, y, x] = ActionType.PRODUCE
-                    action1[w, ActionPlane.PRODUCE_TYPE_PARAM, y, x] = ObjType.WORKER
-    action2 = torch.zeros((WORKER_NUM, len(ACTION_SIZE), GAME_H, GAME_W)).type(torch.uint8)
+    action1 = torch.zeros((WORKER_NUM, len(ACTION_SIZE), GAME_H, GAME_W)).type(torch.int8)
+    # for w in range(WORKER_NUM):
+    #     for y in range(GAME_H):
+    #         for x in range(GAME_W):
+    #             if ob[0][w, ObPlane.IS_BASE, y, x] != 0:
+    #                 action1[w, ActionPlane.ACTION, y, x] = ActionType.PRODUCE
+    #                 action1[w, ActionPlane.PRODUCE_TYPE_PARAM, y, x] = ObjType.WORKER
+    action2 = torch.zeros((WORKER_NUM, len(ACTION_SIZE), GAME_H, GAME_W)).type(torch.int8)
     o, r, isEnd, _ = env.step(action1, action2)
-    action1 = torch.zeros((WORKER_NUM, len(ACTION_SIZE), GAME_H, GAME_W)).type(torch.uint8)
+    action1 = torch.zeros((WORKER_NUM, len(ACTION_SIZE), GAME_H, GAME_W)).type(torch.int8)
     start = time.time()
     o, r, isEnd, _ = env.step(action1, action2)
     o, r, isEnd, _ = env.step(action1, action2)
@@ -90,5 +91,5 @@ if __name__ == "__main__":
     o, r, isEnd, _ = env.step(action1, action2)
     stop = time.time()
     print(stop - start)
-    plt.imshow(o[1][-1, ObPlane.OBSTACLE])
-    plt.show()
+    # plt.imshow(o[1][-1, ObPlane.OBSTACLE])
+    # plt.show()

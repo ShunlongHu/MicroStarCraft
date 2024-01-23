@@ -6,15 +6,18 @@
 #include <vector>
 #include <iostream>
 #include <chrono>
+#include "thread_pool.h"
 #include "game_engine.h"
 #include "state_to_observation.h"
 
 using namespace std;
+using namespace std::this_thread; // sleep_for, sleep_until
 using namespace std::chrono; // nanoseconds, system_clock, seconds
 
 static vector<signed char> observationVec[2]; // NUM_WORKER * FLATTENED_FEATURE
 static vector<int> rewardVec[2]; // NUM_WORKER * FEATURE
 static vector<GameState> gameStateVec;
+static unique_ptr<ThreadPool> pool;
 static atomic<int> taskCounter;
 static TotalObservation totalObservation;
 
@@ -41,18 +44,25 @@ extern "C" __declspec(dllexport) void Init(InitParam initParam) {
         totalObservation.ob2.reward = rewardVec[1].data();
         totalObservation.ob2.rewardSize = static_cast<int>(featureSize);
     }
+    pool = make_unique<ThreadPool>(initParam.numWorkers);
 }
 
 extern "C" __declspec(dllexport) TotalObservation Step(TotalAction totalAction) {
     taskCounter = 0;
     auto lastGameStateVec = gameStateVec;
     for (int i = 0; i < gameStateVec.size(); ++i) {
-        GameStep(&gameStateVec[i], totalAction.action1.data, totalAction.action2.data, totalAction.action1.size, totalAction.action2.size, i, &taskCounter);
+        pool->enqueue(GameStep, &gameStateVec[i], totalAction.action1.data, totalAction.action2.data, totalAction.action1.size, totalAction.action2.size, i, &taskCounter);
+    }
+    while (taskCounter != gameStateVec.size()) {
+        sleep_for(microseconds(100));
     }
 
     taskCounter = 0;
     for (int i = 0; i < gameStateVec.size(); ++i) {
-        StateToObservation(&gameStateVec[i], &lastGameStateVec[i], observationVec, rewardVec, i, &taskCounter);
+        pool->enqueue(StateToObservation, &gameStateVec[i], &lastGameStateVec[i], observationVec, rewardVec, i, &taskCounter);
+    }
+    while (taskCounter != gameStateVec.size()) {
+        sleep_for(microseconds(100));
     }
 
     return totalObservation;
@@ -67,12 +77,18 @@ Reset(int seed, bool isRotSym, bool isAxSym, double terrainProb, int expansionCn
       int mineralPerCluster) {
     taskCounter = 0;
     for (int i = 0; i < gameStateVec.size(); ++i) {
-        GameReset(&gameStateVec[i], seed + i, isRotSym, isAxSym, terrainProb / 100, expansionCnt, clusterPerExpansion,
-                mineralPerCluster, &taskCounter);
+        pool->enqueue(GameReset, &gameStateVec[i], seed + i, isRotSym, isAxSym, terrainProb / 100, expansionCnt, clusterPerExpansion,
+                      mineralPerCluster, &taskCounter);
+    }
+    while (taskCounter != gameStateVec.size()) {
+        sleep_for(microseconds(100));
     }
     taskCounter = 0;
     for (int i = 0; i < gameStateVec.size(); ++i) {
-        StateToObservation(&gameStateVec[i], &gameStateVec[i], observationVec, rewardVec, i, &taskCounter);
+        pool->enqueue(StateToObservation, &gameStateVec[i], &gameStateVec[i], observationVec, rewardVec, i, &taskCounter);
+    }
+    while (taskCounter != gameStateVec.size()) {
+        sleep_for(microseconds(100));
     }
     return totalObservation;
 }

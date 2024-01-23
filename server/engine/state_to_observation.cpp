@@ -6,8 +6,11 @@
 #include <sstream>
 using namespace std;
 void StateToObservation(const GameState* ptrGameState, const GameState* ptrLastGameState, std::vector<signed char>* observationVec, std::vector<int>* rewardVec, int idx, std::atomic<int>* ptrCounter) {
-    const auto& game = *ptrGameState;
     auto& counter = *ptrCounter;
+    counter++;
+    return;
+    const auto& game = *ptrGameState;
+//    auto& counter = *ptrCounter;
     auto observationStartPos = idx * OBSERVATION_PLANE_NUM * game.w * game.h;
     auto rewardStartPos = idx * GAME_STAT_NUM * game.w * game.h;
     signed char* ob[2] {observationVec[0].data() + observationStartPos, observationVec[1].data() + observationStartPos};

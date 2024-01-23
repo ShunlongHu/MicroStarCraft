@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import torch
 
-WORKER_NUM = 2
+WORKER_NUM = 16
 
 
 class VecEnv:
@@ -91,4 +91,5 @@ if __name__ == "__main__":
     o, r, isEnd, _ = env.step(action1, action2)
     o, r, isEnd, _ = env.step(action1, action2)
     o, r, isEnd, _ = env.step(action1, action2)
-    plt.imshow(ob[0][0, 13])
+    plt.imshow(o[1][-1, ObPlane.OBSTACLE])
+    plt.show()

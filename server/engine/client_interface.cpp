@@ -40,8 +40,8 @@ extern "C" __declspec(dllexport) void Init(InitParam initParam) {
         totalObservation.ob1.rewardSize = static_cast<int>(featureSize);
 
         totalObservation.ob2.size = static_cast<int>(observationSize);
-        totalObservation.ob2.data = observationVec[0].data();
-        totalObservation.ob2.reward = rewardVec[0].data();
+        totalObservation.ob2.data = observationVec[1].data();
+        totalObservation.ob2.reward = rewardVec[1].data();
         totalObservation.ob2.rewardSize = static_cast<int>(featureSize);
     }
     pool = make_unique<ThreadPool>(initParam.numWorkers);

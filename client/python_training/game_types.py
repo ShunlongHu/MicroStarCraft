@@ -52,7 +52,9 @@ class Reward:
     NEW_NET_INCOME = 21
     NEW_HIT_CNT = 22
 
+
 REWARD_SIZE = Reward.NEW_HIT_CNT + 1
+
 
 class ActionPlane:
     ACTION = 0

@@ -1,3 +1,5 @@
+import time
+
 from game_types import *
 import numpy as np
 import matplotlib
@@ -6,7 +8,7 @@ from matplotlib import pyplot as plt
 print("Switched to:",matplotlib.get_backend())
 import torch
 
-WORKER_NUM = 16
+WORKER_NUM = 4
 
 
 class VecEnv:
@@ -78,6 +80,7 @@ if __name__ == "__main__":
     action2 = torch.zeros((WORKER_NUM, len(ACTION_SIZE), GAME_H, GAME_W)).type(torch.uint8)
     o, r, isEnd, _ = env.step(action1, action2)
     action1 = torch.zeros((WORKER_NUM, len(ACTION_SIZE), GAME_H, GAME_W)).type(torch.uint8)
+    start = time.time()
     o, r, isEnd, _ = env.step(action1, action2)
     o, r, isEnd, _ = env.step(action1, action2)
     o, r, isEnd, _ = env.step(action1, action2)
@@ -85,5 +88,7 @@ if __name__ == "__main__":
     o, r, isEnd, _ = env.step(action1, action2)
     o, r, isEnd, _ = env.step(action1, action2)
     o, r, isEnd, _ = env.step(action1, action2)
-    # plt.imshow(o[1][-1, ObPlane.OBSTACLE])
-    # plt.show()
+    stop = time.time()
+    print(stop - start)
+    plt.imshow(o[1][-1, ObPlane.OBSTACLE])
+    plt.show()

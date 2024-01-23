@@ -51,9 +51,7 @@ extern "C" __declspec(dllexport) TotalObservation Step(TotalAction totalAction) 
     taskCounter = 0;
     auto lastGameStateVec = gameStateVec;
     for (int i = 0; i < gameStateVec.size(); ++i) {
-        int sizeArr[2] {totalAction.action1.size, totalAction.action2.size};
-        signed char* dataArr[2] = {totalAction.action1.data, totalAction.action2.data};
-        pool->enqueue(GameStep, &gameStateVec[i], dataArr, sizeArr, i, &taskCounter);
+        pool->enqueue(GameStep, &gameStateVec[i], totalAction.action1.data, totalAction.action2.data, totalAction.action1.size, totalAction.action2.size, i, &taskCounter);
     }
     while (taskCounter != gameStateVec.size()) {
         sleep_for(microseconds(100));

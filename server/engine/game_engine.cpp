@@ -621,17 +621,19 @@ void GameStepSingle(GameState& game, TotalDiscreteAction& action, bool enableLog
 }
 
 #include "client_interface.h"
-void GameStep(GameState *ptrGameState, signed char** actionDataArr, int* sizeArr, int idx, std::atomic<int> *ptrCounter) {
+void GameStep(GameState *ptrGameState, signed char* actionDataArr1, signed char* actionDataArr2, int size1, int size2, int idx, std::atomic<int> *ptrCounter) {
     auto& game = *ptrGameState;
     auto& counter = *ptrCounter;
     TotalDiscreteAction totalDiscreteAction;
     auto startIdx = ACTION_PLANE_NUM * game.w * game.h * idx;
     auto actionSize = ACTION_PLANE_NUM * game.w * game.h;
+    int sizeArr[2] = {size1, size2};
     if (startIdx + actionSize > sizeArr[0] || startIdx + actionSize > sizeArr[1]) {
         cerr << "Expect action size " << actionSize << " bytes is greater than " << sizeArr[0] << "/" << sizeArr[1] << "bytes" << endl;
         counter++;
         return;
     }
+    signed char* actionDataArr[2] = {actionDataArr1, actionDataArr2};
 
     unordered_map<Coord, int, UHasher<Coord>> coordIdxMap;
     for (const auto& [i, obj]: game.objMap) {

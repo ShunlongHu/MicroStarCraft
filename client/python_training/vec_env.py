@@ -1,6 +1,9 @@
 from game_types import *
 import numpy as np
-import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('TkAgg',force=True)
+from matplotlib import pyplot as plt
+print("Switched to:",matplotlib.get_backend())
 import torch
 
 WORKER_NUM = 16
@@ -15,14 +18,10 @@ class VecEnv:
               clusterPerExpansion: int,
               mineralPerCluster: int) -> (torch.tensor, torch.tensor):
         totalObs = obj.Reset(seed, isRotSym, isAxSym, terrainProb, expansionCnt, clusterPerExpansion, mineralPerCluster)
-        ob1 = torch.zeros(WORKER_NUM * OBSERVATION_PLANE_NUM * GAME_H * GAME_W)
-        ob2 = torch.zeros(WORKER_NUM * OBSERVATION_PLANE_NUM * GAME_H * GAME_W)
-        for i in range(totalObs.ob1.size):
-            ob1[i] = totalObs.ob1.data[i]
-        for i in range(totalObs.ob2.size):
-            ob2[i] = totalObs.ob2.data[i]
-        ob1 = ob1.reshape(WORKER_NUM, OBSERVATION_PLANE_NUM, GAME_H, GAME_W)
-        ob2 = ob2.reshape(WORKER_NUM, OBSERVATION_PLANE_NUM, GAME_H, GAME_W)
+        assert totalObs.ob1.size == WORKER_NUM * OBSERVATION_PLANE_NUM * GAME_H * GAME_W
+        assert totalObs.ob2.size == WORKER_NUM * OBSERVATION_PLANE_NUM * GAME_H * GAME_W
+        ob1 = torch.from_numpy(np.ctypeslib.as_array(totalObs.ob1.data, [WORKER_NUM, OBSERVATION_PLANE_NUM, GAME_H, GAME_W]))
+        ob2 = torch.from_numpy(np.ctypeslib.as_array(totalObs.ob2.data, [WORKER_NUM, OBSERVATION_PLANE_NUM, GAME_H, GAME_W]))
         return ob1, ob2
 
     def step(self, action1: torch.tensor, action2: torch.tensor) -> ((torch.tensor, torch.tensor), (torch.tensor, torch.tensor), torch.tensor, str):
@@ -34,14 +33,10 @@ class VecEnv:
         actionStruct2 = Action(actionObj2, c_int(actionData2.size(0)))
 
         totalObs = obj.Step(TotalAction(actionStruct1, actionStruct2))
-        ob1 = torch.zeros(WORKER_NUM * OBSERVATION_PLANE_NUM * GAME_H * GAME_W)
-        ob2 = torch.zeros(WORKER_NUM * OBSERVATION_PLANE_NUM * GAME_H * GAME_W)
-        for i in range(totalObs.ob1.size):
-            ob1[i] = totalObs.ob1.data[i]
-        for i in range(totalObs.ob2.size):
-            ob2[i] = totalObs.ob2.data[i]
-        ob1 = ob1.reshape(WORKER_NUM, OBSERVATION_PLANE_NUM, GAME_H, GAME_W)
-        ob2 = ob2.reshape(WORKER_NUM, OBSERVATION_PLANE_NUM, GAME_H, GAME_W)
+        assert totalObs.ob1.size == WORKER_NUM * OBSERVATION_PLANE_NUM * GAME_H * GAME_W
+        assert totalObs.ob2.size == WORKER_NUM * OBSERVATION_PLANE_NUM * GAME_H * GAME_W
+        ob1 = torch.from_numpy(np.ctypeslib.as_array(totalObs.ob1.data, [WORKER_NUM, OBSERVATION_PLANE_NUM, GAME_H, GAME_W]))
+        ob2 = torch.from_numpy(np.ctypeslib.as_array(totalObs.ob2.data, [WORKER_NUM, OBSERVATION_PLANE_NUM, GAME_H, GAME_W]))
 
         re1 = torch.zeros(WORKER_NUM)
         re2 = torch.zeros(WORKER_NUM)
@@ -70,7 +65,6 @@ class VecEnv:
 
 if __name__ == "__main__":
     initParam = InitParam(c_int(GAME_W), c_int(GAME_H), c_int(WORKER_NUM))
-    print(initParam)
     obj.Init(initParam)
     env = VecEnv()
     ob = env.reset(0, False, True, 1, 5, 5, 100)
@@ -91,5 +85,5 @@ if __name__ == "__main__":
     o, r, isEnd, _ = env.step(action1, action2)
     o, r, isEnd, _ = env.step(action1, action2)
     o, r, isEnd, _ = env.step(action1, action2)
-    plt.imshow(o[1][-1, ObPlane.OBSTACLE])
-    plt.show()
+    # plt.imshow(o[1][-1, ObPlane.OBSTACLE])
+    # plt.show()

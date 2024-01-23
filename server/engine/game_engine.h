@@ -11,7 +11,7 @@
 void GameReset(GameState *ptrGameState, int seed, bool isRotSym, bool isAxSym, double terrainProb, int expansionCnt,
                int clusterPerExpansion, int mineralPerCluster, std::atomic<int> *ptrCounter);
 
-void GameStep(GameState *ptrGameState, signed char** actionDataArr, int* sizeArr, int idx, std::atomic<int> *ptrCounter);
+void GameStep(GameState *ptrGameState, signed char* actionDataArr1, signed char* actionDataArr2, int size1, int size2, int idx, std::atomic<int> *ptrCounter);
 
 void GameStepSingle(GameState& game, TotalDiscreteAction& action, bool enableLog=true);
 

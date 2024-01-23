@@ -20,6 +20,8 @@ void StateToObservation(const GameState* ptrGameState, const GameState* ptrLastG
         re[0][i] = 0;
         re[1][i] = 0;
     }
+    counter++;
+    return;
 
     for (const auto& [_, obj]: game.objMap) {
         auto coord = obj.coord.x + obj.coord.y * game.w;

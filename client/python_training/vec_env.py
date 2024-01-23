@@ -8,7 +8,7 @@ from matplotlib import pyplot as plt
 print("Switched to:",matplotlib.get_backend())
 import torch
 
-WORKER_NUM = 64
+WORKER_NUM = 4
 
 
 class VecEnv:

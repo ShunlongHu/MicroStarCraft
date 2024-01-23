@@ -20,8 +20,6 @@ void StateToObservation(const GameState* ptrGameState, const GameState* ptrLastG
         re[0][i] = 0;
         re[1][i] = 0;
     }
-    counter++;
-    return;
 
     for (const auto& [_, obj]: game.objMap) {
         auto coord = obj.coord.x + obj.coord.y * game.w;
@@ -38,7 +36,7 @@ void StateToObservation(const GameState* ptrGameState, const GameState* ptrLastG
         ob[0][OBSTACLE * game.w * game.h + coord] = true;
         if (obj.currentAction == MOVE || obj.currentAction == PRODUCE) {
             auto target = obj.actionTarget.x + obj.actionTarget.y * game.w;
-            ob[0][OBSTACLE * game.w * game.h * game.w * game.h + target] = true;
+            ob[0][OBSTACLE * game.w * game.h + target] = true;
         } else if (obj.currentAction == GATHER) {
             auto target = obj.actionTarget.x + obj.actionTarget.y * game.w;
             ob[0][GATHERING * game.w * game.h + target] = true;

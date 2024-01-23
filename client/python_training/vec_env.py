@@ -52,7 +52,7 @@ class VecEnv:
             re1[i] += totalObs.ob1.reward[i * REWARD_SIZE + Reward.NEW_RANGED_CNT] * 4
             re1[i] += totalObs.ob1.reward[i * REWARD_SIZE + Reward.NEW_HEAVY_CNT] * 8
             re1[i] += totalObs.ob1.reward[i * REWARD_SIZE + Reward.NEW_HIT_CNT]
-            re1[i] += (totalObs.ob1.reward[i * REWARD_SIZE + Reward.VICTORY_SIDE] == -1) * 1000
+            re1[i] += -totalObs.ob1.reward[i * REWARD_SIZE + Reward.VICTORY_SIDE] * 1000
             re2[i] += totalObs.ob2.reward[i * REWARD_SIZE + Reward.NEW_NET_INCOME]
             re2[i] += totalObs.ob2.reward[i * REWARD_SIZE + Reward.NEW_WORKER_CNT]
             re2[i] += totalObs.ob2.reward[i * REWARD_SIZE + Reward.NEW_BARRACK_CNT] * 10
@@ -60,7 +60,7 @@ class VecEnv:
             re2[i] += totalObs.ob2.reward[i * REWARD_SIZE + Reward.NEW_RANGED_CNT] * 4
             re2[i] += totalObs.ob2.reward[i * REWARD_SIZE + Reward.NEW_HEAVY_CNT] * 8
             re2[i] += totalObs.ob2.reward[i * REWARD_SIZE + Reward.NEW_HIT_CNT]
-            re2[i] += (totalObs.ob2.reward[i * REWARD_SIZE + Reward.VICTORY_SIDE] == -1) * 1000
+            re2[i] += totalObs.ob2.reward[i * REWARD_SIZE + Reward.VICTORY_SIDE] * 1000
         return (ob1, ob2),  (re1, re2), isEnd, ""
 
 
@@ -68,26 +68,29 @@ if __name__ == "__main__":
     initParam = InitParam(c_int(GAME_W), c_int(GAME_H), c_int(WORKER_NUM))
     obj.Init(initParam)
     env = VecEnv()
-    ob = env.reset(0, False, True, 1, 5, 5, 100)
+    # ob = env.reset(0, False, True, 1, 5, 5, 100)
+    baseCoord = [None] * WORKER_NUM
+    ob = env.reset(0, False, True, 0, 1, 1, 100)
     action1 = torch.zeros((WORKER_NUM, len(ACTION_SIZE), GAME_H, GAME_W)).type(torch.int8)
     for w in range(WORKER_NUM):
         for y in range(GAME_H):
             for x in range(GAME_W):
-                if ob[0][w, ObPlane.IS_BASE, y, x] != 0:
+                if ob[0][w, ObPlane.IS_BASE, y, x] != 0 and ob[0][w, ObPlane.OWNER_1, y, x] != 0:
                     action1[w, ActionPlane.ACTION, y, x] = ActionType.PRODUCE
                     action1[w, ActionPlane.PRODUCE_TYPE_PARAM, y, x] = ObjType.WORKER
+                    action1[w, ActionPlane.PRODUCE_DIRECTION_PARAM, y, x] = 2
+                    baseCoord[w] = (y, x)
+    for w in range(WORKER_NUM):
+        for y in range(baseCoord[w][0], GAME_H):
+            action1[w, ActionPlane.ACTION, y, baseCoord[w][1]] = ActionType.MOVE
+            action1[w, ActionPlane.MOVE_PARAM, y, baseCoord[w][1]] = 2
+            if ob[0][w, ObPlane.IS_BASE, y, baseCoord[w][1]] != 0 and ob[0][w, ObPlane.OWNER_2, y, baseCoord[w][1]] != 0:
+                action1[w, ActionPlane.ACTION, y - 1, baseCoord[w][1]] = ActionType.ATTACK
+                action1[w, ActionPlane.RELATIVE_ATTACK_POSITION, y - 1, baseCoord[w][1]] = 7 * 4 + 3
+        action1[w, ActionPlane.ACTION, baseCoord[w][0], baseCoord[w][1]] = ActionType.PRODUCE
+
     action2 = torch.zeros((WORKER_NUM, len(ACTION_SIZE), GAME_H, GAME_W)).type(torch.int8)
-    o, r, isEnd, _ = env.step(action1, action2)
-    action1 = torch.zeros((WORKER_NUM, len(ACTION_SIZE), GAME_H, GAME_W)).type(torch.int8)
-    start = time.time()
-    o, r, isEnd, _ = env.step(action1, action2)
-    o, r, isEnd, _ = env.step(action1, action2)
-    o, r, isEnd, _ = env.step(action1, action2)
-    o, r, isEnd, _ = env.step(action1, action2)
-    o, r, isEnd, _ = env.step(action1, action2)
-    o, r, isEnd, _ = env.step(action1, action2)
-    o, r, isEnd, _ = env.step(action1, action2)
-    stop = time.time()
-    print(stop - start)
-    plt.imshow(o[1][-1, ObPlane.OBSTACLE])
+    for i in range(5 + 2 * 32 + 60 * 2): # 5 step produce, 2*32 step move, 60 * 2 step attack
+        o, r, isEnd, _ = env.step(action1, action2)
+    plt.imshow(o[1][-1, ObPlane.IS_BASE])
     plt.show()

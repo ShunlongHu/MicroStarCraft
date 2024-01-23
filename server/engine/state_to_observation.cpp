@@ -7,17 +7,18 @@
 using namespace std;
 void StateToObservation(const GameState* ptrGameState, const GameState* ptrLastGameState, std::vector<signed char>* observationVec, std::vector<int>* rewardVec, int idx, std::atomic<int>* ptrCounter) {
     auto& counter = *ptrCounter;
-    counter++;
-    return;
     const auto& game = *ptrGameState;
-//    auto& counter = *ptrCounter;
     auto observationStartPos = idx * OBSERVATION_PLANE_NUM * game.w * game.h;
-    auto rewardStartPos = idx * GAME_STAT_NUM * game.w * game.h;
+    auto rewardStartPos = idx * GAME_STAT_NUM;
     signed char* ob[2] {observationVec[0].data() + observationStartPos, observationVec[1].data() + observationStartPos};
     signed int* re[2] {rewardVec[0].data() + rewardStartPos, rewardVec[1].data() + rewardStartPos};
 
     for (int i = 0; i < OBSERVATION_PLANE_NUM * game.w * game.h; ++i) {
         ob[0][i] = false;
+    }
+    for (int i = 0; i < GAME_STAT_NUM; ++i) {
+        re[0][i] = 0;
+        re[1][i] = 0;
     }
 
     for (const auto& [_, obj]: game.objMap) {

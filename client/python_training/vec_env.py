@@ -72,12 +72,12 @@ if __name__ == "__main__":
     env = VecEnv()
     ob = env.reset(0, False, True, 1, 5, 5, 100)
     action1 = torch.zeros((WORKER_NUM, len(ACTION_SIZE), GAME_H, GAME_W)).type(torch.int8)
-    # for w in range(WORKER_NUM):
-    #     for y in range(GAME_H):
-    #         for x in range(GAME_W):
-    #             if ob[0][w, ObPlane.IS_BASE, y, x] != 0:
-    #                 action1[w, ActionPlane.ACTION, y, x] = ActionType.PRODUCE
-    #                 action1[w, ActionPlane.PRODUCE_TYPE_PARAM, y, x] = ObjType.WORKER
+    for w in range(WORKER_NUM):
+        for y in range(GAME_H):
+            for x in range(GAME_W):
+                if ob[0][w, ObPlane.IS_BASE, y, x] != 0:
+                    action1[w, ActionPlane.ACTION, y, x] = ActionType.PRODUCE
+                    action1[w, ActionPlane.PRODUCE_TYPE_PARAM, y, x] = ObjType.WORKER
     action2 = torch.zeros((WORKER_NUM, len(ACTION_SIZE), GAME_H, GAME_W)).type(torch.int8)
     o, r, isEnd, _ = env.step(action1, action2)
     action1 = torch.zeros((WORKER_NUM, len(ACTION_SIZE), GAME_H, GAME_W)).type(torch.int8)
@@ -91,5 +91,5 @@ if __name__ == "__main__":
     o, r, isEnd, _ = env.step(action1, action2)
     stop = time.time()
     print(stop - start)
-    # plt.imshow(o[1][-1, ObPlane.OBSTACLE])
-    # plt.show()
+    plt.imshow(o[1][-1, ObPlane.OBSTACLE])
+    plt.show()

@@ -252,7 +252,7 @@ void GameExecuteProduce(GameState& game, std::unordered_map<int, DiscreteAction>
         if (game.resource[playerIdx] < cost) {
             continue;
         }
-        if (coordOccupationCount.at(obj.coord) > 1) {
+        if (coordOccupationCount.at(act.target) > 1) {
             continue;
         }
         act.action = PRODUCE;

@@ -6,10 +6,21 @@ matplotlib.use('TkAgg',force=True)
 from matplotlib import pyplot as plt
 print("Switched to:",matplotlib.get_backend())
 import torch
+import gym
+from gym.spaces.box import Box
+from gym.spaces.tuple import Tuple
+from gym.spaces.discrete import Discrete
 
 
 class VecEnv:
-    def __init__(self, num_workers: int, device: torch.device):
+    def __init__(self, num_workers: int, device: torch.device,
+                 seed: int,
+                 isRotSym: bool,
+                 isAxSym: bool,
+                 terrainProb: float,
+                 expansionCnt: int,
+                 clusterPerExpansion: int,
+                 mineralPerCluster: int):
         self.device = device
         self.num_workers = num_workers
         initParam = InitParam(c_int(GAME_W), c_int(GAME_H), c_int(self.num_workers))
@@ -42,14 +53,18 @@ class VecEnv:
         self.reward_weight1 = self.reward_weight1.reshape(-1, 1).type(torch.FloatTensor)
         self.reward_weight2 = self.reward_weight2.reshape(-1, 1).type(torch.FloatTensor)
 
-    def reset(self, seed: int,
-              isRotSym: bool,
-              isAxSym: bool,
-              terrainProb: float,
-              expansionCnt: int,
-              clusterPerExpansion: int,
-              mineralPerCluster: int) -> (torch.tensor, torch.tensor):
-        totalObs = obj.Reset(seed, isRotSym, isAxSym, terrainProb, expansionCnt, clusterPerExpansion, mineralPerCluster)
+        self.seed = seed
+        self.isRotSym = isRotSym
+        self.isAxSym = isAxSym
+        self.terrainProb = terrainProb
+        self.expansionCnt = expansionCnt
+        self.clusterPerExpansion = clusterPerExpansion
+        self.mineralPerCluster = mineralPerCluster
+
+        self.observation_space = Box(low=-1.0, high=2.0, shape=(OBSERVATION_PLANE_NUM, GAME_H, GAME_W))
+        self.action_space = Tuple((Discrete(6), Discrete(4), Discrete(4), Discrete(4), Discrete(4), Discrete(4), Discrete(49)))
+    def reset(self) -> (torch.tensor, torch.tensor):
+        totalObs = obj.Reset(self.seed, self.isRotSym, self.isAxSym, self.terrainProb, self.expansionCnt, self.clusterPerExpansion, self.mineralPerCluster)
         assert totalObs.ob1.size == self.num_workers * OBSERVATION_PLANE_NUM * GAME_H * GAME_W
         assert totalObs.ob2.size == self.num_workers * OBSERVATION_PLANE_NUM * GAME_H * GAME_W
         ob1 = torch.from_numpy(np.ctypeslib.as_array(totalObs.ob1.data, [self.num_workers, OBSERVATION_PLANE_NUM, GAME_H, GAME_W])).type(torch.FloatTensor)
@@ -58,6 +73,7 @@ class VecEnv:
         ob2 = ob2 * 2 - 1
         ob1 = ob1.detach().to(self.device)
         ob2 = ob2.detach().to(self.device)
+        self.seed += self.num_workers
         return ob1, ob2
 
     def step(self, action1: torch.tensor, action2: torch.tensor) -> ((torch.tensor, torch.tensor), (torch.tensor, torch.tensor), torch.tensor, str):
@@ -91,10 +107,10 @@ class VecEnv:
 
 
 if __name__ == "__main__":
-    env = VecEnv(128, torch.device("cpu"))
-    # ob = env.reset(0, False, True, 1, 5, 5, 100)
+    # env = VecEnv(128, torch.device("cpu"), 0, False, True, 1, 5, 5, 100)
+    env = VecEnv(128, torch.device("cpu"), 0, False, True, 0, 1, 1, 100)
     baseCoord = [None] * env.num_workers
-    ob = env.reset(0, False, True, 0, 1, 1, 100)
+    ob = env.reset()
     action1 = torch.zeros((env.num_workers, len(ACTION_SIZE), GAME_H, GAME_W)).type(torch.int8)
     for w in range(env.num_workers):
         for y in range(GAME_H):

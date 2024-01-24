@@ -52,8 +52,12 @@ class VecEnv:
         totalObs = obj.Reset(seed, isRotSym, isAxSym, terrainProb, expansionCnt, clusterPerExpansion, mineralPerCluster)
         assert totalObs.ob1.size == self.num_workers * OBSERVATION_PLANE_NUM * GAME_H * GAME_W
         assert totalObs.ob2.size == self.num_workers * OBSERVATION_PLANE_NUM * GAME_H * GAME_W
-        ob1 = torch.from_numpy(np.ctypeslib.as_array(totalObs.ob1.data, [self.num_workers, OBSERVATION_PLANE_NUM, GAME_H, GAME_W]))
-        ob2 = torch.from_numpy(np.ctypeslib.as_array(totalObs.ob2.data, [self.num_workers, OBSERVATION_PLANE_NUM, GAME_H, GAME_W]))
+        ob1 = torch.from_numpy(np.ctypeslib.as_array(totalObs.ob1.data, [self.num_workers, OBSERVATION_PLANE_NUM, GAME_H, GAME_W])).type(torch.FloatTensor)
+        ob2 = torch.from_numpy(np.ctypeslib.as_array(totalObs.ob2.data, [self.num_workers, OBSERVATION_PLANE_NUM, GAME_H, GAME_W])).type(torch.FloatTensor)
+        ob1 = ob1 * 2 - 1
+        ob2 = ob2 * 2 - 1
+        ob1 = ob1.detach().to(self.device)
+        ob2 = ob2.detach().to(self.device)
         return ob1, ob2
 
     def step(self, action1: torch.tensor, action2: torch.tensor) -> ((torch.tensor, torch.tensor), (torch.tensor, torch.tensor), torch.tensor, str):
@@ -69,17 +73,11 @@ class VecEnv:
         assert totalObs.ob2.size == self.num_workers * OBSERVATION_PLANE_NUM * GAME_H * GAME_W
         ob1 = torch.from_numpy(np.ctypeslib.as_array(totalObs.ob1.data, [self.num_workers, OBSERVATION_PLANE_NUM, GAME_H, GAME_W])).type(torch.FloatTensor)
         ob2 = torch.from_numpy(np.ctypeslib.as_array(totalObs.ob2.data, [self.num_workers, OBSERVATION_PLANE_NUM, GAME_H, GAME_W])).type(torch.FloatTensor)
-
         ob1 = ob1 * 2 - 1
         ob2 = ob2 * 2 - 1
-
         ob1 = ob1.detach().to(self.device)
         ob2 = ob2.detach().to(self.device)
 
-
-
-        re1 = torch.zeros(self.num_workers)
-        re2 = torch.zeros(self.num_workers)
         print("time = ", totalObs.ob1.reward[Reward.GAME_TIME])
         reTensor1 = torch.from_numpy(np.ctypeslib.as_array(totalObs.ob1.reward, [self.num_workers, REWARD_SIZE])).type(torch.FloatTensor)
         reTensor2 = torch.from_numpy(np.ctypeslib.as_array(totalObs.ob2.reward, [self.num_workers, REWARD_SIZE])).type(torch.FloatTensor)
@@ -101,7 +99,7 @@ if __name__ == "__main__":
     for w in range(env.num_workers):
         for y in range(GAME_H):
             for x in range(GAME_W):
-                if ob[0][w, ObPlane.IS_BASE, y, x] != 0 and ob[0][w, ObPlane.OWNER_1, y, x] != 0:
+                if ob[0][w, ObPlane.IS_BASE, y, x] != -1 and ob[0][w, ObPlane.OWNER_1, y, x] != -1:
                     action1[w, ActionPlane.ACTION, y, x] = ActionType.PRODUCE
                     action1[w, ActionPlane.PRODUCE_TYPE_PARAM, y, x] = ObjType.WORKER
                     action1[w, ActionPlane.PRODUCE_DIRECTION_PARAM, y, x] = 2
@@ -110,7 +108,7 @@ if __name__ == "__main__":
         for y in range(baseCoord[w][0], GAME_H):
             action1[w, ActionPlane.ACTION, y, baseCoord[w][1]] = ActionType.MOVE
             action1[w, ActionPlane.MOVE_PARAM, y, baseCoord[w][1]] = 2
-            if ob[0][w, ObPlane.IS_BASE, y, baseCoord[w][1]] != 0 and ob[0][w, ObPlane.OWNER_2, y, baseCoord[w][1]] != 0:
+            if ob[0][w, ObPlane.IS_BASE, y, baseCoord[w][1]] != -1 and ob[0][w, ObPlane.OWNER_2, y, baseCoord[w][1]] != -1:
                 action1[w, ActionPlane.ACTION, y - 1, baseCoord[w][1]] = ActionType.ATTACK
                 action1[w, ActionPlane.RELATIVE_ATTACK_POSITION, y - 1, baseCoord[w][1]] = 7 * 4 + 3
         action1[w, ActionPlane.ACTION, baseCoord[w][0], baseCoord[w][1]] = ActionType.PRODUCE

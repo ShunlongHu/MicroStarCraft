@@ -8,6 +8,7 @@ using namespace std;
 void StateToObservation(const GameState* ptrGameState, const GameState* ptrLastGameState, std::vector<signed char>* observationVec, std::vector<int>* rewardVec, int idx, std::atomic<int>* ptrCounter) {
     auto& counter = *ptrCounter;
     const auto& game = *ptrGameState;
+    const auto& lastGame = *ptrLastGameState;
     auto observationStartPos = idx * OBSERVATION_PLANE_NUM * game.w * game.h;
     auto rewardStartPos = idx * GAME_STAT_NUM;
     signed char* ob[2] {observationVec[0].data() + observationStartPos, observationVec[1].data() + observationStartPos};
@@ -49,13 +50,111 @@ void StateToObservation(const GameState* ptrGameState, const GameState* ptrLastG
         ob[1][i] = ob[0][i];
     }
 
-    re[0][GAME_TIME] = game.time;
-    re[1][GAME_TIME] = game.time;
+
     if (game.buildingCnt[0] == 0 || game.buildingCnt[1] == 0) {
-        re[0][IS_END] = true;
-        re[1][IS_END] = true;
         re[0][VICTORY_SIDE] = game.buildingCnt[0] > 0 ? -1 : (game.buildingCnt[1] > 0 ? 1 : 0);
         re[1][VICTORY_SIDE] = game.buildingCnt[0] > 0 ? -1 : (game.buildingCnt[1] > 0 ? 1 : 0);
+    }
+
+    for (int p = 0; p < 2; ++p) {
+        re[p][GAME_TIME] = game.time;
+        re[p][IS_END] = (game.buildingCnt[0] == 0 || game.buildingCnt[1] == 0); // && (lastGame.buildingCnt[0] == 0 || lastGame.buildingCnt[1] == 0);
+        if (game.buildingCnt[0] == 0 || game.buildingCnt[1] == 0) {
+            re[p][VICTORY_SIDE] = game.buildingCnt[0] > 0 ? -1 : (game.buildingCnt[1] > 0 ? 1 : 0);
+        }
+        re[p][NEW_NET_INCOME] = game.resource[p] - lastGame.resource[p];
+        auto side = p * 2 - 1;
+        for (const auto& [unitIdx, obj]: game.objMap) {
+            if (lastGame.objMap.count(unitIdx) != 0) {
+                continue;
+            }
+            if (obj.owner != side) {
+                continue;
+            }
+            switch (obj.type) {
+                case WORKER:
+                    re[p][NEW_WORKER_CNT]++;
+                    break;
+                case LIGHT:
+                    re[p][NEW_LIGHT_CNT]++;
+                    break;
+                case RANGED:
+                    re[p][NEW_RANGED_CNT]++;
+                    break;
+                case HEAVY:
+                    re[p][NEW_HEAVY_CNT]++;
+                    break;
+                case BASE:
+                    re[p][NEW_BASE_CNT]++;
+                    break;
+                case BARRACK:
+                    re[p][NEW_BARRACK_CNT]++;
+                    break;
+                default:
+                    break;
+            }
+        }
+        for (const auto& [unitIdx, obj]: lastGame.objMap) {
+            auto newHp = 0;
+            if (obj.owner == side) {
+                if (game.objMap.count(unitIdx) == 0) {
+                    switch (obj.type) {
+                        case WORKER:
+                            re[p][DEAD_WORKER_CNT]++;
+                            break;
+                        case LIGHT:
+                            re[p][DEAD_LIGHT_CNT]++;
+                            break;
+                        case RANGED:
+                            re[p][DEAD_RANGED_CNT]++;
+                            break;
+                        case HEAVY:
+                            re[p][DEAD_HEAVY_CNT]++;
+                            break;
+                        case BASE:
+                            re[p][DEAD_BASE_CNT]++;
+                            break;
+                        case BARRACK:
+                            re[p][DEAD_BARRACK_CNT]++;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+            if (obj.owner != -side) {
+                continue;
+            }
+            if (game.objMap.count(unitIdx) != 0) {
+                newHp = game.objMap.at(unitIdx).hitPoint;
+            }
+            re[p][NEW_HIT_CNT] += obj.hitPoint - newHp;
+            if (game.objMap.count(unitIdx) != 0) {
+                continue;
+            }
+            switch (obj.type) {
+                case WORKER:
+                    re[p][NEW_WORKER_KILLED]++;
+                    break;
+                case LIGHT:
+                    re[p][NEW_LIGHT_KILLED]++;
+                    break;
+                case RANGED:
+                    re[p][NEW_RANGED_KILLED]++;
+                    break;
+                case HEAVY:
+                    re[p][NEW_HEAVY_KILLED]++;
+                    break;
+                case BASE:
+                    re[p][NEW_BASE_KILLED]++;
+                    break;
+                case BARRACK:
+                    re[p][NEW_BARRACK_KILLED]++;
+                    break;
+                default:
+                    break;
+            }
+        }
     }
     counter++;
 }

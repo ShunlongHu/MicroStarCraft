@@ -14,6 +14,33 @@ class VecEnv:
         self.num_workers = num_workers
         initParam = InitParam(c_int(GAME_W), c_int(GAME_H), c_int(self.num_workers))
         obj.Init(initParam)
+        self.reward_weight1 = torch.tensor([0,           # GAME_TIME
+                               0,           # IS_END
+                               -1000,       # VICTORY_SIDE
+                               2 + 1,       # NEW_WORKER_CNT
+                               1 + 2,       # NEW_LIGHT_CNT
+                               2 + 4,       # NEW_RANGED_CNT
+                               4 + 8,       # NEW_HEAVY_CNT
+                               16,          # NEW_BASE_CNT
+                               6 + 10,      # NEW_BARRACK_CNT
+                               0,           # DEAD_WORKER_CNT
+                               0,           # DEAD_LIGHT_CNT
+                               0,           # DEAD_RANGED_CNT
+                               0,           # DEAD_HEAVY_CNT
+                               0,           # DEAD_BASE_CNT
+                               0,           # DEAD_BARRACK_CNT
+                               2 + 1,       # NEW_WORKER_KILLED
+                               1 + 2,       # NEW_LIGHT_KILLED
+                               2 + 4,       # NEW_RANGED_KILLED
+                               4 + 8,       # NEW_HEAVY_KILLED
+                               16,          # NEW_BASE_KILLED
+                               6 + 10,      # NEW_BARRACK_KILLED
+                               1,           # NEW_NET_INCOME,
+                               1,])         # NEW_HIT_CNT
+        self.reward_weight2 = self.reward_weight1.clone()
+        self.reward_weight2[Reward.VICTORY_SIDE] = 1000
+        self.reward_weight1 = self.reward_weight1.reshape(-1, 1).type(torch.FloatTensor)
+        self.reward_weight2 = self.reward_weight2.reshape(-1, 1).type(torch.FloatTensor)
 
     def reset(self, seed: int,
               isRotSym: bool,
@@ -40,40 +67,28 @@ class VecEnv:
         totalObs = obj.Step(TotalAction(actionStruct1, actionStruct2))
         assert totalObs.ob1.size == self.num_workers * OBSERVATION_PLANE_NUM * GAME_H * GAME_W
         assert totalObs.ob2.size == self.num_workers * OBSERVATION_PLANE_NUM * GAME_H * GAME_W
-        ob1 = torch.from_numpy(np.ctypeslib.as_array(totalObs.ob1.data, [self.num_workers, OBSERVATION_PLANE_NUM, GAME_H, GAME_W]))
-        ob2 = torch.from_numpy(np.ctypeslib.as_array(totalObs.ob2.data, [self.num_workers, OBSERVATION_PLANE_NUM, GAME_H, GAME_W]))
-
-        ob1 = ob1.to(self.device)
-        ob2 = ob2.to(self.device)
+        ob1 = torch.from_numpy(np.ctypeslib.as_array(totalObs.ob1.data, [self.num_workers, OBSERVATION_PLANE_NUM, GAME_H, GAME_W])).type(torch.FloatTensor)
+        ob2 = torch.from_numpy(np.ctypeslib.as_array(totalObs.ob2.data, [self.num_workers, OBSERVATION_PLANE_NUM, GAME_H, GAME_W])).type(torch.FloatTensor)
 
         ob1 = ob1 * 2 - 1
         ob2 = ob2 * 2 - 1
 
+        ob1 = ob1.detach().to(self.device)
+        ob2 = ob2.detach().to(self.device)
+
+
+
         re1 = torch.zeros(self.num_workers)
         re2 = torch.zeros(self.num_workers)
-        isEnd = torch.zeros(self.num_workers)
         print("time = ", totalObs.ob1.reward[Reward.GAME_TIME])
-        for i in range(self.num_workers):
-            isEnd[i] = totalObs.ob1.reward[i * REWARD_SIZE + Reward.IS_END]
-            re1[i] += totalObs.ob1.reward[i * REWARD_SIZE + Reward.NEW_NET_INCOME]
-            re1[i] += totalObs.ob1.reward[i * REWARD_SIZE + Reward.NEW_WORKER_CNT] * (2 + 1)
-            re1[i] += totalObs.ob1.reward[i * REWARD_SIZE + Reward.NEW_BARRACK_CNT] * (6 + 10)
-            re1[i] += totalObs.ob1.reward[i * REWARD_SIZE + Reward.NEW_LIGHT_CNT] * (1 + 2)
-            re1[i] += totalObs.ob1.reward[i * REWARD_SIZE + Reward.NEW_RANGED_CNT] * (2 + 4)
-            re1[i] += totalObs.ob1.reward[i * REWARD_SIZE + Reward.NEW_HEAVY_CNT] * (4 + 8)
-            re1[i] += totalObs.ob1.reward[i * REWARD_SIZE + Reward.NEW_HIT_CNT]
-            re1[i] += -totalObs.ob1.reward[i * REWARD_SIZE + Reward.VICTORY_SIDE] * 1000
-            re2[i] += totalObs.ob2.reward[i * REWARD_SIZE + Reward.NEW_NET_INCOME]
-            re2[i] += totalObs.ob2.reward[i * REWARD_SIZE + Reward.NEW_WORKER_CNT] * (2 + 1)
-            re2[i] += totalObs.ob2.reward[i * REWARD_SIZE + Reward.NEW_BARRACK_CNT] * (6 + 10)
-            re2[i] += totalObs.ob2.reward[i * REWARD_SIZE + Reward.NEW_LIGHT_CNT] * (1 + 2)
-            re2[i] += totalObs.ob2.reward[i * REWARD_SIZE + Reward.NEW_RANGED_CNT] * (2 + 4)
-            re2[i] += totalObs.ob2.reward[i * REWARD_SIZE + Reward.NEW_HEAVY_CNT] * (4 + 8)
-            re2[i] += totalObs.ob2.reward[i * REWARD_SIZE + Reward.NEW_HIT_CNT]
-            re2[i] += totalObs.ob2.reward[i * REWARD_SIZE + Reward.VICTORY_SIDE] * 1000
+        reTensor1 = torch.from_numpy(np.ctypeslib.as_array(totalObs.ob1.reward, [self.num_workers, REWARD_SIZE])).type(torch.FloatTensor)
+        reTensor2 = torch.from_numpy(np.ctypeslib.as_array(totalObs.ob2.reward, [self.num_workers, REWARD_SIZE])).type(torch.FloatTensor)
+        isEnd = reTensor1[:, Reward.IS_END].flatten()
+        re1 = torch.matmul(reTensor1, self.reward_weight1).flatten()
+        re2 = torch.matmul(reTensor2, self.reward_weight2).flatten()
 
-        re1 = re1.to(self.device)
-        re2 = re2.to(self.device)
+        re1 = re1.detach().to(self.device)
+        re2 = re2.detach().to(self.device)
         return (ob1, ob2),  (re1, re2), isEnd, ""
 
 
@@ -103,5 +118,6 @@ if __name__ == "__main__":
     action2 = torch.zeros((env.num_workers, len(ACTION_SIZE), GAME_H, GAME_W)).type(torch.int8)
     for i in range(5 + 2 * 32 + 60 * 2): # 5 step produce, 2*32 step move, 60 * 2 step attack
         o, r, isEnd, _ = env.step(action1, action2)
+        print(r[0][0], r[1][0], isEnd[0])
     plt.imshow(o[1][-1, ObPlane.IS_BASE])
     plt.show()

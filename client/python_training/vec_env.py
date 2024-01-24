@@ -56,19 +56,19 @@ class VecEnv:
         for i in range(self.num_workers):
             isEnd[i] = totalObs.ob1.reward[i * REWARD_SIZE + Reward.IS_END]
             re1[i] += totalObs.ob1.reward[i * REWARD_SIZE + Reward.NEW_NET_INCOME]
-            re1[i] += totalObs.ob1.reward[i * REWARD_SIZE + Reward.NEW_WORKER_CNT]
-            re1[i] += totalObs.ob1.reward[i * REWARD_SIZE + Reward.NEW_BARRACK_CNT] * 10
-            re1[i] += totalObs.ob1.reward[i * REWARD_SIZE + Reward.NEW_LIGHT_CNT] * 2
-            re1[i] += totalObs.ob1.reward[i * REWARD_SIZE + Reward.NEW_RANGED_CNT] * 4
-            re1[i] += totalObs.ob1.reward[i * REWARD_SIZE + Reward.NEW_HEAVY_CNT] * 8
+            re1[i] += totalObs.ob1.reward[i * REWARD_SIZE + Reward.NEW_WORKER_CNT] * (2 + 1)
+            re1[i] += totalObs.ob1.reward[i * REWARD_SIZE + Reward.NEW_BARRACK_CNT] * (6 + 10)
+            re1[i] += totalObs.ob1.reward[i * REWARD_SIZE + Reward.NEW_LIGHT_CNT] * (1 + 2)
+            re1[i] += totalObs.ob1.reward[i * REWARD_SIZE + Reward.NEW_RANGED_CNT] * (2 + 4)
+            re1[i] += totalObs.ob1.reward[i * REWARD_SIZE + Reward.NEW_HEAVY_CNT] * (4 + 8)
             re1[i] += totalObs.ob1.reward[i * REWARD_SIZE + Reward.NEW_HIT_CNT]
             re1[i] += -totalObs.ob1.reward[i * REWARD_SIZE + Reward.VICTORY_SIDE] * 1000
             re2[i] += totalObs.ob2.reward[i * REWARD_SIZE + Reward.NEW_NET_INCOME]
-            re2[i] += totalObs.ob2.reward[i * REWARD_SIZE + Reward.NEW_WORKER_CNT]
-            re2[i] += totalObs.ob2.reward[i * REWARD_SIZE + Reward.NEW_BARRACK_CNT] * 10
-            re2[i] += totalObs.ob2.reward[i * REWARD_SIZE + Reward.NEW_LIGHT_CNT] * 2
-            re2[i] += totalObs.ob2.reward[i * REWARD_SIZE + Reward.NEW_RANGED_CNT] * 4
-            re2[i] += totalObs.ob2.reward[i * REWARD_SIZE + Reward.NEW_HEAVY_CNT] * 8
+            re2[i] += totalObs.ob2.reward[i * REWARD_SIZE + Reward.NEW_WORKER_CNT] * (2 + 1)
+            re2[i] += totalObs.ob2.reward[i * REWARD_SIZE + Reward.NEW_BARRACK_CNT] * (6 + 10)
+            re2[i] += totalObs.ob2.reward[i * REWARD_SIZE + Reward.NEW_LIGHT_CNT] * (1 + 2)
+            re2[i] += totalObs.ob2.reward[i * REWARD_SIZE + Reward.NEW_RANGED_CNT] * (2 + 4)
+            re2[i] += totalObs.ob2.reward[i * REWARD_SIZE + Reward.NEW_HEAVY_CNT] * (4 + 8)
             re2[i] += totalObs.ob2.reward[i * REWARD_SIZE + Reward.NEW_HIT_CNT]
             re2[i] += totalObs.ob2.reward[i * REWARD_SIZE + Reward.VICTORY_SIDE] * 1000
 

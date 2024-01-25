@@ -670,7 +670,7 @@ void GameStep(GameState *ptrGameState, signed char* actionDataArr1, signed char*
                     case PRODUCE:
                         dir = DIRECTION_TARGET_MAP[actionDataArr[p][startIdx + PRODUCE_DIRECTION_PARAM * game.w * game.h + h * game.w + w]];
                         act.produceType = static_cast<GameObjType>(actionDataArr[p][
-                                startIdx + PRODUCE_TYPE_PARAM * game.w * game.h + h * game.w + w]);
+                                startIdx + PRODUCE_TYPE_PARAM * game.w * game.h + h * game.w + w] + GameObjType::BASE);
                         act.target = {h + dir.y, w + dir.x};
                         break;
                     case ATTACK:

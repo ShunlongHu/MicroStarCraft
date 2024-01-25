@@ -72,6 +72,8 @@ struct Observation {
     int size = 0;
     int *reward = nullptr;
     int rewardSize = 0;
+    signed char* mask = nullptr;
+    int maskSize = 0;
 };
 
 enum ActionPlane {
@@ -85,6 +87,17 @@ enum ActionPlane {
 };
 
 constexpr static int ACTION_PLANE_NUM = RELATIVE_ATTACK_POSITION + 1;
+
+enum AIActionMask {
+    ACTION_TYPE_MASK = 0,
+    MOVE_PARAM_MASK = ACTION_TYPE_MASK + GAME_ACTION_TYPE_NUM,
+    GATHER_PARAM_MASK = MOVE_PARAM_MASK + 4,
+    RETURN_PARAM_MASK = GATHER_PARAM_MASK + 4,
+    PRODUCE_DIRECTION_PARAM_MASK = RETURN_PARAM_MASK + 4,
+    PRODUCE_TYPE_PARAM_MASK = PRODUCE_DIRECTION_PARAM_MASK + 4,
+    RELATIVE_ATTACK_POSITION_MASK = PRODUCE_TYPE_PARAM_MASK + GAME_PRODUCIBLE_OBJ_TYPE_NUM
+};
+constexpr static int ACTION_MASK_SIZE = RELATIVE_ATTACK_POSITION_MASK + 49;
 
 struct Action {
     signed char *data;

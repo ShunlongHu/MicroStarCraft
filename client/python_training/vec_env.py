@@ -62,8 +62,8 @@ class VecEnv:
         self.mineralPerCluster = mineralPerCluster
 
         self.observation_space = Box(low=-1.0, high=2.0, shape=(OBSERVATION_PLANE_NUM, GAME_H, GAME_W))
-        self.action_space = Tuple((Discrete(6), Discrete(4), Discrete(4), Discrete(4), Discrete(4), Discrete(4), Discrete(49)))
-    def reset(self) -> (torch.tensor, torch.tensor):
+        self.action_space = Tuple((Discrete(6), Discrete(4), Discrete(4), Discrete(4), Discrete(4), Discrete(6), Discrete(49)))
+    def reset(self) -> ((torch.tensor, torch.tensor), (torch.tensor, torch.tensor)):
         totalObs = obj.Reset(self.seed, self.isRotSym, self.isAxSym, self.terrainProb, self.expansionCnt, self.clusterPerExpansion, self.mineralPerCluster)
         assert totalObs.ob1.size == self.num_workers * OBSERVATION_PLANE_NUM * GAME_H * GAME_W
         assert totalObs.ob2.size == self.num_workers * OBSERVATION_PLANE_NUM * GAME_H * GAME_W
@@ -73,8 +73,11 @@ class VecEnv:
         ob2 = ob2 * 2 - 1
         ob1 = ob1.detach().to(self.device)
         ob2 = ob2.detach().to(self.device)
+        mask1 = torch.from_numpy(np.ctypeslib.as_array(totalObs.ob1.mask, [self.num_workers, ACTION_MASK_SIZE_PER_UNIT, GAME_H, GAME_W])).type(torch.FloatTensor).detach().to(self.device)
+        mask2 = torch.from_numpy(np.ctypeslib.as_array(totalObs.ob2.mask, [self.num_workers, ACTION_MASK_SIZE_PER_UNIT, GAME_H, GAME_W])).type(torch.FloatTensor).detach().to(self.device)
+
         self.seed += self.num_workers
-        return ob1, ob2
+        return (ob1, ob2), (mask1, mask2)
 
     def step(self, action1: torch.tensor, action2: torch.tensor) -> ((torch.tensor, torch.tensor), (torch.tensor, torch.tensor), torch.tensor, str):
         actionData1 = action1.reshape(self.num_workers * len(ACTION_SIZE) * GAME_H * GAME_W).type(torch.uint8)
@@ -103,21 +106,24 @@ class VecEnv:
 
         re1 = re1.detach().to(self.device)
         re2 = re2.detach().to(self.device)
-        return (ob1, ob2),  (re1, re2), isEnd, ""
+
+        mask1 = torch.from_numpy(np.ctypeslib.as_array(totalObs.ob1.mask, [self.num_workers, ACTION_MASK_SIZE_PER_UNIT, GAME_H, GAME_W])).type(torch.FloatTensor).detach().to(self.device)
+        mask2 = torch.from_numpy(np.ctypeslib.as_array(totalObs.ob2.mask, [self.num_workers, ACTION_MASK_SIZE_PER_UNIT, GAME_H, GAME_W])).type(torch.FloatTensor).detach().to(self.device)
+        return (ob1, ob2), (mask1, mask2),  (re1, re2), isEnd, ""
 
 
 if __name__ == "__main__":
     # env = VecEnv(128, torch.device("cpu"), 0, False, True, 1, 5, 5, 100)
     env = VecEnv(128, torch.device("cpu"), 0, False, True, 0, 1, 1, 100)
     baseCoord = [None] * env.num_workers
-    ob = env.reset()
+    ob, mask = env.reset()
     action1 = torch.zeros((env.num_workers, len(ACTION_SIZE), GAME_H, GAME_W)).type(torch.int8)
     for w in range(env.num_workers):
         for y in range(GAME_H):
             for x in range(GAME_W):
                 if ob[0][w, ObPlane.IS_BASE, y, x] != -1 and ob[0][w, ObPlane.OWNER_1, y, x] != -1:
                     action1[w, ActionPlane.ACTION, y, x] = ActionType.PRODUCE
-                    action1[w, ActionPlane.PRODUCE_TYPE_PARAM, y, x] = ObjType.WORKER
+                    action1[w, ActionPlane.PRODUCE_TYPE_PARAM, y, x] = ObjType.WORKER - ObjType.BASE
                     action1[w, ActionPlane.PRODUCE_DIRECTION_PARAM, y, x] = 2
                     baseCoord[w] = (y, x)
     for w in range(env.num_workers):
@@ -131,7 +137,7 @@ if __name__ == "__main__":
 
     action2 = torch.zeros((env.num_workers, len(ACTION_SIZE), GAME_H, GAME_W)).type(torch.int8)
     for i in range(5 + 2 * 32 + 60 * 2): # 5 step produce, 2*32 step move, 60 * 2 step attack
-        o, r, isEnd, _ = env.step(action1, action2)
+        o, mask, r, isEnd, _ = env.step(action1, action2)
         print(r[0][0], r[1][0], isEnd[0])
     plt.imshow(o[1][-1, ObPlane.IS_BASE])
     plt.show()

@@ -5,21 +5,27 @@
 #include "state_to_observation.h"
 #include <sstream>
 using namespace std;
-void StateToObservation(const GameState* ptrGameState, const GameState* ptrLastGameState, std::vector<signed char>* observationVec, std::vector<int>* rewardVec, int idx, std::atomic<int>* ptrCounter) {
+void StateToObservation(const GameState* ptrGameState, const GameState* ptrLastGameState, std::vector<signed char>* observationVec, std::vector<int>* rewardVec, std::vector<signed char>* maskVec, int idx, std::atomic<int>* ptrCounter) {
     auto& counter = *ptrCounter;
     const auto& game = *ptrGameState;
     const auto& lastGame = *ptrLastGameState;
     auto observationStartPos = idx * OBSERVATION_PLANE_NUM * game.w * game.h;
     auto rewardStartPos = idx * GAME_STAT_NUM;
+    auto maskStartPos = idx * game.w * game.h * ACTION_MASK_SIZE;
     signed char* ob[2] {observationVec[0].data() + observationStartPos, observationVec[1].data() + observationStartPos};
     signed int* re[2] {rewardVec[0].data() + rewardStartPos, rewardVec[1].data() + rewardStartPos};
-
+    signed char* mask[2] {maskVec[0].data() + maskStartPos, maskVec[1].data() + maskStartPos};
+    unordered_map<Coord, int, UHasher<Coord>> coordIdxMap;
     for (int i = 0; i < OBSERVATION_PLANE_NUM * game.w * game.h; ++i) {
         ob[0][i] = false;
     }
     for (int i = 0; i < GAME_STAT_NUM; ++i) {
         re[0][i] = 0;
         re[1][i] = 0;
+    }
+    for (int i = 0; i < ACTION_MASK_SIZE * game.w * game.h; ++i) {
+        mask[0][i] = false;
+        mask[1][i] = false;
     }
 
     for (const auto& [_, obj]: game.objMap) {
@@ -153,6 +159,81 @@ void StateToObservation(const GameState* ptrGameState, const GameState* ptrLastG
                     break;
                 default:
                     break;
+            }
+        }
+    }
+    // calculate action mask
+    for (int p = 0; p < 2; ++p) {
+        auto side = p * 2 - 1;
+        for (const auto& [unitIdx, obj]: game.objMap) {
+            if (obj.owner != side) {
+                continue;
+            }
+            if (obj.attackCD != 0 || obj.actionProgress != 0) {
+                continue;
+            }
+            const auto& m = OBJ_ACTION_MASK_MAP.at(obj.type);
+            auto coord = obj.coord.y * game.w + obj.coord.x;
+            // process noop
+            mask[p][(ACTION_TYPE_MASK + NOOP) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = true;
+            for (int i = 0; i < DIRECTION_TARGET_MAP.size(); ++i) {
+                auto target = Coord{obj.coord.y + DIRECTION_TARGET_MAP[i].y, obj.coord.x + DIRECTION_TARGET_MAP[i].x};
+                if (target.y < 0 || target.x < 0 || target.x >= game.w || target.y >= game.w) {
+                    continue;
+                }
+                auto targetCoord = target.y * game.w + target.x;
+                // process move & produce
+                if (!ob[0][OBSTACLE * game.w * game.h + targetCoord]) {
+                    mask[p][(ACTION_TYPE_MASK + MOVE) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = m.canMove;
+                    mask[p][(MOVE_PARAM_MASK + i) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = true;
+                    if (OBJ_PRODUCE_MAP.count(obj.type) != 0) {
+                        if (obj.type == BASE && game.resource[p] >= OBJ_COST_MAP.at(WORKER)) {
+                            mask[p][(ACTION_TYPE_MASK + PRODUCE) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = true;
+                            mask[p][(PRODUCE_DIRECTION_PARAM_MASK + i) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = true;
+                            mask[p][(PRODUCE_TYPE_PARAM_MASK + WORKER) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = true;
+                        }
+                        if (obj.type == WORKER && game.resource[p] >= OBJ_COST_MAP.at(BARRACK)) {
+                            mask[p][(ACTION_TYPE_MASK + PRODUCE) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = true;
+                            mask[p][(PRODUCE_DIRECTION_PARAM_MASK + i) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = true;
+                            mask[p][(PRODUCE_TYPE_PARAM_MASK + BARRACK) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = true;
+                            mask[p][(PRODUCE_TYPE_PARAM_MASK + BASE) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = game.resource[p] >= OBJ_COST_MAP.at(BASE);
+                        }
+                        if (obj.type == BARRACK && game.resource[p] >= OBJ_COST_MAP.at(LIGHT)) {
+                            mask[p][(ACTION_TYPE_MASK + PRODUCE) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = true;
+                            mask[p][(PRODUCE_DIRECTION_PARAM_MASK + i) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = true;
+                            mask[p][(PRODUCE_TYPE_PARAM_MASK + LIGHT) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = true;
+                            mask[p][(PRODUCE_TYPE_PARAM_MASK + RANGED) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = game.resource[p] >= OBJ_COST_MAP.at(RANGED);
+                            mask[p][(PRODUCE_TYPE_PARAM_MASK + HEAVY) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = game.resource[p] >= OBJ_COST_MAP.at(HEAVY);
+                        }
+                    }
+                }
+                // process gather
+                if (m.canGather && ob[0][(OBJ_TYPE + MINERAL) * game.w * game.h + targetCoord]) {
+                    mask[p][(ACTION_TYPE_MASK + GATHER) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = true;
+                    mask[p][(GATHER_PARAM_MASK + i) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = true;
+                }
+                // process return
+                if (m.canGather &&
+                    ob[0][(OBJ_TYPE + BASE) * game.w * game.h + targetCoord] &&
+                    ob[0][(OWNER_NONE + side) * game.w * game.h + targetCoord]) {
+                    mask[p][(ACTION_TYPE_MASK + RETURN) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = true;
+                    mask[p][(RETURN_PARAM_MASK + i) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = true;
+                }
+            }
+            // process attack
+            if (m.canAttack) {
+                for (int i = 0; i < (MAX_ATTACK_RANGE * 2 + 1) * (MAX_ATTACK_RANGE * 2 + 1); ++i) {
+                    auto dir = Coord{i / (MAX_ATTACK_RANGE * 2 + 1) - MAX_ATTACK_RANGE, i % (MAX_ATTACK_RANGE * 2 + 1) - MAX_ATTACK_RANGE};
+                    if (dir.x * dir.x + dir.y * dir.y > obj.attackRange * obj.attackRange) {
+                        continue;
+                    }
+                    auto target = Coord{obj.coord.y + dir.y, obj.coord.x + dir.x};
+                    auto targetCoord = target.y * game.w + target.x;
+                    if (ob[0][(OWNER_NONE - side) * game.w * game.h + targetCoord]) {
+                        mask[p][(ACTION_TYPE_MASK + ATTACK) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = true;
+                        mask[p][(RELATIVE_ATTACK_POSITION_MASK + i) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = true;
+                    }
+                }
             }
         }
     }

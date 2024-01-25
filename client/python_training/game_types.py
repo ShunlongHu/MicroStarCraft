@@ -10,6 +10,8 @@ class Observation(Structure):
                 ("size", c_int),
                 ("reward", POINTER(c_int)),
                 ("rewardSize", c_int),
+                ("mask", POINTER(c_byte)),
+                ("maskSize", c_int),
                 ]
 
 
@@ -77,6 +79,7 @@ class ActionType:
 
 # action, move dir, gather dir, return dir, prod dir, prod type, attack dir
 ACTION_SIZE = [6, 4, 4, 4, 4, 6, 49]
+ACTION_MASK_SIZE_PER_UNIT = sum(ACTION_SIZE)
 
 GAME_W = 32
 GAME_H = 32
@@ -128,6 +131,17 @@ class ObjType:
 
 
 OBSERVATION_PLANE_NUM = 31
+
+
+class AIActionMask:
+    ACTION_TYPE_MASK = 0
+    MOVE_PARAM_MASK = ACTION_TYPE_MASK + ActionType.ATTACK + 1
+    GATHER_PARAM_MASK = MOVE_PARAM_MASK + 4
+    RETURN_PARAM_MASK = GATHER_PARAM_MASK + 4
+    PRODUCE_DIRECTION_PARAM_MASK = RETURN_PARAM_MASK + 4
+    PRODUCE_TYPE_PARAM_MASK = PRODUCE_DIRECTION_PARAM_MASK + 4
+    RELATIVE_ATTACK_POSITION_MASK = PRODUCE_TYPE_PARAM_MASK + 6
+
 
 obj = cdll.LoadLibrary("D:/repo/rts/cmake-build-release/server/engine/rts_engine_shared.dll")
 obj.Init.argtypes = [InitParam]

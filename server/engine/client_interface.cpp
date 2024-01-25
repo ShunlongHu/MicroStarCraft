@@ -16,6 +16,7 @@ using namespace std::chrono; // nanoseconds, system_clock, seconds
 
 static vector<signed char> observationVec[2]; // NUM_WORKER * FLATTENED_FEATURE
 static vector<int> rewardVec[2]; // NUM_WORKER * FEATURE
+static vector<signed char> maskVec[2]; // NUM_WORKER * MASK
 static vector<GameState> gameStateVec;
 static unique_ptr<ThreadPool> pool;
 static atomic<int> taskCounter;
@@ -33,16 +34,24 @@ extern "C" __declspec(dllexport) void Init(InitParam initParam) {
     rewardVec[0].resize(featureSize);
     rewardVec[1].resize(featureSize);
 
+    auto maskSize = initParam.numWorkers * ACTION_MASK_SIZE * initParam.h * initParam.w;
+    maskVec[0].resize(maskSize);
+    maskVec[1].resize(maskSize);
+
     for (int i = 0; i < initParam.numWorkers; ++i) {
         totalObservation.ob1.size = static_cast<int>(observationSize);
         totalObservation.ob1.data = observationVec[0].data();
         totalObservation.ob1.reward = rewardVec[0].data();
         totalObservation.ob1.rewardSize = static_cast<int>(featureSize);
+        totalObservation.ob1.mask = maskVec[0].data();
+        totalObservation.ob1.maskSize = static_cast<int>(maskSize);
 
         totalObservation.ob2.size = static_cast<int>(observationSize);
         totalObservation.ob2.data = observationVec[1].data();
         totalObservation.ob2.reward = rewardVec[1].data();
         totalObservation.ob2.rewardSize = static_cast<int>(featureSize);
+        totalObservation.ob2.mask = maskVec[1].data();
+        totalObservation.ob2.maskSize = static_cast<int>(maskSize);
     }
     pool = make_unique<ThreadPool>(initParam.numWorkers);
 }
@@ -59,7 +68,7 @@ extern "C" __declspec(dllexport) TotalObservation Step(TotalAction totalAction) 
 
     taskCounter = 0;
     for (int i = 0; i < gameStateVec.size(); ++i) {
-        pool->enqueue(StateToObservation, &gameStateVec[i], &lastGameStateVec[i], observationVec, rewardVec, i, &taskCounter);
+        pool->enqueue(StateToObservation, &gameStateVec[i], &lastGameStateVec[i], observationVec, rewardVec, maskVec, i, &taskCounter);
     }
     while (taskCounter != gameStateVec.size()) {
         sleep_for(microseconds(100));
@@ -85,7 +94,7 @@ Reset(int seed, bool isRotSym, bool isAxSym, double terrainProb, int expansionCn
     }
     taskCounter = 0;
     for (int i = 0; i < gameStateVec.size(); ++i) {
-        pool->enqueue(StateToObservation, &gameStateVec[i], &gameStateVec[i], observationVec, rewardVec, i, &taskCounter);
+        pool->enqueue(StateToObservation, &gameStateVec[i], &gameStateVec[i], observationVec, rewardVec, maskVec, i, &taskCounter);
     }
     while (taskCounter != gameStateVec.size()) {
         sleep_for(microseconds(100));

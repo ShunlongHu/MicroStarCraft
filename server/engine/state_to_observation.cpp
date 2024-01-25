@@ -210,7 +210,7 @@ void StateToObservation(const GameState* ptrGameState, const GameState* ptrLastG
                     }
                 }
                 // process gather
-                if (m.canGather && ob[0][(OBJ_TYPE + MINERAL) * game.w * game.h + targetCoord]) {
+                if (m.canGather && obj.resource == 0 && ob[0][(OBJ_TYPE + MINERAL) * game.w * game.h + targetCoord]) {
                     mask[p][(ACTION_TYPE_MASK + GATHER) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = true;
                     mask[p][(GATHER_PARAM_MASK + i) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = true;
                 }

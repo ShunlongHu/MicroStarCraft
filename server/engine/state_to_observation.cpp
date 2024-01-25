@@ -165,6 +165,10 @@ void StateToObservation(const GameState* ptrGameState, const GameState* ptrLastG
     // calculate action mask
     for (int p = 0; p < 2; ++p) {
         auto side = p * 2 - 1;
+        // process noop
+        for (int i = 0; i < game.w * game.h; ++i) {
+            mask[p][(ACTION_TYPE_MASK + NOOP) * game.w * game.h + i] = true;
+        }
         for (const auto& [unitIdx, obj]: game.objMap) {
             if (obj.owner != side) {
                 continue;
@@ -174,8 +178,6 @@ void StateToObservation(const GameState* ptrGameState, const GameState* ptrLastG
             }
             const auto& m = OBJ_ACTION_MASK_MAP.at(obj.type);
             auto coord = obj.coord.y * game.w + obj.coord.x;
-            // process noop
-            mask[p][(ACTION_TYPE_MASK + NOOP) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = true;
             for (int i = 0; i < DIRECTION_TARGET_MAP.size(); ++i) {
                 auto target = Coord{obj.coord.y + DIRECTION_TARGET_MAP[i].y, obj.coord.x + DIRECTION_TARGET_MAP[i].x};
                 if (target.y < 0 || target.x < 0 || target.x >= game.w || target.y >= game.w) {

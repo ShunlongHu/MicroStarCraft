@@ -162,7 +162,7 @@ void GameStepAttack(GameState& game, const std::unordered_map<int, DiscreteActio
         if (obj.attackCD != 0) {
             continue;
         }
-        if (obj.actionProgress != 0) {
+        if (obj.actionProgress != 0  || obj.currentAction != NOOP) {
             continue;
         }
         if (act.target.y < 0 || act.target.x < 0 || act.target.x >= game.w || act.target.y >= game.w) {
@@ -218,7 +218,7 @@ void GameStepProduce(GameState& game, std::unordered_map<int, DiscreteAction>& a
         if (obj.attackCD != 0) {
             continue;
         }
-        if (obj.actionProgress != 0) {
+        if (obj.actionProgress != 0  || obj.currentAction != NOOP) {
             continue;
         }
         if (act.target.y < 0 || act.target.x < 0 || act.target.x >= game.w || act.target.y >= game.w) {
@@ -397,7 +397,7 @@ void GameStepMove(GameState& game, std::unordered_map<int, DiscreteAction>& acti
         if (obj.attackCD != 0) {
             continue;
         }
-        if (obj.actionProgress != 0) {
+        if (obj.actionProgress != 0  || obj.currentAction != NOOP) {
             continue;
         }
         if (!obj.actionMask.canMove) {
@@ -458,7 +458,7 @@ void GameStepGather(GameState& game, std::unordered_map<int, DiscreteAction>& ac
         if (obj.attackCD != 0) {
             continue;
         }
-        if (obj.actionProgress != 0) {
+        if (obj.actionProgress != 0  || obj.currentAction != NOOP) {
             continue;
         }
         if (!obj.actionMask.canGather) {
@@ -540,7 +540,7 @@ void GameStepReturn(GameState& game, std::unordered_map<int, DiscreteAction>& ac
         if (obj.attackCD != 0) {
             continue;
         }
-        if (obj.actionProgress != 0) {
+        if (obj.actionProgress != 0  || obj.currentAction != NOOP) {
             continue;
         }
         if (!obj.actionMask.canGather) {

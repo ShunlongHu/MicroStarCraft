@@ -173,11 +173,10 @@ void StateToObservation(const GameState* ptrGameState, const GameState* ptrLastG
             if (obj.owner != side) {
                 continue;
             }
-            if (obj.attackCD != 0 || obj.actionProgress != 0) {
+            if (obj.attackCD != 0 || obj.actionProgress != 0 || obj.currentAction != NOOP) {
                 continue;
             }
             const auto& m = OBJ_ACTION_MASK_MAP.at(obj.type);
-            auto coord = obj.coord.y * game.w + obj.coord.x;
             for (int i = 0; i < DIRECTION_TARGET_MAP.size(); ++i) {
                 auto target = Coord{obj.coord.y + DIRECTION_TARGET_MAP[i].y, obj.coord.x + DIRECTION_TARGET_MAP[i].x};
                 if (target.y < 0 || target.x < 0 || target.x >= game.w || target.y >= game.w) {

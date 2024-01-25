@@ -26,7 +26,7 @@ if __name__ == "__main__":
         action2 = torch.rand((env.num_workers, sum(ACTION_SIZE), GAME_H, GAME_W))
         o, mask, r, isEnd, t = env.step(sample(action1, mask[0]), sample(action2, mask[1]))
         plt.imshow(o[0][0, ObPlane.OBSTACLE])
-        print(r[0][0], r[1][0], isEnd[0])\
+        print(r[0][0], r[1][0], isEnd[0])
         ax = plt.gca()
         ax.set_xticks(np.arange(0, 32, 1))
         ax.set_yticks(np.arange(0, 32, 1))

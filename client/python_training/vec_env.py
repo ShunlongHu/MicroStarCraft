@@ -109,7 +109,7 @@ class VecEnv:
 
         mask1 = torch.from_numpy(np.ctypeslib.as_array(totalObs.ob1.mask, [self.num_workers, ACTION_MASK_SIZE_PER_UNIT, GAME_H, GAME_W])).type(torch.FloatTensor).detach().to(self.device)
         mask2 = torch.from_numpy(np.ctypeslib.as_array(totalObs.ob2.mask, [self.num_workers, ACTION_MASK_SIZE_PER_UNIT, GAME_H, GAME_W])).type(torch.FloatTensor).detach().to(self.device)
-        return (ob1, ob2), (mask1, mask2),  (re1, re2), isEnd, ""
+        return (ob1, ob2), (mask1, mask2),  (re1, re2), isEnd, totalObs.ob1.reward[Reward.GAME_TIME]
 
 
 if __name__ == "__main__":
@@ -137,7 +137,11 @@ if __name__ == "__main__":
 
     action2 = torch.zeros((env.num_workers, len(ACTION_SIZE), GAME_H, GAME_W)).type(torch.int8)
     for i in range(5 + 2 * 32 + 60 * 2): # 5 step produce, 2*32 step move, 60 * 2 step attack
-        o, mask, r, isEnd, _ = env.step(action1, action2)
+        o, mask, r, isEnd, t = env.step(action1, action2)
         print(r[0][0], r[1][0], isEnd[0])
+        for j in range(ACTION_MASK_SIZE_PER_UNIT):
+            fileName = 'masks/' + str(j) + '_time=' + str(t) + '.png'
+            plt.imsave(fileName, mask[0][-1, j])
+
     plt.imshow(o[1][-1, ObPlane.IS_BASE])
     plt.show()

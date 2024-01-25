@@ -190,20 +190,20 @@ void StateToObservation(const GameState* ptrGameState, const GameState* ptrLastG
                         if (obj.type == BASE && game.resource[p] >= OBJ_COST_MAP.at(WORKER)) {
                             mask[p][(ACTION_TYPE_MASK + PRODUCE) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = true;
                             mask[p][(PRODUCE_DIRECTION_PARAM_MASK + i) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = true;
-                            mask[p][(PRODUCE_TYPE_PARAM_MASK + WORKER) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = true;
+                            mask[p][(PRODUCE_TYPE_PARAM_MASK + WORKER - BASE) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = true;
                         }
                         if (obj.type == WORKER && game.resource[p] >= OBJ_COST_MAP.at(BARRACK)) {
                             mask[p][(ACTION_TYPE_MASK + PRODUCE) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = true;
                             mask[p][(PRODUCE_DIRECTION_PARAM_MASK + i) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = true;
-                            mask[p][(PRODUCE_TYPE_PARAM_MASK + BARRACK) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = true;
-                            mask[p][(PRODUCE_TYPE_PARAM_MASK + BASE) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = game.resource[p] >= OBJ_COST_MAP.at(BASE);
+                            mask[p][(PRODUCE_TYPE_PARAM_MASK + BARRACK - BASE) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = true;
+                            mask[p][(PRODUCE_TYPE_PARAM_MASK + BASE - BASE) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = game.resource[p] >= OBJ_COST_MAP.at(BASE);
                         }
                         if (obj.type == BARRACK && game.resource[p] >= OBJ_COST_MAP.at(LIGHT)) {
                             mask[p][(ACTION_TYPE_MASK + PRODUCE) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = true;
                             mask[p][(PRODUCE_DIRECTION_PARAM_MASK + i) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = true;
-                            mask[p][(PRODUCE_TYPE_PARAM_MASK + LIGHT) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = true;
-                            mask[p][(PRODUCE_TYPE_PARAM_MASK + RANGED) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = game.resource[p] >= OBJ_COST_MAP.at(RANGED);
-                            mask[p][(PRODUCE_TYPE_PARAM_MASK + HEAVY) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = game.resource[p] >= OBJ_COST_MAP.at(HEAVY);
+                            mask[p][(PRODUCE_TYPE_PARAM_MASK + LIGHT - BASE) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = true;
+                            mask[p][(PRODUCE_TYPE_PARAM_MASK + RANGED - BASE) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = game.resource[p] >= OBJ_COST_MAP.at(RANGED);
+                            mask[p][(PRODUCE_TYPE_PARAM_MASK + HEAVY - BASE) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = game.resource[p] >= OBJ_COST_MAP.at(HEAVY);
                         }
                     }
                 }
@@ -213,7 +213,7 @@ void StateToObservation(const GameState* ptrGameState, const GameState* ptrLastG
                     mask[p][(GATHER_PARAM_MASK + i) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = true;
                 }
                 // process return
-                if (m.canGather &&
+                if (m.canGather && obj.resource > 0 &&
                     ob[0][(OBJ_TYPE + BASE) * game.w * game.h + targetCoord] &&
                     ob[0][(OWNER_NONE + side) * game.w * game.h + targetCoord]) {
                     mask[p][(ACTION_TYPE_MASK + RETURN) * game.w * game.h + obj.coord.y * game.w + obj.coord.x] = true;

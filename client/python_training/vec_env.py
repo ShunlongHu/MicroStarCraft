@@ -8,7 +8,7 @@ print("Switched to:",matplotlib.get_backend())
 import torch
 import gym
 from gym.spaces.box import Box
-from gym.spaces.tuple import Tuple
+from gym.spaces.multi_discrete import MultiDiscrete
 from gym.spaces.discrete import Discrete
 
 
@@ -62,7 +62,7 @@ class VecEnv:
         self.mineralPerCluster = mineralPerCluster
 
         self.observation_space = Box(low=-1.0, high=2.0, shape=(OBSERVATION_PLANE_NUM, GAME_H, GAME_W))
-        self.action_space = Tuple((Discrete(6), Discrete(4), Discrete(4), Discrete(4), Discrete(4), Discrete(6), Discrete(49)))
+        self.action_space = MultiDiscrete(ACTION_SIZE)
     def reset(self) -> ((torch.tensor, torch.tensor), (torch.tensor, torch.tensor)):
         totalObs = obj.Reset(self.seed, self.isRotSym, self.isAxSym, self.terrainProb, self.expansionCnt, self.clusterPerExpansion, self.mineralPerCluster)
         assert totalObs.ob1.size == self.num_workers * OBSERVATION_PLANE_NUM * GAME_H * GAME_W

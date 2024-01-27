@@ -6,12 +6,13 @@ import torch.nn.functional as F
 
 
 def sample(action: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
-    maskedAction = torch.clamp_min_(F.softmax(action, dim=1) * mask, 1e-6)
-    permutedAction = maskedAction.permute(0, 2, 3, 1)
+    neg_inf = -1e6
+    permutedAction = action.permute(0, 2, 3, 1)
+    logits = torch.where(mask.permute(0, 2, 3, 1) == 1, permutedAction, neg_inf)
     resultantAction = torch.zeros([*permutedAction.size()[:-1], 0])
     lastDim = 0
     for i in ACTION_SIZE:
-        dist = Categorical(permutedAction[:, :, :, lastDim:lastDim + i])
+        dist = Categorical(logits=logits[:, :, :, lastDim:lastDim + i])
         resultantAction = torch.concat([resultantAction, dist.sample().unsqueeze(-1)], dim=-1)
         lastDim += i
     return resultantAction.permute(0, 3, 1, 2)

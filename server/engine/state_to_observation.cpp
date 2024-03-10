@@ -15,7 +15,7 @@ void StateToObservation(const GameState* ptrGameState, const GameState* ptrLastG
     signed char* ob[2] {observationVec[0].data() + observationStartPos, observationVec[1].data() + observationStartPos};
     signed int* re[2] {rewardVec[0].data() + rewardStartPos, rewardVec[1].data() + rewardStartPos};
     signed char* mask[2] {maskVec[0].data() + maskStartPos, maskVec[1].data() + maskStartPos};
-    unordered_map<Coord, int, UHasher<Coord>> coordIdxMap;
+    unordered_map<Coord, int> coordIdxMap;
     for (int i = 0; i < OBSERVATION_PLANE_NUM * game.w * game.h; ++i) {
         ob[0][i] = false;
     }

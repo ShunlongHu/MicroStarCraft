@@ -132,7 +132,7 @@ void GameReset(GameState *ptrGameState, int seed, bool isRotSym, bool isAxSym, d
     taskCounter++;
 }
 
-void GameStepAttack(GameState& game, const std::unordered_map<int, DiscreteAction>& action, int side, int enemySide, unordered_map<int, int>& unitDamageMap, const unordered_map<Coord, int, UHasher<Coord>>& coordIdxMap) {
+void GameStepAttack(GameState& game, const std::unordered_map<int, DiscreteAction>& action, int side, int enemySide, unordered_map<int, int>& unitDamageMap, const unordered_map<Coord, int>& coordIdxMap) {
     for (const auto& [idx, act]: action) {
         if (game.objMap.count(idx) == 0) {
             continue;
@@ -199,7 +199,7 @@ void GameExecuteAttack(GameState& game, const unordered_map<int, int>& unitDamag
     }
 }
 
-void GameStepProduce(GameState& game, std::unordered_map<int, DiscreteAction>& action, int side, unordered_map<Coord, int, UHasher<Coord>>& coordOccupationCount) {
+void GameStepProduce(GameState& game, std::unordered_map<int, DiscreteAction>& action, int side, unordered_map<Coord, int>& coordOccupationCount) {
     for (auto& [idx, act]: action) {
         if (act.action != PRODUCE) {
             continue;
@@ -237,7 +237,7 @@ void GameStepProduce(GameState& game, std::unordered_map<int, DiscreteAction>& a
     }
 }
 
-void GameExecuteProduce(GameState& game, std::unordered_map<int, DiscreteAction>& action, int side, unordered_map<Coord, int, UHasher<Coord>>& coordOccupationCount) {
+void GameExecuteProduce(GameState& game, std::unordered_map<int, DiscreteAction>& action, int side, unordered_map<Coord, int>& coordOccupationCount) {
     for (auto& [idx, act]: action) {
         if (act.action != PRODUCE) {
             continue;
@@ -266,7 +266,7 @@ void GameExecuteProduce(GameState& game, std::unordered_map<int, DiscreteAction>
 }
 
 void GameSettleProduce(GameState& game) {
-    unordered_set<GameObj, UHasher<Coord>> newObjSet;
+    unordered_set<GameObj> newObjSet;
     for (auto& [_, obj]: game.objMap) {
         if (obj.currentAction != PRODUCE) {
             continue;
@@ -375,7 +375,7 @@ void GameRefresh(GameState& game, bool enableLog) {
     }
 }
 
-void GameStepMove(GameState& game, std::unordered_map<int, DiscreteAction>& action, int side, unordered_map<Coord, int, UHasher<Coord>>& coordOccupationCount) {
+void GameStepMove(GameState& game, std::unordered_map<int, DiscreteAction>& action, int side, unordered_map<Coord, int>& coordOccupationCount) {
     for (auto& [idx, act]: action) {
         if (act.action != MOVE) {
             continue;
@@ -408,7 +408,7 @@ void GameStepMove(GameState& game, std::unordered_map<int, DiscreteAction>& acti
     }
 }
 
-void GameExecuteMove(GameState& game, std::unordered_map<int, DiscreteAction>& action, int side, unordered_map<Coord, int, UHasher<Coord>>& coordOccupationCount) {
+void GameExecuteMove(GameState& game, std::unordered_map<int, DiscreteAction>& action, int side, unordered_map<Coord, int>& coordOccupationCount) {
     for (auto& [idx, act]: action) {
         if (act.action != MOVE) {
             continue;
@@ -430,7 +430,7 @@ void GameExecuteMove(GameState& game, std::unordered_map<int, DiscreteAction>& a
 }
 
 void GameSettleMove(GameState& game) {
-    unordered_set<GameObj, UHasher<Coord>> newObjSet;
+    unordered_set<GameObj> newObjSet;
     for (auto& [_, obj]: game.objMap) {
         if (obj.currentAction != MOVE) {
             continue;
@@ -442,7 +442,7 @@ void GameSettleMove(GameState& game) {
     }
 }
 
-void GameStepGather(GameState& game, std::unordered_map<int, DiscreteAction>& action, int side, unordered_map<Coord, int, UHasher<Coord>>& coordGatherCount, const unordered_map<Coord, int, UHasher<Coord>>& coordIdxMap) {
+void GameStepGather(GameState& game, std::unordered_map<int, DiscreteAction>& action, int side, unordered_map<Coord, int>& coordGatherCount, const unordered_map<Coord, int>& coordIdxMap) {
     for (auto& [idx, act]: action) {
         if (act.action != GATHER) {
             continue;
@@ -482,7 +482,7 @@ void GameStepGather(GameState& game, std::unordered_map<int, DiscreteAction>& ac
     }
 }
 
-void GameExecuteGather(GameState& game, std::unordered_map<int, DiscreteAction>& action, int side, unordered_map<Coord, int, UHasher<Coord>>& coordGatherCount) {
+void GameExecuteGather(GameState& game, std::unordered_map<int, DiscreteAction>& action, int side, unordered_map<Coord, int>& coordGatherCount) {
     for (auto& [idx, act]: action) {
         if (act.action != GATHER) {
             continue;
@@ -503,7 +503,7 @@ void GameExecuteGather(GameState& game, std::unordered_map<int, DiscreteAction>&
     }
 }
 
-void GameSettleGather(GameState& game, const unordered_map<Coord, int, UHasher<Coord>>& coordIdxMap) {
+void GameSettleGather(GameState& game, const unordered_map<Coord, int>& coordIdxMap) {
     unordered_set<int> eraseSet;
     for (auto& [_, obj]: game.objMap) {
         if (obj.currentAction != GATHER) {
@@ -524,7 +524,7 @@ void GameSettleGather(GameState& game, const unordered_map<Coord, int, UHasher<C
     }
 }
 
-void GameStepReturn(GameState& game, std::unordered_map<int, DiscreteAction>& action, int side, const unordered_map<Coord, int, UHasher<Coord>>& coordIdxMap) {
+void GameStepReturn(GameState& game, std::unordered_map<int, DiscreteAction>& action, int side, const unordered_map<Coord, int>& coordIdxMap) {
     for (auto& [idx, act]: action) {
         if (act.action != RETURN) {
             continue;
@@ -573,7 +573,7 @@ void GameStepSingle(GameState& game, TotalDiscreteAction& action, bool enableLog
     if (enableLog) {
         DumpAction(game, action);
     }
-    unordered_map<Coord, int, UHasher<Coord>> coordIdxMap;
+    unordered_map<Coord, int> coordIdxMap;
     for (auto& [idx, obj]: game.objMap) {
         coordIdxMap.emplace(obj.coord, idx);
     }
@@ -581,7 +581,7 @@ void GameStepSingle(GameState& game, TotalDiscreteAction& action, bool enableLog
     GameStepAttack(game, action.action[0], -1, 1, unitDamageMap, coordIdxMap);
     GameStepAttack(game, action.action[1], 1, -1, unitDamageMap, coordIdxMap);
     GameExecuteAttack(game, unitDamageMap);
-    unordered_map<Coord, int, UHasher<Coord>> coordOccupationCount;
+    unordered_map<Coord, int> coordOccupationCount;
     for (const auto& [_, obj]: game.objMap) {
         coordOccupationCount[obj.coord]++;
         if (obj.currentAction == MOVE || obj.currentAction == PRODUCE) {
@@ -600,7 +600,7 @@ void GameStepSingle(GameState& game, TotalDiscreteAction& action, bool enableLog
     GameExecuteMove(game, action.action[1], 1, coordOccupationCount);
     GameSettleMove(game);
 
-    unordered_map<Coord, int, UHasher<Coord>> coordGatherCount;
+    unordered_map<Coord, int> coordGatherCount;
     for (const auto& [_, obj]: game.objMap) {
         if (obj.currentAction == GATHER) {
             coordGatherCount[obj.actionTarget]++;
@@ -635,7 +635,7 @@ void GameStep(GameState *ptrGameState, signed char* actionDataArr1, signed char*
     }
     signed char* actionDataArr[2] = {actionDataArr1, actionDataArr2};
 
-    unordered_map<Coord, int, UHasher<Coord>> coordIdxMap;
+    unordered_map<Coord, int> coordIdxMap;
     for (const auto& [i, obj]: game.objMap) {
         coordIdxMap[obj.coord] = i;
     }

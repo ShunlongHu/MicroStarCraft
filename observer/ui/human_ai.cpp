@@ -14,7 +14,7 @@ static unordered_map<int, DiscreteAction> txActionMap;
 static vector<bool> occupationMap;
 static GameState lastGame;
 
-void ProcAction(const GameState& game, const unordered_map<Coord, int, UHasher<Coord>>& coordIdxMap);
+void ProcAction(const GameState& game, const unordered_map<Coord, int>& coordIdxMap);
 void ProcMove(const GameState& game, int idx, const ActionTarget & target);
 
 void HumanAi::Act(const GameState& game, Coord mouseClick, Coord mouseRightClick)
@@ -26,7 +26,7 @@ void HumanAi::Act(const GameState& game, Coord mouseClick, Coord mouseRightClick
         txActionMap = {};
         lastGame = game;
     }
-    unordered_map<Coord, int, UHasher<Coord>> coordIdxMap;
+    unordered_map<Coord, int> coordIdxMap;
     for (const auto& [idx, obj]: game.objMap) {
         coordIdxMap.emplace(obj.coord, idx);
     }
@@ -72,7 +72,7 @@ void HumanAi::Act(const GameState& game, Coord mouseClick, Coord mouseRightClick
     RtsObserver::selectedObj = selType;
 }
 
-void ProcAction(const GameState& game, const unordered_map<Coord, int, UHasher<Coord>>& coordIdxMap) {
+void ProcAction(const GameState& game, const unordered_map<Coord, int>& coordIdxMap) {
     occupationMap = vector<bool>(game.w * game.h, false);
 
     unordered_map<int, GameObj> baseMap;
@@ -92,7 +92,7 @@ void ProcAction(const GameState& game, const unordered_map<Coord, int, UHasher<C
 
 
     unordered_set<int> doneActionSet;
-    unordered_set<Coord, UHasher<Coord>> toGatherSet;
+    unordered_set<Coord> toGatherSet;
     for (const auto& [idx, act]: actionMap) {
         if (game.objMap.count(idx) == 0) {
             doneActionSet.emplace(idx);
@@ -275,7 +275,7 @@ inline int heuristic(const Coord& a, const Coord& b) {
 
 void ProcMove(const GameState& game, int idx, const ActionTarget & target) {
     const auto& coord = game.objMap.at(idx).coord;
-    unordered_set<Coord, UHasher<Coord>> visited;
+    unordered_set<Coord> visited;
     vector<Loc> path;
     priority_queue<Loc, vector<Loc>, std::greater<>> pq;
     pq.emplace(coord, -1, 0, heuristic(coord, target));

@@ -119,24 +119,6 @@ const static std::unordered_map<GameObjType, int> OBJ_ATTACK_RANGE_MAP {
 constexpr static int RES_PER_GATHER = 1;
 constexpr static int GATHER_TIME = 1;
 
-template<class T>
-struct UHasher {
-    size_t operator()(const T &key) const {
-        if (sizeof(T) == 8) {
-            return *reinterpret_cast<const uint64_t *>(&key);
-        }
-        if (sizeof(T) == 4) {
-            return *reinterpret_cast<const uint32_t *>(&key);
-        }
-        if (sizeof(T) == 2) {
-            return *reinterpret_cast<const uint16_t *>(&key);
-        }
-        if (sizeof(T) == 1) {
-            return *reinterpret_cast<const uint8_t *>(&key);
-        }
-        return std::_Hash_array_representation(reinterpret_cast<const char *>(&key), sizeof(key));
-    }
-};
 
 enum ActionType {
     NOOP,
@@ -172,6 +154,17 @@ struct Coord {
     Coord(int y, int x) : y(y), x(x) {}
     Coord() : y(0), x(0) {}
 };
+
+namespace std {
+    template<>
+    struct hash<Coord> {
+        size_t operator()(const Coord &key) const {
+            auto &x = key.x;
+            auto &y = key.y;
+            return std::hash<uint64_t>{}(x >= y ? (x * x) + x + y : (y * y) + x);
+        }
+    };
+}
 
 using ActionTarget = Coord;
 
@@ -249,6 +242,20 @@ struct GameObj {
         return *this;
     }
 };
+
+namespace std {
+    template<>
+    struct hash<GameObj> {
+        size_t operator()(const GameObj &key) const {
+            return std::hash<uint64_t>{}(
+                    std::hash<Coord>{}(key.coord) + key.type + key.hitPoint + key.resource + key.owner +
+                    key.currentAction + std::hash<Coord>{}(key.actionTarget) + key.actionProgress +
+                    key.actionTotalProgress + key.attackCD + key.produceType + key.attackRange + key.attackInterval +
+                    key.attackPoint + key.actionMask.canAttack + key.actionMask.canGather + key.actionMask.canMove +
+                    key.actionMask.canBeGathered + key.actionMask.canBeAttacked + key.actionMask.canBeStored);
+        }
+    };
+}
 
 struct GameState {
     std::unordered_map<int, GameObj> objMap;

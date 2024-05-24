@@ -82,8 +82,8 @@ auto ThreadPool::enqueue(F&& f, Args&&... args)
             throw std::runtime_error("enqueue on stopped ThreadPool");
 
         tasks.emplace([task](){ (*task)(); });
+        condition.notify_one();
     }
-    condition.notify_one();
     return res;
 }
 
@@ -93,8 +93,8 @@ inline ThreadPool::~ThreadPool()
     {
         std::unique_lock<std::mutex> lock(queue_mutex);
         stop = true;
+        condition.notify_all();
     }
-    condition.notify_all();
     for(std::thread &worker: workers)
         worker.join();
 }

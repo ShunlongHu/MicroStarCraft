@@ -33,6 +33,7 @@ RtsMap::RtsMap(QWidget *parent) : QOpenGLWidget(parent),
     format.setProfile(QSurfaceFormat::CoreProfile);
     //指定opengl版本为3.3
     format.setVersion(3, 3);
+    format.setSamples(8);
     setFormat(format);
     setCursor(Qt::ArrowCursor);
 }
@@ -132,8 +133,10 @@ void RtsMap::initializeGL()
     //给着色器变量赋值,projextion,view默认构造是生成单位矩阵
     view.translate(QVector3D(0, 0, -5.0f));
     view.rotate(-45, 1, 0, 0);
-    view.scale(1.09);
-    projection.perspective(30.0f, (GLfloat)width() / (GLfloat)height(), 0.1f, 100.0f);
+    view.translate(QVector3D(0, 0.03, 0.0f));
+    view.scale(0.45);
+    view.scale(1, 1.32);
+    projection.perspective(10.0f, (GLfloat)width() / (GLfloat)height(), 0.1f, 100.0f);
     /*
     将此程序绑定到active的OPenGLContext，并使其成为当前着色器程序
     先前绑定的着色器程序将被释放，等价于调用glUseProgram(GLuint id)
@@ -323,7 +326,7 @@ void RtsMap::paintGL()
     identity.setToIdentity();
 
     mMatrix.setToIdentity();
-    mMatrix.translate(-1.0f, 2);
+    mMatrix.translate(-1.0f, 1);
     mMatrix.scale(0.1f);
     mMatrix.rotate(45.0f, 1, 0, 0);
     textProgram->setUniformValue("model", mMatrix);
@@ -348,8 +351,8 @@ void RtsMap::paintGL()
 void RtsMap::resizeGL(int width, int height)
 {
     glViewport(0,0,width,height);
-    if (width != height) {
-        resize(std::min(width,height),std::min(width, height));
+    if (width * 9 != height * 16) {
+        resize(std::min(width*9,height*16)/9,std::min(width*9, height*16)/16);
     }
     update();
 }

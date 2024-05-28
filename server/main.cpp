@@ -36,6 +36,7 @@
 
 ABSL_FLAG(uint16_t, port, 50051, "Server port for the service");
 ABSL_FLAG(std::string, replay, "", "Replay file path");
+ABSL_FLAG(bool, light_only, false, "Cannot build heavy and ranged");
 
 using grpc::Server;
 using grpc::ServerBuilder;
@@ -68,6 +69,7 @@ void RunServer(uint16_t port) {
 int main(int argc, char** argv) {
     absl::ParseCommandLine(argc, argv);
     RtsServiceImpl::replayFile = absl::GetFlag(FLAGS_replay);
+    RtsServiceImpl::isLightOnly = absl::GetFlag(FLAGS_light_only);
     Init({W, H, 1});
     RunServer(absl::GetFlag(FLAGS_port));
     return 0;

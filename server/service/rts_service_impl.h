@@ -11,6 +11,7 @@ class RtsServiceImpl final : public message::Rts::Service {
 public:
     static void mainLoop();
     static std::string replayFile;
+    static bool isLightOnly;
 
 private:
     grpc::Status ConnectObserver(grpc::ServerContext *context,

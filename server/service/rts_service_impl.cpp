@@ -34,6 +34,7 @@ static ObservationRequest initParam;
 
 static TotalDiscreteAction totalAction;
 string RtsServiceImpl::replayFile;
+bool RtsServiceImpl::isLightOnly {false};
 
 Status RtsServiceImpl::ConnectObserver(ServerContext* context, ServerReaderWriter<Message, ObservationRequest>* stream) {
     cout << "Observer Connected!" << endl;
@@ -132,7 +133,13 @@ Status RtsServiceImpl::ConnectPlayer(ServerContext* context, ServerReaderWriter<
         act.clear();
         act.reserve(msg.actions_size());
         for (const auto& a: msg.actions()) {
-            act.emplace(a.id(), DiscreteAction{static_cast<ActionType>(a.action()), static_cast<GameObjType>(a.producetype()), {a.targety(), a.targetx()}});
+            auto discreteAction = DiscreteAction{static_cast<ActionType>(a.action()), static_cast<GameObjType>(a.producetype()), {a.targety(), a.targetx()}};
+            if (isLightOnly) {
+                if (discreteAction.produceType == HEAVY || discreteAction.produceType == RANGED) {
+                    discreteAction.produceType = LIGHT;
+                }
+            }
+            act.emplace(a.id(), discreteAction);
         }
     }
     writer.join();

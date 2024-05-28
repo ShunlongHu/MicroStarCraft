@@ -58,14 +58,6 @@ id: 0,action: 0,produce_type: 0,target_x: 0,target_y: 0,}],};
             {
                 let gs = game_state_clone.lock().unwrap().clone();
                 cur_game_state = gs.clone();
-                // cur_game_state.obj_size = gs.obj_size;
-                // cur_game_state.obj_arr = gs.obj_arr.clone();
-                // cur_game_state.building_cnt = gs.building_cnt.clone();
-                // cur_game_state.resource = gs.resource.clone();
-                // cur_game_state.w = gs.w;
-                // cur_game_state.h = gs.h;
-                // cur_game_state.time = gs.time;
-                // cur_game_state.obj_cnt = gs.obj_cnt;
             }
 
             if last_game_state != cur_game_state {
@@ -89,7 +81,6 @@ id: 0,action: 0,produce_type: 0,target_x: 0,target_y: 0,}],};
     let mut inbound = response.into_inner();
 
     while let Some(message) = inbound.message().await? {
-        println!("{:?}", message.data.len());
         let mut data = game_state.lock().unwrap();
         let mut idx = 0;
 
@@ -164,7 +155,6 @@ id: 0,action: 0,produce_type: 0,target_x: 0,target_y: 0,}],};
         idx += 4;
         data.obj_cnt = i32::from_le_bytes(message.data[idx..idx+4].to_vec().try_into().unwrap());
     }
-
     Ok(())
 }
 #[tokio::main]

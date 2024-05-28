@@ -45,22 +45,19 @@ enum Side {
 
 async fn main_loop(client: &mut RtsClient<Channel>, side: i8) -> Result<(), Box<dyn Error>> {
     let game_state = Arc::new(Mutex::new(GameState{
-        obj_size: 0,obj_arr: [GameObj{..Default::default()}; 32*32],
-        resource: [0;2],building_cnt: [0;2],w: 0,h: 0,time: 0,obj_cnt: 0,
+        obj_vec: vec![], resource: [0;2],building_cnt: [0;2],w: 0,h: 0,time: 0,obj_cnt: 0,
     }));
     let game_state_clone = game_state.clone();
     let outbound = async_stream::stream! {
         yield PlayerRequest{command: 0,role: if side == -1 {i32::from(message::Role::PlayerA)} else {i32::from(message::Role::PlayerB)}, actions: vec![Action{
 id: 0,action: 0,produce_type: 0,target_x: 0,target_y: 0,}],};
         let mut interval = time::interval(Duration::from_micros(100));
-        let mut last_game_state = GameState{
-                obj_size: 0,obj_arr: [GameObj{..Default::default()}; 32*32],
-                resource: [0;2],building_cnt: [0;2],w: 0,h: 0,time: 0,obj_cnt: 0,};
+        let mut last_game_state = GameState{obj_vec: vec![], resource: [0;2],building_cnt: [0;2],w: 0,h: 0,time: 0,obj_cnt: 0,};
         let mut cur_game_state = last_game_state.clone();
         loop {
             {
                 let gs = game_state_clone.lock().unwrap().clone();
-                cur_game_state.time = gs.time;
+                cur_game_state = gs.clone();
                 // cur_game_state.obj_size = gs.obj_size;
                 // cur_game_state.obj_arr = gs.obj_arr.clone();
                 // cur_game_state.building_cnt = gs.building_cnt.clone();
@@ -72,24 +69,17 @@ id: 0,action: 0,produce_type: 0,target_x: 0,target_y: 0,}],};
             }
 
             if last_game_state != cur_game_state {
-        //         last_game_state.obj_size = cur_game_state.obj_size;
-        //         last_game_state.obj_arr = cur_game_state.obj_arr.clone();
-        //         last_game_state.resource = cur_game_state.resource.to_owned();
-        //         last_game_state.w = cur_game_state.w.to_owned();
-        //         last_game_state.h = cur_game_state.h.to_owned();
-        //         last_game_state.building_cnt = cur_game_state.building_cnt.to_owned();
-        //         last_game_state.time = cur_game_state.time.to_owned();
-        //         last_game_state.obj_cnt = cur_game_state.obj_cnt.to_owned();
-        //         let action = act(last_game_state.clone(), side);
-        //         let mut request = PlayerRequest{
-        //             command: 0,
-        //             role: if side == -1 {i32::from(message::Role::PlayerA)} else {i32::from(message::Role::PlayerB)},
-        //             actions: vec![]
-        //         };
-        //         for (idx, act) in action {
-        //             request.actions.push(Action{id: idx, action: act.action, produce_type: act.produce_type, target_x: act.target.x, target_y: act.target.y});
-        //         }
-        //         yield request;
+                last_game_state = cur_game_state.clone();
+                let action = act(last_game_state.clone(), side);
+                let mut request = PlayerRequest{
+                    command: 0,
+                    role: if side == -1 {i32::from(message::Role::PlayerA)} else {i32::from(message::Role::PlayerB)},
+                    actions: vec![]
+                };
+                for (idx, act) in action {
+                    request.actions.push(Action{id: idx, action: act.action, produce_type: act.produce_type, target_x: act.target.x, target_y: act.target.y});
+                }
+                yield request;
             }
             interval.tick().await;
         }
@@ -104,7 +94,7 @@ id: 0,action: 0,produce_type: 0,target_x: 0,target_y: 0,}],};
         let mut idx = 0;
 
         let obj_num = i64::from_le_bytes(message.data[idx..idx+8].to_vec().try_into().unwrap());
-        data.obj_size = obj_num as i32;
+        data.obj_vec.reserve(obj_num as usize);
         idx += 8;
         for _ in 0..obj_num {
             let obj_idx = i32::from_le_bytes(message.data[idx..idx+4].to_vec().try_into().unwrap());
@@ -156,7 +146,7 @@ id: 0,action: 0,produce_type: 0,target_x: 0,target_y: 0,}],};
             idx += 1;
             obj.action_mask.can_be_gathered = message.data[idx] > 0;
             idx += 1;
-            data.obj_arr[obj_idx as usize] = obj;
+            data.obj_vec.push(obj);
         }
         data.resource[0] = i32::from_le_bytes(message.data[idx..idx+4].to_vec().try_into().unwrap());
         idx += 4;

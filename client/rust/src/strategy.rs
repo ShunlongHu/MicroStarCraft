@@ -53,9 +53,9 @@
         pub action_mask: ActionMask
     }
 
-    #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq)]
+    #[derive(Clone, Ord, PartialOrd, Eq, PartialEq)]
     pub struct GameState {
-        pub obj_arr: [GameObj; 32*32],
+        pub obj_vec: Vec<GameObj>,
         pub resource: [i32; 2],
         pub building_cnt: [i32; 2],
         pub w: i32,
@@ -76,8 +76,7 @@
 
     pub fn act(game_state: GameState, side: i8) -> HashMap<i32, Action> {
         let mut ret_val: HashMap<i32, Action> = HashMap::new();
-        for idx in 0..game_state.obj_size {
-            let obj = game_state.obj_arr[idx as usize];
+        for obj in game_state.obj_vec {
             if obj.owner != side {
                 continue;
             }
@@ -86,7 +85,7 @@
                 produce_type: rand::thread_rng().gen_range(0..RANGED + 1),
                 target: Coord {y: rand::thread_rng().gen_range(0..game_state.h), x:rand::thread_rng().gen_range(0..game_state.w)},
             };
-            ret_val.insert(idx, action);
+            ret_val.insert(obj.idx, action);
         }
         ret_val
     }

@@ -1,0 +1,24 @@
+[package]
+name = "rts_rust_client"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+clap = { version = "4.5.4", features = ["derive"] }
+# 用于从proto2/proto3文件生成rust 代码
+prost = "0.11"
+tokio = { version = "1", features = ["full"] }
+tonic = "0.9"
+clap_derive = "4.5.4"
+rand = "0.8.5"
+time = "0.3.36"
+async-stream = "0.3.5"
+byteorder = "1.5.0"
+
+[build-dependencies]
+# 用于在build阶段生成gRPC的客户端和服务端代码
+tonic-build = "0.9"
+
+[[bin]]
+name = "rts_rust_client"
+path = "src/main.rs"

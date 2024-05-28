@@ -223,14 +223,17 @@ struct GameObj {
     ActionMask actionMask;
 
     inline bool operator==(const GameObj &state2) const {
-        auto ptrA = reinterpret_cast<const char *> (this);
-        auto ptrB = reinterpret_cast<const char *> (&state2);
-        for (int i = 0; i < sizeof(GameObj); ++i) {
-            if (ptrA[i] != ptrB[i]) {
-                return false;
-            }
-        }
-        return true;
+        return
+            type == state2.type &&
+            coord == state2.coord &&
+            hitPoint == state2.hitPoint &&
+            resource == state2.resource &&
+            owner == state2.owner &&
+            currentAction == state2.currentAction &&
+            actionTarget == state2.actionTarget &&
+            actionProgress == state2.actionProgress &&
+            attackCD == state2.attackCD &&
+            produceType == state2.produceType;
     }
 
     inline GameObj &operator=(const GameObj &state2) noexcept {

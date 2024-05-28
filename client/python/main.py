@@ -20,7 +20,7 @@ def generate_action() -> Iterable[PlayerRequest]:
     while True:
         if lastState != state:
             lastState = state
-            action = Act(state)
+            action = Act(state, -1 if role == Role.PLAYER_A else 1)
             retVal = PlayerRequest(command=STEP, role=role)
             for k, v in action.items():
                 curAction = Action(id=k, action=v.action, produceType=v.produceType, targetX=v.target.x,

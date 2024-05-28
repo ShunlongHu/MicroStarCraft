@@ -8,7 +8,7 @@
 #include "game_types.h"
 
 namespace Strategy {
-void Act(const GameState& state, std::unordered_map<int, DiscreteAction>& action);
+void Act(const GameState& state, std::unordered_map<int, DiscreteAction>& action, int8_t side);
 };
 
 

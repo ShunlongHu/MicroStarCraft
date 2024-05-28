@@ -60,7 +60,7 @@ int main(int argc, char** argv) {
     while (stream->Read(&result)) {
         istringstream iss(result.data(), ios::binary);
         iss >> state;
-        Strategy::Act(state, action);
+        Strategy::Act(state, action, role == PLAYER_A ? -1 : 1);
         PlayerRequest request;
         request.set_role(role);
         request.set_command(STEP);

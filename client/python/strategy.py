@@ -3,9 +3,11 @@ import random
 from game import *
 
 
-def Act(state: GameState) -> dict[int, DiscreteAction]:
+def Act(state: GameState, side) -> dict[int, DiscreteAction]:
     retVal = {}
     for idx, obj in state.objMap.items():
+        if obj.owner != side:
+            continue
         act = DiscreteAction()
         act.action = random.randint(0, GAME_ACTION_TYPE_NUM - 1)
         act.produceType = random.randint(0, GAME_ACTION_TYPE_NUM - 1)
